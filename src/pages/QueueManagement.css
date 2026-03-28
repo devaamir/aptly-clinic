@@ -1,0 +1,337 @@
+.qm-container {
+  padding: 24px;
+  font-family: 'Manrope', sans-serif;
+  flex: 1;
+  overflow-y: auto;
+  box-sizing: border-box;
+}
+
+.qm-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24px;
+}
+
+.qm-title {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--color-textPrimary);
+  margin: 0;
+}
+
+.qm-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.qm-icon-btn {
+  background: #ffffff;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  cursor: pointer;
+  padding: 7px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.qm-icon-btn img {
+  width: 20px;
+  height: 20px;
+}
+
+.qm-icon-btn:hover {
+  background: var(--color-inputBg);
+}
+
+.view-toggle {
+  display: flex;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  overflow: hidden;
+  background: #fff;
+}
+
+.view-btn {
+  border: none;
+  border-radius: 0;
+}
+
+.view-btn+.view-btn {
+  border-left: 1px solid var(--color-border);
+}
+
+.view-active {
+  background: var(--color-inputBg);
+}
+
+.qm-doctor-tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.qm-doctor-tab {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  border-radius: 8px;
+  border: 1px solid var(--color-border);
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--color-textSecondary);
+  background: #fff;
+}
+
+.qm-doctor-tab.active {
+  border-color: var(--color-accent);
+  color: var(--color-accent);
+  background: #EEF4FF;
+}
+
+.tab-avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.qm-main-card {
+  background: #ffffff;
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  overflow: hidden;
+  padding: 16px 18px;
+}
+
+/* Doctor Card */
+.qm-doctor-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  margin-bottom: 6px;
+}
+
+.doctor-info {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.doctor-avatar {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.doctor-name {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--color-textPrimary);
+  margin: 0 0 4px 0;
+}
+
+.doctor-meta {
+  font-size: 13px;
+  color: var(--color-textSecondary);
+  margin: 0;
+}
+
+.live-badge {
+  font-size: 13px;
+  font-weight: 600;
+  color: #22c55e;
+  margin-left: 12px;
+  background: #ECFDF3;
+  padding: 4px 10px;
+  border-radius: 999px;
+}
+
+.doctor-actions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.action-btn {
+  padding: 8px 16px;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  background: #fff;
+  font-size: 13px;
+  font-weight: 500;
+  font-family: 'Manrope', sans-serif;
+  cursor: pointer;
+  color: var(--color-textPrimary);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.btn-icon {
+  width: 16px;
+  height: 16px;
+}
+
+.action-btn:hover {
+  background: var(--color-inputBg);
+}
+
+.next-token {
+  background: #22c55e;
+  color: #fff;
+  border-color: #22c55e;
+}
+
+.next-token:hover {
+  background: #16a34a;
+}
+
+/* Stats */
+.qm-stats {
+  display: flex;
+  gap: 1px;
+  background: var(--color-border);
+  margin-bottom: 10px;
+  width: 60%;
+  background: #F5F9FF;
+  border-radius: 10px;
+  border: 1px solid var(--color-border);
+}
+
+.stat-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 14px 20px;
+  border-right: 1px solid var(--color-border);
+  /* background: #fff; */
+}
+
+.stat-label {
+  font-size: 12px;
+  color: var(--color-textSecondary);
+}
+
+.stat-value {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--color-textPrimary);
+}
+
+/* Table */
+.qm-table-wrapper {
+  overflow: hidden;
+  background: #fff;
+}
+
+.qm-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.qm-table thead tr {
+  background: var(--color-inputBg);
+}
+
+.qm-table th {
+  text-align: left;
+  padding: 12px 16px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-textSecondary);
+  letter-spacing: 0.5px;
+}
+
+.qm-table td {
+  padding: 14px 16px;
+  border-top: 1px solid var(--color-border);
+  color: var(--color-textPrimary);
+}
+
+.row-current {
+  background: #F0F5FF;
+}
+
+.token-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  border: 1px solid var(--color-border);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-textPrimary);
+}
+
+.token-current {
+  background: var(--color-accent);
+  color: #fff;
+  border-color: var(--color-accent);
+}
+
+.patient-cell {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.patient-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.status-badge {
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.status-completed {
+  color: #22c55e;
+}
+
+.status-skipped {
+  color: #f59e0b;
+}
+
+.status-current {
+  color: #418EFD;
+}
+
+.status-waiting {
+  color: #94a3b8;
+}
+
+.status-cancelled {
+  color: #ef4444;
+}
+
+.phone-btn {
+  background: var(--color-inputBg);
+}
+
+.dots-btn {
+  background: transparent;
+}
+
+.row-actions .qm-icon-btn {
+  border: none;
+}
+
+.row-actions {
+  display: flex;
+  gap: 4px;
+  justify-content: flex-end;
+}
