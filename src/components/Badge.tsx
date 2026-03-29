@@ -6,12 +6,13 @@ interface BadgeProps {
   bgColor: string
   textColor: string
   dotColor: string
+  showDot?: boolean
 }
 
-const Badge: FC<BadgeProps> = ({ text, bgColor, textColor, dotColor }) => {
+const Badge: FC<BadgeProps> = ({ text, bgColor, textColor, dotColor, showDot = true }) => {
   return (
     <span className="badge" style={{ backgroundColor: bgColor, color: textColor }}>
-      <span className="badge-dot" style={{ backgroundColor: dotColor }} />
+      {showDot && <span className="badge-dot" style={{ backgroundColor: dotColor }} />}
       {text}
     </span>
   )

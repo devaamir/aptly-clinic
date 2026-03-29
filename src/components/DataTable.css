@@ -1,0 +1,32 @@
+.data-table-wrapper {
+  overflow-y: auto;
+  flex: 1;
+  min-height: 0;
+  background: #fff;
+}
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+  font-family: 'Manrope', sans-serif;
+}
+
+.data-table thead tr {
+  background: var(--color-inputBg);
+}
+
+.data-table th {
+  text-align: left;
+  padding: 12px 16px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-textSecondary);
+  letter-spacing: 0.5px;
+}
+
+.data-table td {
+  padding: 14px 16px;
+  border-top: 1px solid var(--color-border);
+  color: var(--color-textPrimary);
+}
