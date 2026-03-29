@@ -160,6 +160,13 @@ const doctors: Doctor[] = [
     ],
   },
 ]
+const formatTo12h = (time: string) => {
+  const [h, m] = time.split(':').map(Number)
+  const ampm = h >= 12 ? 'PM' : 'AM'
+  const h12 = h % 12 || 12
+  return `${h12}:${m.toString().padStart(2, '0')} ${ampm}`
+}
+
 const QueueManagement: FC = () => {
   const [selectedId, setSelectedId] = useState(2)
   const [sessionIdx, setSessionIdx] = useState(0)
@@ -302,8 +309,11 @@ const QueueManagement: FC = () => {
 
         {scheduledPause && (
           <div className="session-banner scheduled-banner">
-            <img src={infoIconBlue} alt="" className="banner-icon" />
-            <span>Scheduled pause started at {scheduledPause.startAt} for {scheduledPause.duration}.</span>
+            <div className="pause-banner-left">
+              <img src={infoIconBlue} alt="" className="banner-icon" />
+              <span>Scheduled pause started at {formatTo12h(scheduledPause.startAt)} for {scheduledPause.duration}.</span>
+            </div>
+            <button className="cancel-schedule-btn" onClick={() => setScheduledPause(null)}>Cancel Schedule</button>
           </div>
         )}
         <div className="qm-doctor-card">
@@ -316,10 +326,10 @@ const QueueManagement: FC = () => {
             {session.isLive && <Badge text="Live" bgColor="#ECFDF3" textColor="#027A48" dotColor="#12B76A" />}
           </div>
           <div className="doctor-actions">
-            <button className="action-btn" disabled={!session.isLive || !!pausedDuration || !!scheduledPause} onClick={() => setShowPauseModal(true)}><img src={instantPauseIcon} alt="" className="btn-icon" /> Instant Pause</button>
-            <button className="action-btn" disabled={!session.isLive || !!pausedDuration || !!scheduledPause} onClick={() => setShowScheduledModal(true)}><img src={scheduledPauseIcon} alt="" className="btn-icon" /> Scheduled Pause</button>
-            <button className="action-btn" disabled={!session.isLive || !!pausedDuration || !!scheduledPause} onClick={handleSkip}><img src={skipIcon} alt="" className="btn-icon" /> Skip</button>
-            <button className="action-btn next-token" disabled={!session.isLive || !!pausedDuration || !!scheduledPause} onClick={handleNextToken}>Next Token <img src={rightArrow} alt="" className="btn-icon" /></button>
+            <button className="action-btn" disabled={!session.isLive || !!pausedDuration} onClick={() => setShowPauseModal(true)}><img src={instantPauseIcon} alt="" className="btn-icon" /> Instant Pause</button>
+            <button className="action-btn" disabled={!session.isLive || !!pausedDuration} onClick={() => setShowScheduledModal(true)}><img src={scheduledPauseIcon} alt="" className="btn-icon" /> Scheduled Pause</button>
+            <button className="action-btn" disabled={!session.isLive || !!pausedDuration} onClick={handleSkip}><img src={skipIcon} alt="" className="btn-icon" /> Skip</button>
+            <button className="action-btn next-token" disabled={!session.isLive || !!pausedDuration} onClick={handleNextToken}>Next Token <img src={rightArrow} alt="" className="btn-icon" /></button>
           </div>
         </div>
 

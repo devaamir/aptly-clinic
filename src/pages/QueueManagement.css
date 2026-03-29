@@ -195,6 +195,21 @@
 .scheduled-banner {
   background: #ECF4FFB2;
   color: #2D74DB;
+  justify-content: space-between;
+}
+
+.cancel-schedule-btn {
+  background: #fff;
+  color: #FF5A4F;
+  border: 1px solid #E8EAED;
+  border-radius: 6px;
+  padding: 5px 14px;
+  font-size: 12px;
+  font-weight: 600;
+  font-family: 'Manrope', sans-serif;
+  cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 display: flex;
