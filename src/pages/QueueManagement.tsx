@@ -1,6 +1,7 @@
 import type { FC } from 'react'
 import { useState, useEffect } from 'react'
 import PatientModal from '../components/PatientModal'
+import PageHeader from '../components/PageHeader'
 import InstantPauseModal from '../components/InstantPauseModal'
 import ScheduledPauseModal from '../components/ScheduledPauseModal'
 import verifyTickGreen from '../assets/icons/verify-tick-green.svg'
@@ -252,20 +253,22 @@ const QueueManagement: FC = () => {
   return (
     <div className="qm-container">
       {/* Header */}
-      <div className="qm-header">
-        <h1 className="qm-title">Queue Management</h1>
-        <div className="qm-header-actions">
-          <button className="qm-icon-btn"><img src={searchIcon} alt="search" /></button>
-          <button className="qm-icon-btn"><img src={upDownArrow} alt="sort" /></button>
-          <button className="qm-icon-btn"><img src={sortIcon} alt="filter" /></button>
-          <button className="qm-icon-btn"><img src={settingsIconsIcon} alt="settings" /></button>
-          <button className="qm-icon-btn"><img src={reloadIcon} alt="reload" /></button>
-          <div className="view-toggle">
-            <button className={`qm-icon-btn view-btn ${view === 'list' ? 'view-active' : ''}`} onClick={() => setView('list')}><img src={listIcon} alt="list" /></button>
-            <button className={`qm-icon-btn view-btn ${view === 'grid' ? 'view-active' : ''}`} onClick={() => setView('grid')}><img src={gridIcon} alt="grid" /></button>
+      <PageHeader
+        title="Queue Management"
+        actions={
+          <div className="qm-header-actions">
+            <button className="qm-icon-btn"><img src={searchIcon} alt="search" /></button>
+            <button className="qm-icon-btn"><img src={upDownArrow} alt="sort" /></button>
+            <button className="qm-icon-btn"><img src={sortIcon} alt="filter" /></button>
+            <button className="qm-icon-btn"><img src={settingsIconsIcon} alt="settings" /></button>
+            <button className="qm-icon-btn"><img src={reloadIcon} alt="reload" /></button>
+            <div className="view-toggle">
+              <button className={`qm-icon-btn view-btn ${view === 'list' ? 'view-active' : ''}`} onClick={() => setView('list')}><img src={listIcon} alt="list" /></button>
+              <button className={`qm-icon-btn view-btn ${view === 'grid' ? 'view-active' : ''}`} onClick={() => setView('grid')}><img src={gridIcon} alt="grid" /></button>
+            </div>
           </div>
-        </div>
-      </div>
+        }
+      />
 
       {/* Doctor Tabs */}
       <div className="qm-doctor-tabs">

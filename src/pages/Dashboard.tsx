@@ -2,6 +2,13 @@ import type { FC } from 'react'
 import { useState } from 'react'
 import logo from '../assets/images/logo.png'
 import QueueManagement from './QueueManagement'
+import DashboardPage from './DashboardPage'
+import Appointments from './Appointments'
+import Patients from './Patients'
+import Doctors from './Doctors'
+import LeaveManagement from './LeaveManagement'
+import Specialties from './Specialties'
+import Settings from './Settings'
 import dashboardIcon from '../assets/icons/dashboard-icon.svg'
 import queueIcon from '../assets/icons/quemanagment-icon.svg'
 import appointmentIcon from '../assets/icons/appointment-icon.svg'
@@ -27,7 +34,7 @@ const navItems: { label: ActivePage; icon: string }[] = [
 ]
 
 const Dashboard: FC = () => {
-  const [activePage, setActivePage] = useState<ActivePage>('Queue Management')
+  const [activePage, setActivePage] = useState<ActivePage>('Dashboard')
 
   return (
     <div className="dashboard">
@@ -59,7 +66,14 @@ const Dashboard: FC = () => {
           </div>
         </div>
         <div className="topbar-divider" />
+        {activePage === 'Dashboard' && <DashboardPage />}
         {activePage === 'Queue Management' && <QueueManagement />}
+        {activePage === 'Appointments' && <Appointments />}
+        {activePage === 'Patients' && <Patients />}
+        {activePage === 'Doctors' && <Doctors />}
+        {activePage === 'Leave Management' && <LeaveManagement />}
+        {activePage === 'Specialties' && <Specialties />}
+        {activePage === 'Settings' && <Settings />}
       </main>
     </div>
   )
