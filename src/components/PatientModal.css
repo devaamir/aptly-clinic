@@ -1,0 +1,98 @@
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px 0 20px;
+}
+
+.modal-token {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-textPrimary);
+  font-family: 'Manrope', sans-serif;
+}
+
+.modal-close {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-size: 16px;
+  color: var(--color-textSecondary);
+  line-height: 1;
+}
+
+.modal-body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 32px;
+  gap: 8px;
+}
+
+.modal-avatar {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  object-fit: cover;
+  margin-bottom: 4px;
+}
+
+.modal-name {
+  font-size: 18px;
+  font-weight: 600;
+  color: #0A0A0A;
+  font-family: 'Manrope', sans-serif;
+  margin: 0;
+}
+
+.modal-meta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 400;
+  color: #636A79;
+  font-family: 'Manrope', sans-serif;
+}
+
+.meta-dot {
+  color: #636A79;
+}
+
+.modal-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 16px;
+  width: 100%;
+}
+
+.modal-btn {
+  flex: 1;
+  padding: 10px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  font-family: 'Manrope', sans-serif;
+  cursor: pointer;
+  border: none;
+}
+
+.call-btn {
+  background: #F1F2F4;
+  color: #0A0A0A;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.modal-btn-icon {
+  width: 16px;
+  height: 16px;
+}
+
+.cancel-btn {
+  background: #FFE8E7;
+  color: #FF5A4F;
+}

@@ -1,0 +1,99 @@
+.ip-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.ip-icon-wrap {
+  background: #F8F9FB;
+  border-radius: 50%;
+  border: 1px solid #F1F2F4;
+  padding: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+}
+
+.ip-icon {
+  width: 48px;
+  height: 48px;
+  filter: invert(65%) sepia(80%) saturate(600%) hue-rotate(5deg);
+}
+
+.ip-close {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-size: 16px;
+  color: var(--color-textSecondary);
+}
+
+.ip-title {
+  font-size: 20px;
+  font-weight: 600;
+  color: #0A0A0A;
+  font-family: 'Manrope', sans-serif;
+  margin: 0 0 8px 0;
+}
+
+.ip-desc {
+  font-size: 14px;
+  font-weight: 400;
+  color: #636A79;
+  font-family: 'Manrope', sans-serif;
+  line-height: 1.6;
+  margin: 0 0 20px 0;
+}
+
+.ip-label {
+  display: block;
+  font-size: 12px;
+  font-weight: 500;
+  color: #494F5A;
+  font-family: 'Manrope', sans-serif;
+  margin-bottom: 0px;
+}
+
+.ip-select {
+  width: 100%;
+  padding: 2px 10px;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  font-size: 14px;
+  font-family: 'Manrope', sans-serif;
+  background: var(--color-inputBg);
+  color: var(--color-textPrimary);
+  outline: none;
+  margin-bottom: 60px;
+  box-sizing: border-box;
+}
+
+.ip-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+}
+
+.ip-btn {
+  width: calc(30%);
+  padding: 8.5px 0px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  font-family: 'Manrope', sans-serif;
+  cursor: pointer;
+  border: none;
+}
+
+.ip-cancel {
+  background: transparent;
+  color: #636A79;
+  border: 1px solid #E0E2E6;
+}
+
+.ip-submit {
+  background: var(--color-accent);
+  color: #fff;
+}

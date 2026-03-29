@@ -3,7 +3,7 @@ export const colors = {
   background: '#ffffff',
   textPrimary: '#1C1E22',
   textSecondary: '#636A79',
-  textMuted: '#747474',
+  patientName: '#00001D',
   border: '#E0E2E6',
   borderHover: '#94a3b8',
   rightBg: 'linear-gradient(#7FA8FF4D 10%, #FFFFFFFF 100%, #7FA8FF4D 10%)',
