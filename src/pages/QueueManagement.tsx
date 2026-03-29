@@ -192,8 +192,13 @@ const QueueManagement: FC = () => {
 
   const [showPauseModal, setShowPauseModal] = useState(false)
   const [showScheduledModal, setShowScheduledModal] = useState(false)
-  const [pausedDuration, setPausedDuration] = useState<string | null>(null)
-  const [scheduledPause, setScheduledPause] = useState<{ startAt: string; duration: string } | null>(null)
+  const [pausedMap, setPausedMap] = useState<Record<string, string | null>>({})
+  const [scheduledMap, setScheduledMap] = useState<Record<string, { startAt: string; duration: string } | null>>({})
+
+  const pausedDuration = pausedMap[sessionKey] ?? null
+  const scheduledPause = scheduledMap[sessionKey] ?? null
+  const setPausedDuration = (val: string | null) => setPausedMap(prev => ({ ...prev, [sessionKey]: val }))
+  const setScheduledPause = (val: { startAt: string; duration: string } | null) => setScheduledMap(prev => ({ ...prev, [sessionKey]: val }))
 
   useEffect(() => {
     if (!scheduledPause) return
@@ -205,7 +210,7 @@ const QueueManagement: FC = () => {
       }
     }, 10000)
     return () => clearInterval(interval)
-  }, [scheduledPause])
+  }, [scheduledPause, sessionKey])
   const [toast, setToast] = useState<string | null>(null)
   const [selectedPatient, setSelectedPatient] = useState<typeof patients[0] | null>(null)
 
