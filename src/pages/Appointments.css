@@ -194,6 +194,15 @@
 .apt-id {
   font-weight: 500;
   color: var(--color-accent);
+  font-size: 14px;
+}
+
+.apt-age,
+.apt-date,
+.apt-session {
+  font-weight: 500;
+  color: var(--color-textPrimary);
+  font-size: 14px;
 }
 
 .apt-dots-btn {
@@ -208,4 +217,12 @@
 .apt-dots-btn img {
   width: 20px;
   height: 20px;
+}
+
+.apt-label {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--color-textSecondary);
+  letter-spacing: 0.5px;
+  white-space: nowrap;
 }

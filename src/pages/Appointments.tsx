@@ -49,6 +49,8 @@ const appointments: Appointment[] = [
   { id: 'APT004', patient: 'Jerry Helfer', avatar: 'https://i.pravatar.cc/32?img=8', phone: '+91 90487 8293', age: 38, date: 'Mar 30, 2026', session: '10:30 AM', token: '04', doctor: 'Dr. Daniel Hamilton', doctorAvatar: 'https://i.pravatar.cc/32?img=2', specialty: 'Cardiology', bookingMethod: 'Offline', status: 'Completed' },
   { id: 'APT005', patient: 'Rodger Struck', avatar: 'https://i.pravatar.cc/32?img=9', phone: '+91 90487 8294', age: 52, date: 'Mar 30, 2026', session: '11:00 AM', token: '05', doctor: 'Dr. Sarah Johnson', doctorAvatar: 'https://i.pravatar.cc/32?img=1', specialty: 'Cardiology', bookingMethod: 'Online', status: 'Confirmed' },
   { id: 'APT006', patient: 'Bradley Lawlor', avatar: 'https://i.pravatar.cc/32?img=10', phone: '+91 90487 8295', age: 41, date: 'Mar 30, 2026', session: '11:30 AM', token: '06', doctor: 'Dr. Michael Chen', doctorAvatar: 'https://i.pravatar.cc/32?img=4', specialty: 'Orthopedics', bookingMethod: 'Offline', status: 'Confirmed' },
+  { id: 'APT007', patient: 'Bradley Lawlor', avatar: 'https://i.pravatar.cc/32?img=10', phone: '+91 90487 8295', age: 41, date: 'Mar 30, 2026', session: '11:30 AM', token: '06', doctor: 'Dr. Michael Chen', doctorAvatar: 'https://i.pravatar.cc/32?img=4', specialty: 'Orthopedics', bookingMethod: 'Offline', status: 'Confirmed' },
+  { id: 'APT008', patient: 'Bradley Lawlor', avatar: 'https://i.pravatar.cc/32?img=10', phone: '+91 90487 8295', age: 41, date: 'Mar 30, 2026', session: '11:30 AM', token: '06', doctor: 'Dr. Michael Chen', doctorAvatar: 'https://i.pravatar.cc/32?img=4', specialty: 'Orthopedics', bookingMethod: 'Offline', status: 'Confirmed' },
 ]
 
 const Appointments: FC = () => {
@@ -91,16 +93,16 @@ const Appointments: FC = () => {
         <table className="apt-table">
           <thead>
             <tr>
-              <th>APPOINTMENT ID</th>
-              <th>PATIENT</th>
-              <th>AGE</th>
-              <th>DATE</th>
-              <th>SESSION</th>
-              <th>TOKEN</th>
-              <th>DOCTOR</th>
-              <th>BOOKING METHOD</th>
-              <th>STATUS</th>
-              <th></th>
+              <th className='apt-label'>APPOINTMENT ID</th>
+              <th className='apt-label'>PATIENT</th>
+              <th className='apt-label'>AGE</th>
+              <th className='apt-label'>DATE</th>
+              <th className='apt-label'>SESSION</th>
+              <th className='apt-label'>TOKEN</th>
+              <th className='apt-label'>DOCTOR</th>
+              <th className='apt-label'>BOOKING METHOD</th>
+              <th className='apt-label'>STATUS</th>
+              <th className='apt-label'></th>
             </tr>
           </thead>
           <tbody>
@@ -116,9 +118,9 @@ const Appointments: FC = () => {
                     </div>
                   </div>
                 </td>
-                <td>{a.age}</td>
-                <td>{a.date}</td>
-                <td>{a.session}</td>
+                <td className='apt-age'>{a.age}</td>
+                <td className='apt-date'>{a.date}</td>
+                <td className='apt-session'>{a.session}</td>
                 <td><span className="apt-token">{a.token}</span></td>
                 <td>
                   <div className="apt-patient-cell">
