@@ -11,7 +11,7 @@
 .modal-card {
   background: #fff;
   border-radius: 12px;
-  width: 400px;
-  padding: 32px;
+  min-width: 400px;
+  padding: 0;
   box-sizing: border-box;
 }

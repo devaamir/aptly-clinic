@@ -1,0 +1,104 @@
+.form-field {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+}
+
+.form-field-label {
+  font-size: 12px;
+  font-weight: 500;
+  color: #494F5A;
+  font-family: 'Manrope', sans-serif;
+}
+
+.form-field-input-wrap {
+  display: flex;
+  align-items: center;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  background: var(--color-inputBg);
+  overflow: hidden;
+}
+
+.form-field-prefix {
+  padding: 3px 6px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #1D1E21;
+  font-family: 'Manrope', sans-serif;
+  border-right: 1px solid var(--color-border);
+  white-space: nowrap;
+  background: #fff;
+  border-radius: 6px;
+}
+
+.form-field-input {
+  padding: 6.5px 10px;
+  border: none;
+  font-size: 14px;
+  font-weight: 500;
+  font-family: 'Manrope', sans-serif;
+  background: transparent;
+  color: #7E8695;
+  outline: none;
+  box-sizing: border-box;
+  width: 100%;
+}
+
+.form-field-input:focus {
+  border-color: var(--color-accent);
+}
+
+.form-field-input::placeholder {
+  color: var(--color-placeholder);
+}
+
+.form-field-required {
+  color: #F04438;
+}
+
+.form-field-select {
+  width: 100%;
+  padding-right: 28px;
+  border: 1px solid var(--color-border) !important;
+  border-radius: 8px;
+  background: var(--color-inputBg);
+  appearance: none;
+  cursor: pointer;
+}
+
+.form-field-select-wrap {
+  position: relative;
+}
+
+.form-field-select {
+  width: 100%;
+  padding-right: 28px;
+}
+
+.form-field-arrow {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 16px;
+  height: 16px;
+  pointer-events: none;
+}
+
+.form-field-right-icon {
+  width: 16px;
+  height: 16px;
+  margin-right: 10px;
+  flex-shrink: 0;
+  cursor: pointer;
+}
+
+input[type="date"]::-webkit-calendar-picker-indicator {
+  opacity: 0;
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  cursor: pointer;
+}

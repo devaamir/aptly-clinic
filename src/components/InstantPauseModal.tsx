@@ -16,6 +16,7 @@ const InstantPauseModal: FC<InstantPauseModalProps> = ({ onClose, onSubmit }) =>
 
   return (
     <Modal onClose={onClose}>
+      <div style={{ padding: '24px' }}>
       <div className="ip-header">
         <div className="ip-icon-wrap">
           <img src={instantPauseIcon} alt="" className="ip-icon" />
@@ -36,6 +37,7 @@ const InstantPauseModal: FC<InstantPauseModalProps> = ({ onClose, onSubmit }) =>
       <div className="ip-actions">
         <button className="ip-btn ip-cancel" onClick={onClose}>Cancel</button>
         <button className="ip-btn ip-submit" onClick={() => selected && onSubmit(selected)}>Submit</button>
+      </div>
       </div>
     </Modal>
   )

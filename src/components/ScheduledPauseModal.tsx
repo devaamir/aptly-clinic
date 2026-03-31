@@ -23,6 +23,7 @@ const ScheduledPauseModal: FC<ScheduledPauseModalProps> = ({ onClose, onSubmit }
 
   return (
     <Modal onClose={onClose}>
+      <div style={{ padding: '24px' }}>
       <div className="ip-header">
         <div className="ip-icon-wrap">
           <img src={scheduledPauseIcon} alt="" className="ip-icon" />
@@ -59,6 +60,7 @@ const ScheduledPauseModal: FC<ScheduledPauseModalProps> = ({ onClose, onSubmit }
       <div className="ip-actions">
         <button className="ip-btn ip-cancel" onClick={onClose}>Cancel</button>
         <button className="ip-btn ip-submit" onClick={() => startAt && onSubmit(startAt, duration)}>Submit</button>
+      </div>
       </div>
     </Modal>
   )

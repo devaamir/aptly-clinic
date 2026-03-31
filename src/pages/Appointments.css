@@ -226,3 +226,258 @@
   letter-spacing: 0.5px;
   white-space: nowrap;
 }
+
+.apt-detail-hero {
+  background: #D8E7FF;
+  border-radius: 10px;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  margin-bottom: 24px;
+}
+
+.apt-detail-hero-top {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 0;
+}
+
+.apt-detail-avatar {
+  width: 66px;
+  height: 66px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.apt-detail-name {
+  font-size: 16px;
+  font-weight: 600;
+  color: #00001D;
+  font-family: 'Manrope', sans-serif;
+}
+
+.apt-detail-id {
+  font-size: 13px;
+  font-weight: 400;
+  color: #636A79;
+  font-family: 'Manrope', sans-serif;
+  margin-top: 4px;
+}
+
+.apt-detail-info-row {
+  display: flex;
+  align-items: stretch;
+  background: #fff;
+  border-radius: 8px;
+  padding: 10px 12px;
+  margin-top: 16px;
+}
+
+.apt-detail-info-item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+  position: relative;
+  padding: 0 16px;
+}
+
+.apt-detail-info-item:first-child {
+  padding-left: 0;
+}
+
+.apt-detail-info-label {
+  font-size: 11px;
+  font-weight: 400;
+  color: #636A79;
+  font-family: 'Manrope', sans-serif;
+}
+
+.apt-detail-info-value {
+  font-size: 13px;
+  font-weight: 500;
+  color: #00001D;
+  font-family: 'Manrope', sans-serif;
+}
+
+.apt-detail-info-divider {
+  position: absolute;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: #E0E2E6;
+}
+
+.apt-section-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #00001D;
+  font-family: 'Manrope', sans-serif;
+  margin: 0 0 12px 0;
+}
+
+.apt-detail-card {
+  border: 1px solid #E0E2E6;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.apt-detail-card-row {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding: 8px 16px;
+}
+
+.apt-detail-card-divider {
+  height: 1px;
+  background: #E0E2E6;
+  margin: 0 16px;
+}
+
+.apt-detail-doctor-row {
+  justify-content: flex-start;
+  gap: 16px;
+}
+
+.apt-detail-doctor-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.apt-detail-doc-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.apt-detail-doc-name {
+  font-size: 14px;
+  font-weight: 500;
+  color: #00001D;
+  font-family: 'Manrope', sans-serif;
+}
+
+.apt-detail-card-vdivider {
+  width: 1px;
+  height: 24px;
+  background: #E0E2E6;
+  flex-shrink: 0;
+}
+
+.apt-detail-doc-specialty {
+  font-size: 13px;
+  font-weight: 400;
+  color: #636A79;
+  font-family: 'Manrope', sans-serif;
+}
+
+.apt-token-box {
+  background: #00000008;
+  border-radius: 8px;
+  padding: 10px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.apt-token-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: #418EFD;
+  font-family: 'Manrope', sans-serif;
+}
+
+.apt-token-number {
+  font-size: 18px;
+  font-weight: 700;
+  color: #418EFD;
+  font-family: 'Manrope', sans-serif;
+}
+
+.apt-booking-list {
+  background: #F7F7F7;
+  border: 1px solid #E8EAED;
+  border-radius: 12px;
+  margin: 0 16px 16px 16px;
+}
+
+.apt-booking-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 16px;
+}
+
+.apt-booking-label {
+  font-size: 12px;
+  font-weight: 500;
+  color: #494F5A;
+  font-family: 'Manrope', sans-serif;
+}
+
+.apt-booking-value {
+  font-size: 12px;
+  font-weight: 500;
+  color: #1D1E21;
+  font-family: 'Manrope', sans-serif;
+}
+
+.sch-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 24px;
+}
+
+.sch-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: #0A0A0A;
+  font-family: 'Manrope', sans-serif;
+  margin: 0;
+}
+
+.sch-close {
+  width: 28px;
+  height: 28px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-size: 16px;
+  color: #A0A5B1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+}
+
+.sch-body {
+  padding: 32px 24px 24px;
+}
+
+.sch-section-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: #00001D;
+  font-family: 'Manrope', sans-serif;
+  margin: 0 0 16px 0;
+}
+
+.sch-divider {
+  height: 1px;
+  background: var(--color-border);
+}
+
+.sch-form-row {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 16px;
+}
