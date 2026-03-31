@@ -468,7 +468,7 @@
   font-weight: 600;
   color: #00001D;
   font-family: 'Manrope', sans-serif;
-  margin: 0 0 16px 0;
+  margin: 0 0 8px 0;
 }
 
 .sch-divider {
@@ -479,5 +479,53 @@
 .sch-form-row {
   display: flex;
   gap: 16px;
-  margin-bottom: 16px;
+  margin-bottom: 32px;
+}
+
+.sch-date-scroll {
+  display: flex;
+  gap: 9px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+}
+
+.sch-date-scroll::-webkit-scrollbar {
+  height: 4px;
+}
+
+.sch-date-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid #EAEFF2;
+  background: #F2F4F7;
+  cursor: pointer;
+  flex-shrink: 0;
+  gap: 2px;
+}
+
+.sch-date-card.selected {
+  background: #2879E4;
+  border-color: #2879E4;
+}
+
+.sch-date-day {
+  font-size: 12px;
+  font-weight: 500;
+  color: #00001D;
+  font-family: 'Manrope', sans-serif;
+}
+
+.sch-date-val {
+  font-size: 12px;
+  font-weight: 500;
+  color: #7E8695;
+  font-family: 'Manrope', sans-serif;
+}
+
+.sch-date-card.selected .sch-date-day,
+.sch-date-card.selected .sch-date-val {
+  color: #F8F9FB;
 }

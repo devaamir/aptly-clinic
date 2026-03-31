@@ -1,0 +1,77 @@
+.mini-cal {
+  background: #fff;
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  padding: 12px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.mini-cal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.mini-cal-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: #00001D;
+  font-family: 'Manrope', sans-serif;
+}
+
+.mini-cal-nav {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-size: 18px;
+  color: #636A79;
+  padding: 0 6px;
+  line-height: 1;
+}
+
+.mini-cal-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+}
+
+.mini-cal-day-name {
+  text-align: center;
+  font-size: 11px;
+  font-weight: 500;
+  color: #7E8695;
+  font-family: 'Manrope', sans-serif;
+  padding: 4px 0;
+}
+
+.mini-cal-cell {
+  text-align: center;
+  font-size: 12px;
+  font-weight: 500;
+  color: #00001D;
+  font-family: 'Manrope', sans-serif;
+  padding: 6px 4px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.mini-cal-cell:hover:not(.disabled) {
+  background: #EFF8FF;
+}
+
+.mini-cal-cell.today {
+  color: #2879E4;
+  font-weight: 700;
+}
+
+.mini-cal-cell.selected {
+  background: #2879E4;
+  color: #fff;
+}
+
+.mini-cal-cell.disabled {
+  color: #C5C9D0;
+  cursor: not-allowed;
+}

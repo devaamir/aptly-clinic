@@ -1,5 +1,5 @@
 import type { FC } from 'react'
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import PageHeader from '../components/PageHeader'
 import InputBox from '../components/InputBox'
 import Badge from '../components/Badge'
@@ -66,6 +66,26 @@ const Appointments: FC = () => {
   const [filter, setFilter] = useState<Filter>('Today')
   const [selected, setSelected] = useState<Appointment | null>(null)
   const [showSchedule, setShowSchedule] = useState(false)
+  const [selectedSpecialty, setSelectedSpecialty] = useState('')
+  const [selectedDate, setSelectedDate] = useState<string | null>(null)
+
+  const datePickerRef = useRef<HTMLInputElement>(null)
+
+  const next30Days = Array.from({ length: 30 }, (_, i) => {
+    const d = new Date()
+    d.setDate(d.getDate() + i)
+    return d
+  })
+
+  const todayStr = new Date().toISOString().split('T')[0]
+  const maxDateStr = (() => { const d = new Date(); d.setDate(d.getDate() + 29); return d.toISOString().split('T')[0] })()
+
+  const doctorsBySpecialty: Record<string, { label: string; value: string }[]> = {
+    cardiology: [{ label: 'Dr. Daniel Hamilton', value: 'daniel' }, { label: 'Dr. Sarah Johnson', value: 'sarah' }],
+    neurology: [{ label: 'Dr. Mark Spencer', value: 'mark' }],
+    orthopedics: [{ label: 'Dr. Michael Chen', value: 'michael' }],
+    pediatrics: [{ label: 'Dr. Emily Carter', value: 'emily' }],
+  }
 
   return (
     <div className="apt-container">
@@ -247,7 +267,7 @@ const Appointments: FC = () => {
               <button className="sch-close" onClick={() => setShowSchedule(false)}>✕</button>
             </div>
             <div className="sch-divider" />
-            <div className="sch-body">
+            <div className="sch-body" style={{ marginBottom: 62 }}>
               <h3 className="sch-section-title">Patient Information</h3>
               <div className="sch-form-row">
                 <FormField label="Name" placeholder="Enter name" />
@@ -259,12 +279,66 @@ const Appointments: FC = () => {
               </div>
               <h3 className="sch-section-title">Doctor Assign</h3>
               <div className="sch-form-row">
-                <FormField as="select" label="Specialty" options={[{ label: 'Pediatrics', value: 'pediatrics' }, { label: 'Cardiology', value: 'cardiology' }, { label: 'Neurology', value: 'neurology' }, { label: 'Orthopedics', value: 'orthopedics' }]} />
-                <FormField as="select" label="Doctors" options={[{ label: 'Dr. John Doe', value: 'john' }, { label: 'Dr. Jane Smith', value: 'jane' }]} />
+                <FormField
+                  as="select"
+                  label="Specialty"
+                  value={selectedSpecialty}
+                  onChange={e => setSelectedSpecialty((e.target as HTMLSelectElement).value)}
+                  options={[
+                    { label: 'Cardiology', value: 'cardiology' },
+                    { label: 'Neurology', value: 'neurology' },
+                    { label: 'Orthopedics', value: 'orthopedics' },
+                    { label: 'Pediatrics', value: 'pediatrics' },
+                  ]}
+                />
+                <FormField
+                  as="select"
+                  label="Doctor"
+                  options={selectedSpecialty ? doctorsBySpecialty[selectedSpecialty] : []}
+                />
               </div>
+              <h3 className="sch-section-title" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                Select a date
+                <span style={{ cursor: 'pointer', display: 'flex' }} onClick={() => datePickerRef.current?.showPicker()}>
+                  <img src={calendarIcon} alt="" style={{ width: 16, height: 16 }} />
+                </span>
+                <input
+                  ref={datePickerRef}
+                  type="date"
+                  min={todayStr}
+                  max={maxDateStr}
+                  style={{ position: 'absolute', opacity: 0, width: 0, height: 0, pointerEvents: 'none' }}
+                  onChange={e => {
+                    const d = new Date(e.target.value)
+                    setSelectedDate(d.toDateString())
+                  }}
+                />
+              </h3>
+              <div className="sch-date-scroll">
+                {next30Days.map(d => {
+                  const key = d.toDateString()
+                  const isSelected = selectedDate === key
+                  const day = d.toLocaleDateString('en-US', { weekday: 'short' })
+                  const dateStr = d.toLocaleDateString('en-US', { day: '2-digit', month: 'short' })
+                  return (
+                    <div
+                      key={key}
+                      className={`sch-date-card ${isSelected ? 'selected' : ''}`}
+                      onClick={() => setSelectedDate(key)}
+                    >
+                      <span className="sch-date-day">{day}</span>
+                      <span className="sch-date-val">{dateStr}</span>
+                    </div>
+                  )
+                })}
+              </div>
+              <div />
             </div>
-
-
+            <div className="sch-divider" />
+            <div className="ip-actions" style={{ padding: '16px 24px' }}>
+              <button className="ip-btn ip-cancel" onClick={() => setShowSchedule(false)}>Cancel</button>
+              <button className="ip-btn ip-submit">Submit</button>
+            </div>
           </div>
         </Modal>
       )}
