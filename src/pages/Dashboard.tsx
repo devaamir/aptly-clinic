@@ -6,6 +6,7 @@ import DashboardPage from './DashboardPage'
 import Appointments from './Appointments'
 import Patients from './Patients'
 import Doctors from './Doctors'
+import DoctorProfile from './DoctorProfile'
 import LeaveManagement from './LeaveManagement'
 import Specialties from './Specialties'
 import Settings from './Settings'
@@ -22,6 +23,8 @@ import './Dashboard.css'
 
 type ActivePage = 'Dashboard' | 'Queue Management' | 'Appointments' | 'Patients' | 'Doctors' | 'Leave Management' | 'Specialties' | 'Settings'
 
+interface Doctor { id: string; name: string; avatar: string; specialty: string; phone: string; email: string; experience: string; status: 'Active' | 'Inactive' }
+
 const navItems: { label: ActivePage; icon: string }[] = [
   { label: 'Dashboard', icon: dashboardIcon },
   { label: 'Queue Management', icon: queueIcon },
@@ -35,6 +38,7 @@ const navItems: { label: ActivePage; icon: string }[] = [
 
 const Dashboard: FC = () => {
   const [activePage, setActivePage] = useState<ActivePage>('Dashboard')
+  const [viewDoctor, setViewDoctor] = useState<Doctor | null>(null)
 
   return (
     <div className="dashboard">
@@ -47,7 +51,7 @@ const Dashboard: FC = () => {
             <div
               key={item.label}
               className={`nav-item ${activePage === item.label ? 'nav-item-active' : ''}`}
-              onClick={() => setActivePage(item.label)}
+              onClick={() => { setActivePage(item.label); setViewDoctor(null) }}
             >
               <img src={item.icon} alt="" className="nav-icon" />
               <span className="nav-label">{item.label}</span>
@@ -57,7 +61,15 @@ const Dashboard: FC = () => {
       </aside>
       <main className="dashboard-main">
         <div className="topbar">
-          <span className="topbar-title">{activePage}</span>
+          <div className="topbar-title">
+            {viewDoctor ? (
+              <>
+                <span style={{ color: '#A0A5B1', fontWeight: 500, cursor: 'pointer' }} onClick={() => setViewDoctor(null)}>Doctors</span>
+                <span style={{ color: '#A0A5B1', margin: '0 6px' }}>/</span>
+                <span>View Doctor</span>
+              </>
+            ) : activePage}
+          </div>
           <div className="topbar-right">
             <button className="topbar-icon-btn"><img src={notificationIcon} alt="notifications" style={{ width: 20, height: 20 }} /></button>
             <div className="topbar-profile">
@@ -70,7 +82,8 @@ const Dashboard: FC = () => {
         {activePage === 'Queue Management' && <QueueManagement />}
         {activePage === 'Appointments' && <Appointments />}
         {activePage === 'Patients' && <Patients />}
-        {activePage === 'Doctors' && <Doctors />}
+        {activePage === 'Doctors' && !viewDoctor && <Doctors onViewProfile={setViewDoctor} />}
+        {activePage === 'Doctors' && viewDoctor && <DoctorProfile doctor={viewDoctor} onBack={() => setViewDoctor(null)} />}
         {activePage === 'Leave Management' && <LeaveManagement />}
         {activePage === 'Specialties' && <Specialties />}
         {activePage === 'Settings' && <Settings />}

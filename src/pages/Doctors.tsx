@@ -40,7 +40,7 @@ const statusProps = {
   Inactive: { bgColor: '#F2F4F7', textColor: '#344054', dotColor: '#636A79' },
 }
 
-const Doctors: FC = () => {
+const Doctors: FC<{ onViewProfile: (d: Doctor) => void }> = ({ onViewProfile }) => {
   const [searchQuery, setSearchQuery] = useState('')
   const [showAdd, setShowAdd] = useState(false)
   const [doctorAdded, setDoctorAdded] = useState(false)
@@ -127,7 +127,7 @@ const Doctors: FC = () => {
                   </span>
                 </td>
                 <td>
-                  <button className="doc-view-btn">View Profile</button>
+                  <button className="doc-view-btn" onClick={() => onViewProfile(d)}>View Profile</button>
                 </td>
               </tr>
             ))}

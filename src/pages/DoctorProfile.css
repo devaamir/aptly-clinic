@@ -1,0 +1,409 @@
+.dp-container {
+  padding: 24px;
+  font-family: 'Manrope', sans-serif;
+  flex: 1;
+  overflow-y: auto;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.dp-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.dp-back-btn {
+  background: #fff;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  padding: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+}
+
+.dp-breadcrumb {
+  font-size: 14px;
+  font-family: 'Manrope', sans-serif;
+}
+
+.dp-breadcrumb-link {
+  color: var(--color-accent);
+  cursor: pointer;
+  font-weight: 500;
+}
+
+.dp-breadcrumb-link:hover {
+  text-decoration: underline;
+}
+
+.dp-breadcrumb-sep {
+  color: #A0A5B1;
+  margin: 0 2px;
+}
+
+.dp-breadcrumb-current {
+  color: #00001D;
+  font-weight: 600;
+}
+
+.dp-body {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.dp-profile-card {
+  background: #fff;
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  padding: 24px;
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  gap: 20px;
+}
+
+.dp-avatar {
+  width: 96px;
+  height: 96px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.dp-profile-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 180px;
+}
+
+.dp-name-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.dp-name {
+  font-size: 24px;
+  font-weight: 700;
+  color: #0A0A0A;
+}
+
+.dp-specialty {
+  font-size: 14px;
+  font-weight: 500;
+  color: #0A0A0A;
+  font-family: 'Manrope', sans-serif;
+}
+
+.dp-profile-meta {
+  display: flex;
+  align-items: stretch;
+  background: var(--color-inputBg);
+  border-radius: 8px;
+  padding: 12px 16px;
+  flex: 1;
+}
+
+.dp-meta-item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+  position: relative;
+  padding: 0 16px;
+}
+
+.dp-meta-item:first-child { padding-left: 0; }
+
+.dp-meta-label {
+  font-size: 11px;
+  color: #636A79;
+  font-weight: 400;
+}
+
+.dp-meta-value {
+  font-size: 13px;
+  color: #00001D;
+  font-weight: 500;
+}
+
+.dp-meta-divider {
+  position: absolute;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: var(--color-border);
+}
+
+.dp-section-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: #00001D;
+}
+
+.dp-apt-card {
+  background: #fff;
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  overflow: hidden;
+  padding: 16px;
+}
+
+.dp-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.dp-table th {
+  text-align: left;
+  padding: 10px 14px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-textSecondary);
+  background: var(--color-inputBg);
+  letter-spacing: 0.4px;
+}
+
+.dp-table td {
+  padding: 12px 14px;
+  border-top: 1px solid var(--color-border);
+  color: var(--color-textPrimary);
+  white-space: nowrap;
+}
+
+.dp-apt-id {
+  font-weight: 500;
+  color: var(--color-accent);
+}
+
+.dp-patient-cell {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.dp-patient-avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.dp-patient-name {
+  font-size: 13px;
+  font-weight: 500;
+  color: #00001D;
+}
+
+.dp-patient-phone {
+  font-size: 12px;
+  color: #636A79;
+}
+
+.dp-token {
+  background: #F1F2F4;
+  border-radius: 10px;
+  width: 30px;
+  height: 30px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.dp-empty {
+  color: #A0A5B1;
+  font-size: 13px;
+  text-align: center;
+  padding: 32px 0;
+}
+
+.dp-info-row {
+  display: flex;
+  gap: 80px;
+  margin-top: 10px;
+}
+
+.dp-info-item {
+  display: flex;
+  align-items: center;
+}
+
+.dp-info-item img {
+  width: 16px;
+  height: 16px;
+  margin-right: 8px;
+  flex-shrink: 0;
+}
+
+.dp-info-value {
+  font-size: 14px;
+  font-weight: 400;
+  color: #4A5565;
+  font-family: 'Manrope', sans-serif;
+}
+
+.dp-meta-text {
+  font-size: 14px;
+  font-weight: 400;
+  color: #6A7282;
+  font-family: 'Manrope', sans-serif;
+  margin-top: 10px;
+}
+
+.dp-tabs {
+  display: inline-flex;
+  width: fit-content;
+  background: #ECECF0;
+  border-radius: 14px;
+  padding: 4px;
+  gap: 2px;
+}
+
+.dp-tab {
+  padding: 8px 20px;
+  border: none;
+  border-radius: 10px;
+  background: transparent;
+  font-size: 14px;
+  font-weight: 500;
+  font-family: 'Manrope', sans-serif;
+  color: #636A79;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.dp-tab.active {
+  background: #fff;
+  color: #0A0A0A;
+  font-weight: 600;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+}
+
+.dp-overview {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+}
+
+.dp-overview-left {
+  flex: 0 0 70%;
+}
+
+.dp-overview-right {
+  flex: 0 0 calc(30% - 16px);
+}
+
+.dp-stats-row {
+  display: flex;
+  gap: 12px;
+}
+
+.dp-stat-card {
+  flex: 1;
+  background: #fff;
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.dp-stat-value {
+  font-size: 22px;
+  font-weight: 700;
+  color: #0A0A0A;
+  font-family: 'Manrope', sans-serif;
+}
+
+.dp-stat-label {
+  font-size: 12px;
+  font-weight: 400;
+  color: #636A79;
+  font-family: 'Manrope', sans-serif;
+}
+
+.dp-schedule-card {
+  background: #fff;
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  padding: 16px;
+}
+
+.dp-schedule-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #0A0A0A;
+  font-family: 'Manrope', sans-serif;
+  margin-bottom: 12px;
+}
+
+.dp-schedule-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  padding: 8px 10px;
+  gap: 12px;
+  background: #EFF6FF;
+  border-radius: 9px;
+  margin-bottom: 6px;
+}
+
+.dp-schedule-day {
+  font-size: 13px;
+  font-weight: 600;
+  color: #0A0A0A;
+  font-family: 'Manrope', sans-serif;
+  min-width: 32px;
+}
+
+.dp-schedule-sessions {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+}
+
+.dp-schedule-session {
+  font-size: 12px;
+  font-weight: 400;
+  color: #2879E4;
+  background: #EFF6FF;
+  border-radius: 9px;
+  padding: 2px 8px;
+  font-family: 'Manrope', sans-serif;
+}
+
+.dp-schedule-off {
+  font-size: 12px;
+  font-weight: 400;
+  color: #A0A5B1;
+  font-family: 'Manrope', sans-serif;
+}
+
+.dp-schedule-divider {
+  height: 1px;
+  background: var(--color-border);
+}
+
+.dp-tab-placeholder {
+  color: #A0A5B1;
+  font-size: 14px;
+  font-family: 'Manrope', sans-serif;
+  padding: 32px 0;
+  text-align: center;
+}
+
+.dp-schedule-row-off {
+  background: #F9FAFB !important;
+}
