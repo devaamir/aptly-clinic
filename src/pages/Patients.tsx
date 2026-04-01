@@ -88,7 +88,7 @@ const Patients: FC = () => {
             <col style={{ width: '3%' }} />
             <col style={{ width: '5%' }} />
             <col style={{ width: '5%' }} />
-            <col style={{ width: '5%' }} />
+            <col style={{ width: '10%' }} />
             <col style={{ width: '20%' }} />
             <col />
           </colgroup>

@@ -364,6 +364,7 @@ const Appointments: FC = () => {
                   <button className="sch-close" onClick={resetSchedule}>✕</button>
                 </div>
                 <div className="sch-divider" />
+                <div className="modal-body-scroll">
                 <div className="sch-body" style={{ marginBottom: selectedDoctor ? 32 : 62 }}>
                   <h3 className="sch-section-title">Patient Information</h3>
                   <div className="sch-form-row">
@@ -454,6 +455,7 @@ const Appointments: FC = () => {
                     </div>
                   )}
                   <div />
+                </div>
                 </div>
                 <div className="sch-divider" />
                 <div className="ip-actions" style={{ padding: '16px 24px' }}>

@@ -16,7 +16,7 @@ const InstantPauseModal: FC<InstantPauseModalProps> = ({ onClose, onSubmit }) =>
 
   return (
     <Modal onClose={onClose}>
-      <div style={{ padding: '24px' }}>
+      <div style={{ padding: '24px', width: 470 }}>
       <div className="ip-header">
         <div className="ip-icon-wrap">
           <img src={instantPauseIcon} alt="" className="ip-icon" />
