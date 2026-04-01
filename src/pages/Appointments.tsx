@@ -6,6 +6,8 @@ import Badge from '../components/Badge'
 import SlidePanel from '../components/SlidePanel'
 import Modal from '../components/Modal'
 import FormField from '../components/FormField'
+import { appointments, bookingProps, statusProps } from '../data/appointments'
+import type { Appointment, AptStatus, BookingMethod } from '../data/appointments'
 import calendarIcon from '../assets/icons/calendar.svg'
 import searchIcon from '../assets/icons/search-icon.svg'
 import sortIcon from '../assets/icons/sort-icon.svg'
@@ -14,62 +16,28 @@ import addIcon from '../assets/icons/add-icon-white.svg'
 import dotsIcon from '../assets/icons/3dots-icon.svg'
 import './Appointments.css'
 
-type AptStatus = 'Confirmed' | 'Completed' | 'Cancelled'
 type Filter = 'Today' | 'Tomorrow' | 'This Week' | 'Date' | 'Date Range'
 
-interface Appointment {
-  id: string
-  patient: string
-  avatar: string
-  phone: string
-  gender: string
-  dob: string
-  age: number
-  date: string
-  session: string
-  token: string
-  doctor: string
-  doctorAvatar: string
-  specialty: string
-  bookingMethod: BookingMethod
-  bookedDate: string
-  cancelledBy?: string
-  cancelledOn?: string
-  status: AptStatus
-}
-
-type BookingMethod = 'Online' | 'Offline'
-
-const bookingProps: Record<BookingMethod, { bgColor: string; textColor: string; dotColor: string }> = {
-  Online: { bgColor: '#F2F4F7', textColor: '#344054', dotColor: '#636A79' },
-  Offline: { bgColor: '#FDF2FA', textColor: '#C11574', dotColor: '#EE46BC' },
-}
-
-const statusProps: Record<AptStatus, { bgColor: string; textColor: string; dotColor: string }> = {
-  Confirmed: { bgColor: '#ECFDF3', textColor: '#027A48', dotColor: '#12B76A' },
-  Cancelled: { bgColor: '#FEF3F2', textColor: '#B42318', dotColor: '#F04438' },
-  Completed: { bgColor: '#EEF4FF', textColor: '#3538CD', dotColor: '#6172F3' },
-}
-
-const appointments: Appointment[] = [
-  { id: 'APT001', patient: 'Katie Sims', avatar: 'https://i.pravatar.cc/32?img=5', phone: '+91 90487 8290', gender: 'Female', dob: 'Jan 12, 1994', age: 32, date: 'Mar 30, 2026', session: '09:00 AM', token: '01', doctor: 'Dr. Daniel Hamilton', doctorAvatar: 'https://i.pravatar.cc/32?img=2', specialty: 'Cardiology', bookingMethod: 'Online', status: 'Confirmed' },
-  { id: 'APT002', patient: 'Ricky Smith', avatar: 'https://i.pravatar.cc/32?img=6', phone: '+91 90487 8291', gender: 'Male', dob: 'Mar 5, 1981', age: 45, date: 'Mar 30, 2026', session: '09:30 AM', token: '02', doctor: 'Dr. Sarah Johnson', doctorAvatar: 'https://i.pravatar.cc/32?img=1', specialty: 'Cardiology', bookingMethod: 'Offline', bookedDate: 'Mar 27, 2026', status: 'Confirmed' },
-  { id: 'APT003', patient: 'Autumn Phillips', avatar: 'https://i.pravatar.cc/32?img=7', phone: '+91 90487 8292', gender: 'Female', dob: 'Jul 22, 1998', age: 28, date: 'Mar 30, 2026', session: '10:00 AM', token: '03', doctor: 'Dr. Michael Chen', doctorAvatar: 'https://i.pravatar.cc/32?img=4', specialty: 'Orthopedics', bookingMethod: 'Online', status: 'Cancelled', cancelledBy: 'Clinic', cancelledOn: 'Mar 29, 2026' },
-  { id: 'APT004', patient: 'Jerry Helfer', avatar: 'https://i.pravatar.cc/32?img=8', phone: '+91 90487 8293', gender: 'Male', dob: 'Sep 3, 1988', age: 38, date: 'Mar 30, 2026', session: '10:30 AM', token: '04', doctor: 'Dr. Daniel Hamilton', doctorAvatar: 'https://i.pravatar.cc/32?img=2', specialty: 'Cardiology', bookingMethod: 'Offline', bookedDate: 'Mar 27, 2026', status: 'Completed' },
-  { id: 'APT005', patient: 'Rodger Struck', avatar: 'https://i.pravatar.cc/32?img=9', phone: '+91 90487 8294', gender: 'Male', dob: 'Feb 14, 1974', age: 52, date: 'Mar 30, 2026', session: '11:00 AM', token: '05', doctor: 'Dr. Sarah Johnson', doctorAvatar: 'https://i.pravatar.cc/32?img=1', specialty: 'Cardiology', bookingMethod: 'Online', status: 'Confirmed' },
-  { id: 'APT006', patient: 'Bradley Lawlor', avatar: 'https://i.pravatar.cc/32?img=10', phone: '+91 90487 8295', gender: 'Male', dob: 'Nov 30, 1984', age: 41, date: 'Mar 30, 2026', session: '11:30 AM', token: '06', doctor: 'Dr. Michael Chen', doctorAvatar: 'https://i.pravatar.cc/32?img=4', specialty: 'Orthopedics', bookingMethod: 'Offline', bookedDate: 'Mar 27, 2026', status: 'Confirmed' },
-  { id: 'APT007', patient: 'Bradley Lawlor', avatar: 'https://i.pravatar.cc/32?img=10', phone: '+91 90487 8295', gender: 'Male', dob: 'Nov 30, 1984', age: 41, date: 'Mar 30, 2026', session: '11:30 AM', token: '06', doctor: 'Dr. Michael Chen', doctorAvatar: 'https://i.pravatar.cc/32?img=4', specialty: 'Orthopedics', bookingMethod: 'Offline', bookedDate: 'Mar 27, 2026', status: 'Confirmed' },
-  { id: 'APT008', patient: 'Bradley Lawlor', avatar: 'https://i.pravatar.cc/32?img=10', phone: '+91 90487 8295', gender: 'Male', dob: 'Nov 30, 1984', age: 41, date: 'Mar 30, 2026', session: '11:30 AM', token: '06', doctor: 'Dr. Michael Chen', doctorAvatar: 'https://i.pravatar.cc/32?img=4', specialty: 'Orthopedics', bookingMethod: 'Offline', bookedDate: 'Mar 27, 2026', status: 'Confirmed' },
-]
-
 const Appointments: FC = () => {
+  const [searchQuery, setSearchQuery] = useState('')
   const [filter, setFilter] = useState<Filter>('Today')
+  const [filterDate, setFilterDate] = useState<string | null>(null)
+  const [filterRangeStart, setFilterRangeStart] = useState<string | null>(null)
+  const [filterRangeEnd, setFilterRangeEnd] = useState<string | null>(null)
   const [selected, setSelected] = useState<Appointment | null>(null)
   const [showSchedule, setShowSchedule] = useState(false)
   const [selectedSpecialty, setSelectedSpecialty] = useState('')
-  const [selectedDate, setSelectedDate] = useState<string | null>(null)
+  const [selectedDoctor, setSelectedDoctor] = useState('')
+  const [selectedDate, setSelectedDate] = useState<string>(new Date().toDateString())
+  const [selectedSession, setSelectedSession] = useState<string | null>(null)
+  const [submitted, setSubmitted] = useState(false)
+  const [patientName, setPatientName] = useState('')
+  const [patientPhone, setPatientPhone] = useState('')
 
   const datePickerRef = useRef<HTMLInputElement>(null)
+  const filterDateRef = useRef<HTMLInputElement>(null)
+  const filterRangeStartRef = useRef<HTMLInputElement>(null)
+  const filterRangeEndRef = useRef<HTMLInputElement>(null)
 
   const next30Days = Array.from({ length: 30 }, (_, i) => {
     const d = new Date()
@@ -87,6 +55,67 @@ const Appointments: FC = () => {
     pediatrics: [{ label: 'Dr. Emily Carter', value: 'emily' }],
   }
 
+  // Doctors with 2 sessions; others get 1 session only
+  const doctorSessions: Record<string, { label: string; value: string }[]> = {
+    daniel: [{ label: '9:00 AM – 1:00 PM', value: '9am-1pm' }, { label: '2:00 PM – 4:00 PM', value: '2pm-4pm' }],
+    sarah: [{ label: '9:00 AM – 1:00 PM', value: '9am-1pm' }, { label: '2:00 PM – 4:00 PM', value: '2pm-4pm' }],
+    mark: [{ label: '9:00 AM – 1:00 PM', value: '9am-1pm' }],
+    michael: [{ label: '9:00 AM – 1:00 PM', value: '9am-1pm' }],
+    emily: [{ label: '9:00 AM – 1:00 PM', value: '9am-1pm' }, { label: '2:00 PM – 4:00 PM', value: '2pm-4pm' }],
+  }
+
+  const resetSchedule = () => {
+    setShowSchedule(false)
+    setSubmitted(false)
+    setPatientName('')
+    setPatientPhone('')
+    setSelectedSpecialty('')
+    setSelectedDoctor('')
+    setSelectedDate(new Date().toDateString())
+    setSelectedSession(null)
+  }
+
+  const bookedDateTime = new Date().toLocaleString('en-US', { month: 'short', day: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })
+  const tokenNumber = String(appointments.length + 1).padStart(2, '0')
+
+  const allDoctors = Object.values(doctorsBySpecialty).flat()
+  const selectedDoctorLabel = allDoctors.find(d => d.value === selectedDoctor)?.label ?? ''
+
+  const filterByDate = (a: Appointment) => {
+    const aptDate = new Date(a.date); aptDate.setHours(0,0,0,0)
+    const today = new Date(); today.setHours(0,0,0,0)
+    const tomorrow = new Date(today); tomorrow.setDate(today.getDate() + 1)
+    const weekEnd = new Date(today); weekEnd.setDate(today.getDate() + 6)
+    if (filter === 'Today') return aptDate.toDateString() === today.toDateString()
+    if (filter === 'Tomorrow') return aptDate.toDateString() === tomorrow.toDateString()
+    if (filter === 'This Week') return aptDate >= today && aptDate <= weekEnd
+    if (filter === 'Date' && filterDate) return aptDate.toDateString() === new Date(filterDate).toDateString()
+    if (filter === 'Date Range' && filterRangeStart && filterRangeEnd) {
+      const s = new Date(filterRangeStart); s.setHours(0,0,0,0)
+      const e = new Date(filterRangeEnd); e.setHours(0,0,0,0)
+      return aptDate >= s && aptDate <= e
+    }
+    return true
+  }
+
+  const filteredAppointments = appointments.filter(a =>
+    filterByDate(a) &&
+    (!searchQuery.trim() ||
+      a.patient.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      a.doctor.toLowerCase().includes(searchQuery.toLowerCase()))
+  )
+
+  const sessionRanges: Record<string, [number, number]> = {
+    '9am-1pm': [9, 13],
+    '2pm-4pm': [14, 16],
+  }
+  const isLive = (() => {
+    if (!selectedSession || selectedDate !== new Date().toDateString()) return false
+    const [start, end] = sessionRanges[selectedSession] ?? [0, 0]
+    const h = new Date().getHours()
+    return h >= start && h < end
+  })()
+
   return (
     <div className="apt-container">
       <PageHeader
@@ -103,13 +132,37 @@ const Appointments: FC = () => {
       <div className="apt-main-card" style={{ marginBottom: 16 }}>
         <div className="apt-toolbar">
           <div className="apt-search">
-            <InputBox type="text" placeholder="Search by patient name, doctor..." leftIcon={<img src={searchIcon} alt="" />} />
+            <InputBox
+              type="text"
+              placeholder="Search by patient name, doctor..."
+              leftIcon={<img src={searchIcon} alt="" />}
+              value={searchQuery}
+              onChange={e => setSearchQuery(e.target.value)}
+              rightIcon={searchQuery ? <span className="apt-search-clear" onClick={() => setSearchQuery('')}>✕</span> : undefined}
+            />
           </div>
           <div className="apt-filters">
             <div className="apt-filter-group">
               {(['Today', 'Tomorrow', 'This Week', 'Date', 'Date Range'] as Filter[]).map(f => (
-                <button key={f} className={`apt-filter-btn ${filter === f ? 'active' : ''}`} onClick={() => setFilter(f)}>{f}</button>
+                <button
+                  key={f}
+                  className={`apt-filter-btn ${filter === f ? 'active' : ''}`}
+                  onClick={() => {
+                    setFilter(f)
+                    if (f === 'Date') filterDateRef.current?.showPicker()
+                    if (f === 'Date Range') filterRangeStartRef.current?.showPicker()
+                  }}
+                >
+                  {f === 'Date' && filterDate ? new Date(filterDate).toLocaleDateString('en-US', { month: 'short', day: '2-digit' }) : f === 'Date Range' && filterRangeStart && filterRangeEnd ? `${new Date(filterRangeStart).toLocaleDateString('en-US', { month: 'short', day: '2-digit' })} – ${new Date(filterRangeEnd).toLocaleDateString('en-US', { month: 'short', day: '2-digit' })}` : f}
+                </button>
               ))}
+              {/* Hidden date pickers */}
+              <input ref={filterDateRef} type="date" style={{ position: 'absolute', opacity: 0, width: 0, height: 0, pointerEvents: 'none' }}
+                onChange={e => setFilterDate(e.target.value)} />
+              <input ref={filterRangeStartRef} type="date" style={{ position: 'absolute', opacity: 0, width: 0, height: 0, pointerEvents: 'none' }}
+                onChange={e => { setFilterRangeStart(e.target.value); setFilterRangeEnd(null); setTimeout(() => filterRangeEndRef.current?.showPicker(), 100) }} />
+              <input ref={filterRangeEndRef} type="date" style={{ position: 'absolute', opacity: 0, width: 0, height: 0, pointerEvents: 'none' }}
+                onChange={e => setFilterRangeEnd(e.target.value)} />
             </div>
             <div className="apt-icon-group">
               <button className="apt-icon-btn"><img src={sortIcon} alt="sort" /></button>
@@ -137,7 +190,11 @@ const Appointments: FC = () => {
             </tr>
           </thead>
           <tbody>
-            {appointments.map(a => (
+            {filteredAppointments.length === 0 ? (
+              <tr>
+                <td colSpan={10} className="apt-no-results">No appointments found</td>
+              </tr>
+            ) : filteredAppointments.map(a => (
               <tr key={a.id}>
                 <td className="apt-id">{a.id}</td>
                 <td>
@@ -260,85 +317,151 @@ const Appointments: FC = () => {
       )}
 
       {showSchedule && (
-        <Modal onClose={() => setShowSchedule(false)}>
+        <Modal onClose={resetSchedule}>
           <div style={{ width: 564 }}>
-            <div className="sch-header">
-              <h2 className="sch-title">Schedule Appointment</h2>
-              <button className="sch-close" onClick={() => setShowSchedule(false)}>✕</button>
-            </div>
-            <div className="sch-divider" />
-            <div className="sch-body" style={{ marginBottom: 62 }}>
-              <h3 className="sch-section-title">Patient Information</h3>
-              <div className="sch-form-row">
-                <FormField label="Name" placeholder="Enter name" />
-                <FormField label="Phone Number" placeholder="Enter phone" type="tel" prefix="+91" />
-              </div>
-              <div className="sch-form-row">
-                <FormField as="select" label="Gender" options={[{ label: 'Male', value: 'male' }, { label: 'Female', value: 'female' }]} />
-                <FormField label="Date of Birth" placeholder="DD/MM/YYYY" type="date" rightIcon={calendarIcon} />
-              </div>
-              <h3 className="sch-section-title">Doctor Assign</h3>
-              <div className="sch-form-row">
-                <FormField
-                  as="select"
-                  label="Specialty"
-                  value={selectedSpecialty}
-                  onChange={e => setSelectedSpecialty((e.target as HTMLSelectElement).value)}
-                  options={[
-                    { label: 'Cardiology', value: 'cardiology' },
-                    { label: 'Neurology', value: 'neurology' },
-                    { label: 'Orthopedics', value: 'orthopedics' },
-                    { label: 'Pediatrics', value: 'pediatrics' },
-                  ]}
-                />
-                <FormField
-                  as="select"
-                  label="Doctor"
-                  options={selectedSpecialty ? doctorsBySpecialty[selectedSpecialty] : []}
-                />
-              </div>
-              <h3 className="sch-section-title" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                Select a date
-                <span style={{ cursor: 'pointer', display: 'flex' }} onClick={() => datePickerRef.current?.showPicker()}>
-                  <img src={calendarIcon} alt="" style={{ width: 16, height: 16 }} />
-                </span>
-                <input
-                  ref={datePickerRef}
-                  type="date"
-                  min={todayStr}
-                  max={maxDateStr}
-                  style={{ position: 'absolute', opacity: 0, width: 0, height: 0, pointerEvents: 'none' }}
-                  onChange={e => {
-                    const d = new Date(e.target.value)
-                    setSelectedDate(d.toDateString())
-                  }}
-                />
-              </h3>
-              <div className="sch-date-scroll">
-                {next30Days.map(d => {
-                  const key = d.toDateString()
-                  const isSelected = selectedDate === key
-                  const day = d.toLocaleDateString('en-US', { weekday: 'short' })
-                  const dateStr = d.toLocaleDateString('en-US', { day: '2-digit', month: 'short' })
-                  return (
-                    <div
-                      key={key}
-                      className={`sch-date-card ${isSelected ? 'selected' : ''}`}
-                      onClick={() => setSelectedDate(key)}
-                    >
-                      <span className="sch-date-day">{day}</span>
-                      <span className="sch-date-val">{dateStr}</span>
+            {submitted ? (
+              <div className="sch-confirm">
+                <div className="sch-confirm-token-half">
+                  {isLive && (
+                    <span style={{ position: 'absolute', top: 14, left: 14 }}>
+                      <Badge text="Live" bgColor="rgba(255,255,255,0.2)" textColor="#fff" dotColor="#fff" />
+                    </span>
+                  )}
+                  <span className="sch-confirm-token-label">Token Number</span>
+                  <span className="sch-confirm-token-number">{tokenNumber}</span>
+                </div>
+                <div className="sch-confirm-details">
+                  <div className="sch-confirm-patient">
+                    <img src="https://i.pravatar.cc/56?img=12" alt={patientName} className="sch-confirm-avatar" />
+                    <div>
+                      <div className="sch-confirm-name">{patientName || 'Patient'}</div>
+                      <div className="sch-confirm-phone">+91 {patientPhone || '—'}</div>
                     </div>
-                  )
-                })}
+                  </div>
+                  <div className="sch-confirm-info-list">
+                    {[
+                      { label: 'Appointment Date', value: selectedDate },
+                      { label: 'Session', value: selectedSession ?? '—' },
+                      { label: 'Doctor', value: selectedDoctorLabel },
+                      { label: 'Booked Date & Time', value: bookedDateTime },
+                    ].map((item, i, arr) => (
+                      <div key={item.label}>
+                        <div className="sch-confirm-info-row">
+                          <span className="sch-confirm-info-label">{item.label}</span>
+                          <span className="sch-confirm-info-value">{item.value}</span>
+                        </div>
+                        {i < arr.length - 1 && <div className="sch-confirm-divider" />}
+                      </div>
+                    ))}
+                  </div>
+                  <button className="sch-confirm-done" onClick={resetSchedule}>Done</button>
+                </div>
               </div>
-              <div />
-            </div>
-            <div className="sch-divider" />
-            <div className="ip-actions" style={{ padding: '16px 24px' }}>
-              <button className="ip-btn ip-cancel" onClick={() => setShowSchedule(false)}>Cancel</button>
-              <button className="ip-btn ip-submit">Submit</button>
-            </div>
+            ) : (
+              <>
+                <div className="sch-header">
+                  <h2 className="sch-title">Schedule Appointment</h2>
+                  <button className="sch-close" onClick={resetSchedule}>✕</button>
+                </div>
+                <div className="sch-divider" />
+                <div className="sch-body" style={{ marginBottom: selectedDoctor ? 32 : 62 }}>
+                  <h3 className="sch-section-title">Patient Information</h3>
+                  <div className="sch-form-row">
+                    <FormField label="Name" placeholder="Enter name" value={patientName} onChange={e => setPatientName((e.target as HTMLInputElement).value)} />
+                    <FormField label="Phone Number" placeholder="Enter phone" type="tel" prefix="+91" value={patientPhone} onChange={e => setPatientPhone((e.target as HTMLInputElement).value)} />
+                  </div>
+                  <div className="sch-form-row">
+                    <FormField as="select" label="Gender" options={[{ label: 'Male', value: 'male' }, { label: 'Female', value: 'female' }]} />
+                    <FormField label="Date of Birth" placeholder="DD/MM/YYYY" type="date" rightIcon={calendarIcon} />
+                  </div>
+                  <h3 className="sch-section-title">Doctor Assign</h3>
+                  <div className="sch-form-row">
+                    <FormField
+                      as="select"
+                      label="Specialty"
+                      value={selectedSpecialty}
+                      onChange={e => { setSelectedSpecialty((e.target as HTMLSelectElement).value); setSelectedDoctor(''); setSelectedSession(null) }}
+                      options={[
+                        { label: 'Cardiology', value: 'cardiology' },
+                        { label: 'Neurology', value: 'neurology' },
+                        { label: 'Orthopedics', value: 'orthopedics' },
+                        { label: 'Pediatrics', value: 'pediatrics' },
+                      ]}
+                    />
+                    <FormField
+                      as="select"
+                      label="Doctor"
+                      value={selectedDoctor}
+                      onChange={e => { setSelectedDoctor((e.target as HTMLSelectElement).value); setSelectedSession(null) }}
+                      options={selectedSpecialty ? doctorsBySpecialty[selectedSpecialty] : []}
+                    />
+                  </div>
+                  <h3 className="sch-section-title" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    Select a date
+                    <span style={{ cursor: 'pointer', display: 'flex' }} onClick={() => datePickerRef.current?.showPicker()}>
+                      <img src={calendarIcon} alt="" style={{ width: 16, height: 16 }} />
+                    </span>
+                    <input
+                      ref={datePickerRef}
+                      type="date"
+                      min={todayStr}
+                      max={maxDateStr}
+                      style={{ position: 'absolute', opacity: 0, width: 0, height: 0, pointerEvents: 'none' }}
+                      onChange={e => {
+                        const d = new Date(e.target.value)
+                        setSelectedDate(d.toDateString())
+                        setSelectedSession(null)
+                      }}
+                    />
+                  </h3>
+                  <div className="sch-date-scroll">
+                    {next30Days.map(d => {
+                      const key = d.toDateString()
+                      const isSelected = selectedDate === key
+                      const day = d.toLocaleDateString('en-US', { weekday: 'short' })
+                      const dateStr = d.toLocaleDateString('en-US', { day: '2-digit', month: 'short' })
+                      return (
+                        <div
+                          key={key}
+                          className={`sch-date-card ${isSelected ? 'selected' : ''}`}
+                          onClick={() => { setSelectedDate(key); setSelectedSession(null) }}
+                        >
+                          <span className="sch-date-day">{day}</span>
+                          <span className="sch-date-val">{dateStr}</span>
+                        </div>
+                      )
+                    })}
+                  </div>
+                  {selectedDoctor && (
+                    <div className="sch-session-picker">
+                      <h3 className="sch-section-title" style={{ marginBottom: 12 }}>Select Session</h3>
+                      <div className="sch-session-options">
+                        {(doctorSessions[selectedDoctor] ?? [{ label: '9:00 AM – 1:00 PM', value: '9am-1pm' }]).map(s => (
+                          <label key={s.value} className={`sch-session-option ${selectedSession === s.value ? 'selected' : ''}`}>
+                            <span className={`sch-radio ${selectedSession === s.value ? 'checked' : ''}`} />
+                            <input
+                              type="radio"
+                              name="session"
+                              value={s.value}
+                              checked={selectedSession === s.value}
+                              onChange={() => setSelectedSession(s.value)}
+                              style={{ display: 'none' }}
+                            />
+                            {s.label}
+                          </label>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  <div />
+                </div>
+                <div className="sch-divider" />
+                <div className="ip-actions" style={{ padding: '16px 24px' }}>
+                  <button className="ip-btn ip-cancel" onClick={resetSchedule}>Cancel</button>
+                  <button className="ip-btn ip-submit" onClick={() => setSubmitted(true)}>Submit</button>
+                </div>
+              </>
+            )}
           </div>
         </Modal>
       )}
