@@ -19,6 +19,7 @@ import leaveIcon from '../assets/icons/leave-managment.svg'
 import specialtiesIcon from '../assets/icons/specialities-icon.svg'
 import settingsIcon from '../assets/icons/settings-icon.svg'
 import notificationIcon from '../assets/icons/notification-icon.svg'
+import arrowLeftIcon from '../assets/icons/arrow-left.svg'
 import './Dashboard.css'
 
 type ActivePage = 'Dashboard' | 'Queue Management' | 'Appointments' | 'Patients' | 'Doctors' | 'Leave Management' | 'Specialties' | 'Settings'
@@ -61,11 +62,14 @@ const Dashboard: FC = () => {
       </aside>
       <main className="dashboard-main">
         <div className="topbar">
-          <div className="topbar-title">
+          <div className="topbar-title" style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
             {viewDoctor ? (
               <>
+                <button className="dp-back-btn" onClick={() => setViewDoctor(null)}>
+                  <img src={arrowLeftIcon} alt="back" style={{ width: 16, height: 16 }} />
+                </button>
                 <span style={{ color: '#A0A5B1', fontWeight: 500, cursor: 'pointer' }} onClick={() => setViewDoctor(null)}>Doctors</span>
-                <span style={{ color: '#A0A5B1', margin: '0 6px' }}>/</span>
+                <span style={{ color: '#A0A5B1', margin: '0 2px' }}>/</span>
                 <span>View Doctor</span>
               </>
             ) : activePage}

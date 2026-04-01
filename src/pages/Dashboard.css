@@ -118,3 +118,14 @@
   background: var(--color-border);
   flex-shrink: 0;
 }
+
+.dp-back-btn {
+  background: #fff;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  padding: 6px 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}

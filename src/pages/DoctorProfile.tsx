@@ -2,7 +2,6 @@ import type { FC } from 'react'
 import { useState } from 'react'
 import Badge from '../components/Badge'
 import { appointments, statusProps as aptStatusProps, bookingProps } from '../data/appointments'
-import arrowLeft from '../assets/icons/arrow-left.svg'
 import patientsGreenIcon from '../assets/icons/patients-green-icon.svg'
 import patientsRedIcon from '../assets/icons/patients-red-icon.svg'
 import clockBlueIcon from '../assets/icons/clock-blue-icon.svg'
@@ -41,12 +40,6 @@ const DoctorProfile: FC<DoctorProfileProps> = ({ doctor, onBack }) => {
 
   return (
     <div className="dp-container">
-      <div className="dp-header">
-        <button className="dp-back-btn" onClick={onBack}>
-          <img src={arrowLeft} alt="back" style={{ width: 16, height: 16 }} />
-        </button>
-      </div>
-
       <div className="dp-body">
         {/* Profile Card */}
         <div className="dp-profile-card">
