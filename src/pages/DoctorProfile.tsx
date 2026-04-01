@@ -1,6 +1,7 @@
 import type { FC } from 'react'
 import { useState } from 'react'
 import Badge from '../components/Badge'
+import Modal from '../components/Modal'
 import { appointments, statusProps as aptStatusProps, bookingProps } from '../data/appointments'
 import patientsGreenIcon from '../assets/icons/patients-green-icon.svg'
 import patientsRedIcon from '../assets/icons/patients-red-icon.svg'
@@ -37,6 +38,30 @@ interface DoctorProfileProps {
 const DoctorProfile: FC<DoctorProfileProps> = ({ doctor, onBack }) => {
   const doctorApts = appointments.filter(a => a.doctor === doctor.name)
   const [activeTab, setActiveTab] = useState<'Overview' | 'Schedule' | 'Leaves' | 'Documents'>('Overview')
+
+  const weekSchedule = [
+    { day: 'Monday', short: 'Mon', sessions: [{ time: '9:00 AM – 1:00 PM', tokens: 16, hours: '4 hours' }, { time: '2:00 PM – 4:00 PM', tokens: 8, hours: '2 hours' }] },
+    { day: 'Tuesday', short: 'Tue', sessions: [{ time: '9:00 AM – 1:00 PM', tokens: 16, hours: '4 hours' }] },
+    { day: 'Wednesday', short: 'Wed', sessions: [] },
+    { day: 'Thursday', short: 'Thu', sessions: [{ time: '9:00 AM – 1:00 PM', tokens: 16, hours: '4 hours' }, { time: '2:00 PM – 4:00 PM', tokens: 8, hours: '2 hours' }] },
+    { day: 'Friday', short: 'Fri', sessions: [{ time: '9:00 AM – 1:00 PM', tokens: 16, hours: '4 hours' }] },
+    { day: 'Saturday', short: 'Sat', sessions: [] },
+    { day: 'Sunday', short: 'Sun', sessions: [] },
+  ]
+
+  const [showModify, setShowModify] = useState(false)
+  const [dayToggles, setDayToggles] = useState<Record<string, boolean>>(
+    Object.fromEntries(weekSchedule.map(d => [d.day, d.sessions.length > 0]))
+  )
+  const [dayShifts, setDayShifts] = useState<Record<string, { time: string; tokens: number; hours: string }[]>>(
+    Object.fromEntries(weekSchedule.map(d => [d.day, d.sessions]))
+  )
+
+  const addShift = (day: string) =>
+    setDayShifts(p => ({ ...p, [day]: [...p[day], { time: '09:00 AM – 01:00 PM', tokens: 16, hours: '4 hours' }] }))
+
+  const removeShift = (day: string, idx: number) =>
+    setDayShifts(p => ({ ...p, [day]: p[day].filter((_, i) => i !== idx) }))
 
   return (
     <div className="dp-container">
@@ -111,22 +136,14 @@ const DoctorProfile: FC<DoctorProfileProps> = ({ doctor, onBack }) => {
             <div className="dp-overview-right">
               <div className="dp-schedule-card">
                 <div className="dp-schedule-title">This Week's Schedule</div>
-                {[
-                  { day: 'Mon', sessions: ['9:00 AM – 1:00 PM', '2:00 PM – 4:00 PM'] },
-                  { day: 'Tue', sessions: ['9:00 AM – 1:00 PM'] },
-                  { day: 'Wed', sessions: [] },
-                  { day: 'Thu', sessions: ['9:00 AM – 1:00 PM', '2:00 PM – 4:00 PM'] },
-                  { day: 'Fri', sessions: ['9:00 AM – 1:00 PM'] },
-                  { day: 'Sat', sessions: [] },
-                  { day: 'Sun', sessions: [] },
-                ].map((item, i, arr) => (
-                  <div key={item.day}>
+                {weekSchedule.map((item) => (
+                  <div key={item.short}>
                     <div className={`dp-schedule-row ${item.sessions.length === 0 ? 'dp-schedule-row-off' : ''}`}>
-                      <span className="dp-schedule-day">{item.day}</span>
+                      <span className="dp-schedule-day">{item.short}</span>
                       <div className="dp-schedule-sessions">
                         {item.sessions.length === 0
                           ? <span className="dp-schedule-off">Off</span>
-                          : item.sessions.map(s => <span key={s} className="dp-schedule-session">{s}</span>)
+                          : item.sessions.map(s => <span key={s.time} className="dp-schedule-session">{s.time}</span>)
                         }
                       </div>
                     </div>
@@ -136,10 +153,145 @@ const DoctorProfile: FC<DoctorProfileProps> = ({ doctor, onBack }) => {
             </div>
           </div>
         )}
-        {activeTab === 'Schedule' && <div className="dp-tab-placeholder">Schedule content coming soon.</div>}
-        {activeTab === 'Leaves' && <div className="dp-tab-placeholder">Leaves content coming soon.</div>}
+        {activeTab === 'Schedule' && (
+          <div className="dp-schedule-tab">
+            <div className="dp-schedule-tab-header">
+              <span className="dp-schedule-tab-title">This Week's Schedule</span>
+              <button className="dp-modify-btn" onClick={() => setShowModify(true)}>Modify Schedule</button>
+            </div>
+            <div className="dp-week-grid">
+              {weekSchedule.map(item => (
+                <div key={item.day} className="dp-day-card">
+                  <div className="dp-day-card-header">
+                    <span className="dp-day-card-name">{item.day}</span>
+                    <span className={`dp-day-badge ${item.sessions.length === 0 ? 'off' : ''}`}>
+                      {item.sessions.length === 0 ? 'Off Day' : 'Working Day'}
+                    </span>
+                  </div>
+                  {item.sessions.length > 0 && (
+                    <div className="dp-day-sessions">
+                      {item.sessions.map(s => (
+                        <div key={s.time} className="dp-session-card">
+                          <span className="dp-session-time">{s.time}</span>
+                          <div className="dp-session-meta">
+                            <span>Max {s.tokens} Tokens</span>
+                            <span>{s.hours}</span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+        {activeTab === 'Leaves' && (
+          <div className="dp-schedule-tab">
+            <div className="dp-schedule-tab-header">
+              <span className="dp-schedule-tab-title">Leave History</span>
+            </div>
+            <table className="dp-table">
+              <colgroup>
+                <col style={{ width: '5%' }} />
+                <col style={{ width: '10%' }} />
+                <col style={{ width: '5%' }} />
+                <col style={{ width: '5%' }} />
+                <col style={{ width: '5%' }} />
+                <col style={{ width: '25%' }} />
+                <col />
+              </colgroup>
+              <thead>
+                <tr>
+                  <th>APPLIED DATE</th>
+                  <th>REASON</th>
+                  <th>START DATE</th>
+                  <th>END DATE</th>
+                  <th>DURATION</th>
+                  <th>STATUS</th>
+                </tr>
+              </thead>
+              <tbody>
+                {[
+                  { applied: 'Mar 10, 2026', reason: 'Medical', start: 'Mar 15, 2026', end: 'Mar 17, 2026', duration: '3 days', status: 'Approved' },
+                  { applied: 'Feb 20, 2026', reason: 'Personal', start: 'Feb 25, 2026', end: 'Feb 25, 2026', duration: '1 day', status: 'Approved' },
+                  { applied: 'Jan 5, 2026', reason: 'Family Emergency', start: 'Jan 8, 2026', end: 'Jan 10, 2026', duration: '3 days', status: 'Rejected' },
+                ].map((l, i) => (
+                  <tr key={i}>
+                    <td>{l.applied}</td>
+                    <td>{l.reason}</td>
+                    <td>{l.start}</td>
+                    <td>{l.end}</td>
+                    <td>{l.duration}</td>
+                    <td>
+                      <span className={`dp-leave-status ${l.status === 'Approved' ? 'approved' : 'rejected'}`}>{l.status}</span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
         {activeTab === 'Documents' && <div className="dp-tab-placeholder">Documents content coming soon.</div>}
       </div>
+
+      {showModify && (
+        <Modal onClose={() => setShowModify(false)}>
+          <div style={{ width: 520 }}>
+            <div className="sch-header">
+              <h2 className="sch-title">Modify Schedule</h2>
+              <button className="sch-close" onClick={() => setShowModify(false)}>✕</button>
+            </div>
+            <div className="sch-divider" />
+            <div className="modal-body-scroll">
+              <div className="sch-body">
+                {weekSchedule.map(item => (
+                  <div key={item.day} className="dp-modify-day-row">
+                    <div className="dp-modify-day-left">
+                      <button
+                        className={`dp-toggle ${dayToggles[item.day] ? 'on' : ''}`}
+                        onClick={() => setDayToggles(p => ({ ...p, [item.day]: !p[item.day] }))}
+                      ><span className="dp-toggle-thumb" /></button>
+                      <div className="dp-modify-day-name">{item.day}</div>
+                      {dayToggles[item.day] && (
+                        <button className="dp-add-shift-btn" onClick={() => addShift(item.day)}>+ Add Shift</button>
+                      )}
+                    </div>
+                    {dayToggles[item.day] && dayShifts[item.day].length > 0 && (
+                      <div className="dp-modify-sessions">
+                        {dayShifts[item.day].map((s, si) => (
+                          <div key={si} className="dp-modify-session-item">
+                            <div className="dp-modify-inputs">
+                              <div className="dp-modify-input-group">
+                                <label className="dp-modify-input-label">Start Time</label>
+                                <input type="time" className="dp-modify-input" defaultValue={s.time.split(' – ')[0].trim().replace(' AM', '').replace(' PM', '')} />
+                              </div>
+                              <div className="dp-modify-input-group">
+                                <label className="dp-modify-input-label">End Time</label>
+                                <input type="time" className="dp-modify-input" defaultValue={s.time.split(' – ')[1].trim().replace(' AM', '').replace(' PM', '')} />
+                              </div>
+                              <div className="dp-modify-input-group">
+                                <label className="dp-modify-input-label">Max Tokens</label>
+                                <input type="number" className="dp-modify-input" defaultValue={s.tokens} min={1} />
+                              </div>
+                              <button className="dp-remove-shift-btn" onClick={() => removeShift(item.day, si)}>✕</button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+            <div className="sch-divider" />
+            <div className="ip-actions" style={{ padding: '16px 24px' }}>
+              <button className="ip-btn ip-cancel" onClick={() => setShowModify(false)}>Cancel</button>
+              <button className="ip-btn ip-submit">Save Changes</button>
+            </div>
+          </div>
+        </Modal>
+      )}
     </div>
   )
 }
