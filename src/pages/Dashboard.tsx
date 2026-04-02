@@ -22,7 +22,7 @@ import notificationIcon from '../assets/icons/notification-icon.svg'
 import arrowLeftIcon from '../assets/icons/arrow-left.svg'
 import './Dashboard.css'
 
-type ActivePage = 'Dashboard' | 'Queue Management' | 'Appointments' | 'Patients' | 'Doctors' | 'Leave Management' | 'Specialties' | 'Settings'
+type ActivePage = 'Dashboard' | 'Queue Management' | 'Appointments' | 'Patients' | 'Doctors' | 'Leave Management' | 'Settings'
 
 interface Doctor { id: string; name: string; avatar: string; specialty: string; phone: string; email: string; experience: string; status: 'Active' | 'Inactive' }
 
@@ -33,7 +33,6 @@ const navItems: { label: ActivePage; icon: string }[] = [
   { label: 'Patients', icon: patientsIcon },
   { label: 'Doctors', icon: doctorsIcon },
   { label: 'Leave Management', icon: leaveIcon },
-  { label: 'Specialties', icon: specialtiesIcon },
   { label: 'Settings', icon: settingsIcon },
 ]
 
@@ -89,7 +88,6 @@ const Dashboard: FC = () => {
         {activePage === 'Doctors' && !viewDoctor && <Doctors onViewProfile={setViewDoctor} />}
         {activePage === 'Doctors' && viewDoctor && <DoctorProfile doctor={viewDoctor} onBack={() => setViewDoctor(null)} />}
         {activePage === 'Leave Management' && <LeaveManagement />}
-        {activePage === 'Specialties' && <Specialties />}
         {activePage === 'Settings' && <Settings />}
       </main>
     </div>

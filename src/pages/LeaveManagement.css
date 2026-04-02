@@ -1,0 +1,294 @@
+.lm-container {
+  padding: 24px;
+  font-family: 'Manrope', sans-serif;
+  flex: 1;
+  overflow: hidden;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.lm-toolbar-card {
+  background: #fff;
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.lm-search {
+  width: 360px;
+  flex-shrink: 0;
+}
+
+.lm-search .input-box {
+  border: none;
+}
+
+.lm-toolbar-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.lm-filter-group {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.lm-filter-btn {
+  padding: 5px 12px;
+  border: 1px solid #0000001A;
+  border-radius: 6px;
+  background: #fff;
+  font-size: 13px;
+  font-weight: 500;
+  font-family: 'Manrope', sans-serif;
+  color: #0A0A0A;
+  cursor: pointer;
+}
+
+.lm-filter-btn.active {
+  background: #E9F2FF;
+  color: #2B7FFF;
+  border-color: #2879E4;
+}
+
+.lm-icon-btn {
+  background: #fff;
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  padding: 7px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+}
+
+.lm-icon-btn img {
+  width: 18px;
+  height: 18px;
+}
+
+.lm-main-card {
+  background: #fff;
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  overflow-y: auto;
+  flex: 1;
+  padding: 16px;
+}
+
+.lm-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+  font-family: 'Manrope', sans-serif;
+}
+
+.lm-table thead tr {
+  background: var(--color-inputBg);
+}
+
+.lm-table th {
+  text-align: left;
+  padding: 12px 16px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-textSecondary);
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+}
+
+.lm-table td {
+  padding: 14px 16px;
+  border-top: 1px solid var(--color-border);
+  white-space: nowrap;
+}
+
+.lm-id {
+  font-weight: 500;
+  color: var(--color-accent);
+}
+
+.lm-doctor-cell {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.lm-avatar {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.lm-doctor-name {
+  font-size: 14px;
+  font-weight: 500;
+  color: #00001D;
+  margin-bottom: -4px;
+}
+
+.lm-doctor-spec {
+  font-size: 12px;
+  color: #636A79;
+}
+
+.lm-cell {
+  font-size: 14px;
+  color: var(--color-textPrimary);
+}
+
+.lm-actions {
+  display: flex;
+  gap: 6px;
+}
+
+.lm-approve-btn {
+  padding: 5px 12px;
+  background: #ECFDF3;
+  color: #027A48;
+  border: 1px solid #12B76A;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  font-family: 'Manrope', sans-serif;
+  cursor: pointer;
+}
+
+.lm-reject-btn {
+  padding: 5px 12px;
+  background: #FEF3F2;
+  color: #B42318;
+  border: 1px solid #F04438;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  font-family: 'Manrope', sans-serif;
+  cursor: pointer;
+}
+
+.lm-empty {
+  text-align: center;
+  padding: 48px;
+  color: #A0A5B1;
+  font-size: 14px;
+}
+
+.lm-clear {
+  cursor: pointer;
+  font-size: 13px;
+  color: #A0A5B1;
+  padding: 2px 4px;
+}
+
+.lm-cancel-btn {
+  background: transparent;
+  border: none;
+  color: #FF5A4F;
+  font-size: 13px;
+  font-weight: 500;
+  font-family: 'Manrope', sans-serif;
+  cursor: pointer;
+  padding: 0;
+  white-space: nowrap;
+}
+
+.lm-apply-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  background: var(--color-accent);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  font-family: 'Manrope', sans-serif;
+  cursor: pointer;
+}
+
+.lm-apply-btn:hover {
+  background: var(--color-accentHover);
+}
+
+.lm-halfday-row {
+  margin-bottom: 18px;
+}
+
+.lm-halfday-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #0A0A0A;
+  font-family: 'Manrope', sans-serif;
+  cursor: pointer;
+}
+
+.lm-checkbox {
+  width: 18px;
+  height: 18px;
+  border-radius: 5px;
+  border: 1.5px solid #A0A5B1;
+  background: #fff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.lm-checkbox.checked {
+  border-color: #418EFD;
+  background: #418EFD;
+}
+
+.lm-confirm-modal {
+  padding: 32px 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 12px;
+  width: 420px;
+}
+
+.lm-confirm-icon-wrap {
+  margin-bottom: 4px;
+}
+
+.lm-confirm-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: #0A0A0A;
+  font-family: 'Manrope', sans-serif;
+  margin: 0;
+}
+
+.lm-confirm-desc {
+  font-size: 14px;
+  font-weight: 400;
+  color: #636A79;
+  font-family: 'Manrope', sans-serif;
+  margin: 0;
+  line-height: 1.6;
+}
+
+.lm-confirm-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 8px;
+  width: 65%;
+}
+
+.lm-confirm-actions .ip-btn {
+  flex: 1;
+}

@@ -189,3 +189,21 @@
   color: #418EFD;
   text-decoration: none;
 }
+
+.captcha-check-custom {
+  width: 18px;
+  height: 18px;
+  border-radius: 5px;
+  border: 1.5px solid #A0A5B1;
+  background: #fff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.captcha-check-custom.checked {
+  background: #418EFD;
+  border-color: #418EFD;
+}

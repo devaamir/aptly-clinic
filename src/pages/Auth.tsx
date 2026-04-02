@@ -8,6 +8,7 @@ import lockIcon from '../assets/icons/lock.svg'
 import eyeIcon from '../assets/icons/security-eye.svg'
 import recaptchaImg from '../assets/images/re-captcha.png'
 import tickBlue from '../assets/icons/tick-blue.svg'
+import tickIcon from '../assets/icons/tick-icon.svg'
 import warningRed from '../assets/icons/warning-red.svg'
 import './Auth.css'
 
@@ -21,6 +22,7 @@ const Auth: FC<AuthProps> = ({ onLogin }) => {
   const [screen, setScreen] = useState<Screen>('login')
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirm, setShowConfirm] = useState(false)
+  const [notRobot, setNotRobot] = useState(false)
 
   return (
     <AuthLayout>
@@ -49,8 +51,10 @@ const Auth: FC<AuthProps> = ({ onLogin }) => {
             <a href="#" className="forgot-link" onClick={e => { e.preventDefault(); setScreen('set-password') }}>Forgot Password?</a>
           </div>
 
-          <div className="captcha-btn">
-            <input type="checkbox" className="captcha-check" />
+          <div className="captcha-btn" onClick={() => setNotRobot(p => !p)} style={{ cursor: 'pointer' }}>
+            <span className={`captcha-check-custom ${notRobot ? 'checked' : ''}`}>
+              {notRobot && <img src={tickIcon} alt="" style={{ width: 12, height: 12 }} />}
+            </span>
             <span className="captcha-label">I'm not a robot</span>
             <img src={recaptchaImg} alt="reCAPTCHA" className="captcha-logo" />
           </div>
