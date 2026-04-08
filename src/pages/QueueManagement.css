@@ -212,11 +212,6 @@
   flex-shrink: 0;
 }
 
-display: flex;
-align-items: center;
-gap: 8px;
-}
-
 .resume-btn {
   background: #F79009;
   color: #fff;
