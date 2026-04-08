@@ -51,3 +51,7 @@
 .input-icon.right {
   right: 12px;
 }
+
+.input-box.has-error {
+  border-color: #F04438;
+}

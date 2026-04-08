@@ -3,6 +3,7 @@ import { useState } from 'react'
 import InputBox from '../components/InputBox'
 import Button from '../components/Button'
 import AuthLayout from '../components/AuthLayout'
+import { login } from '../services/api'
 import smsIcon from '../assets/icons/sms.svg'
 import lockIcon from '../assets/icons/lock.svg'
 import eyeIcon from '../assets/icons/security-eye.svg'
@@ -23,6 +24,30 @@ const Auth: FC<AuthProps> = ({ onLogin }) => {
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirm, setShowConfirm] = useState(false)
   const [notRobot, setNotRobot] = useState(false)
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [error, setError] = useState('')
+  const [emailError, setEmailError] = useState('')
+  const [passwordError, setPasswordError] = useState('')
+  const [loading, setLoading] = useState(false)
+
+  const handleLogin = async () => {
+    setEmailError(''); setPasswordError('')
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { setEmailError('Please enter a valid email address.'); return }
+    if (password.length < 6) { setPasswordError('Password must be at least 6 characters.'); return }
+    setError(''); setLoading(true)
+    try {
+      const res = await login(email, password)
+      localStorage.setItem('accessToken', res.data.accessToken)
+      localStorage.setItem('refreshToken', res.data.refreshToken)
+      onLogin()
+    } catch (err: unknown) {
+      const msg = (err as { response?: { data?: { message?: string } } })?.response?.data?.message
+      setError(msg || 'Invalid email or password.')
+    } finally {
+      setLoading(false)
+    }
+  }
 
   return (
     <AuthLayout>
@@ -32,7 +57,8 @@ const Auth: FC<AuthProps> = ({ onLogin }) => {
           <p className="form-subtitle">Enter your email address and password to login</p>
 
           <div className="form-group" style={{ marginBottom: '17.5px' }}>
-            <InputBox type="email" placeholder="Email Address" leftIcon={<img src={smsIcon} alt="" />} />
+            <InputBox type="email" placeholder="Email Address" leftIcon={<img src={smsIcon} alt="" />} value={email} onChange={e => { setEmail(e.target.value); setEmailError('') }} error={!!emailError} />
+            {emailError && <p style={{ color: '#F04438', fontSize: 12, marginTop: 4, fontFamily: 'Manrope' }}>{emailError}</p>}
           </div>
 
           <div className="form-group">
@@ -40,11 +66,15 @@ const Auth: FC<AuthProps> = ({ onLogin }) => {
               type={showPassword ? 'text' : 'password'}
               placeholder="Password"
               leftIcon={<img src={lockIcon} alt="" />}
+              value={password}
+              onChange={e => { setPassword(e.target.value); setPasswordError('') }}
+              error={!!passwordError}
               rightIcon={
                 <img src={eyeIcon} alt="toggle" style={{ cursor: 'pointer', pointerEvents: 'all' }}
                   onClick={() => setShowPassword(p => !p)} />
               }
             />
+            {passwordError && <p style={{ color: '#F04438', fontSize: 12, marginTop: 4, fontFamily: 'Manrope' }}>{passwordError}</p>}
           </div>
 
           <div className="form-row">
@@ -59,8 +89,8 @@ const Auth: FC<AuthProps> = ({ onLogin }) => {
             <img src={recaptchaImg} alt="reCAPTCHA" className="captcha-logo" />
           </div>
 
-          <Button label="Login" style={{ marginBottom: '24px' }} onClick={onLogin} />
-          <p className="trouble-text">Having trouble logging in? <a href="#">Contact Us</a></p>
+          {error && <p style={{ color: '#F04438', fontSize: 13, marginBottom: 8, fontFamily: 'Manrope' }}>{error}</p>}
+          <Button label={loading ? 'Logging in...' : 'Login'} style={{ marginBottom: '24px' }} onClick={handleLogin} />          <p className="trouble-text">Having trouble logging in? <a href="#">Contact Us</a></p>
         </>
       )}
 

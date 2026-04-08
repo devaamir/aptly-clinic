@@ -1,13 +1,15 @@
 import type { FC } from 'react'
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import PageHeader from '../components/PageHeader'
 import InputBox from '../components/InputBox'
 import Badge from '../components/Badge'
 import SlidePanel from '../components/SlidePanel'
 import Modal from '../components/Modal'
 import FormField from '../components/FormField'
-import { appointments, bookingProps, statusProps } from '../data/appointments'
+import { bookingProps, statusProps } from '../data/appointments'
 import type { Appointment, AptStatus, BookingMethod } from '../data/appointments'
+import { getAppointments } from '../services/api'
+import type { Appointment as ApiAppointment } from '../services/api'
 import calendarIcon from '../assets/icons/calendar.svg'
 import searchIcon from '../assets/icons/search-icon.svg'
 import sortIcon from '../assets/icons/sort-icon.svg'
@@ -16,10 +18,36 @@ import addIcon from '../assets/icons/add-icon-white.svg'
 import dotsIcon from '../assets/icons/3dots-icon.svg'
 import './Appointments.css'
 
+const mapApiAppointment = (a: ApiAppointment): Appointment => ({
+  id: a.referenceId,
+  patient: a.patient.name,
+  avatar: `https://i.pravatar.cc/32?u=${a.patient.id}`,
+  phone: a.patient.phoneNumber,
+  gender: a.patient.gender,
+  dob: a.patient.dateOfBirth,
+  age: new Date().getFullYear() - new Date(a.patient.dateOfBirth).getFullYear(),
+  date: new Date(a.appointmentDate).toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' }),
+  session: `${a.schedule.startTime.slice(0, 5)} – ${a.schedule.stopTime.slice(0, 5)}`,
+  token: String(a.tokenNumber).padStart(2, '0'),
+  doctor: a.doctor.name,
+  doctorAvatar: a.doctor.profilePicture || `https://i.pravatar.cc/32?u=${a.doctor.id}`,
+  specialty: a.doctor.specialities[0]?.name ?? '',
+  bookingMethod: a.creatorRole === 'patient' ? 'Online' : 'Offline' as BookingMethod,
+  bookedDate: new Date(a.createdAt).toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' }),
+  status: (a.tokenStatus === 'pending' ? 'Confirmed' : a.tokenStatus === 'completed' ? 'Completed' : 'Cancelled') as AptStatus,
+})
+
 type Filter = 'Today' | 'Tomorrow' | 'This Week' | 'Date' | 'Date Range'
 
 const Appointments: FC = () => {
   const [searchQuery, setSearchQuery] = useState('')
+  const [appointments, setAppointments] = useState<Appointment[]>([])
+
+  useEffect(() => {
+    getAppointments().then(res => {
+      if (res.success) setAppointments(res.data.map(mapApiAppointment))
+    }).catch(() => {})
+  }, [])
   const [filter, setFilter] = useState<Filter>('Today')
   const [filterDate, setFilterDate] = useState<string | null>(null)
   const [filterRangeStart, setFilterRangeStart] = useState<string | null>(null)

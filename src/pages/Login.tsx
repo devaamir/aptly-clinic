@@ -9,6 +9,7 @@ import eyeIcon from '../assets/icons/security-eye.svg'
 import tickIcon from '../assets/icons/tick-icon.svg'
 import recaptchaImg from '../assets/images/re-captcha.png'
 import './Login.css'
+import { login } from '../services/api'
 
 interface LoginProps {
   onForgotPassword: () => void
