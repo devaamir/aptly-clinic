@@ -1,7 +1,7 @@
 import axios from 'axios'
-import type { LoginResponse, AppointmentsResponse, ContextsResponse, SwitchContextResponse } from './types'
+import type { LoginResponse, AppointmentsResponse, ContextsResponse, SwitchContextResponse, DoctorScheduleResponse, DoctorsResponse, PatientsResponse } from './types'
 
-export type { LoginResponse, AppointmentsResponse, ContextsResponse, SwitchContextResponse }
+export type { LoginResponse, AppointmentsResponse, ContextsResponse, SwitchContextResponse, DoctorScheduleResponse, DoctorsResponse, PatientsResponse }
 export * from './types'
 
 const client = axios.create({
@@ -62,3 +62,21 @@ export const switchContext = (role: string, medicalCenterId: string) =>
   })
 
 export const getPatients = () => api.get<PatientsResponse>('/patients')
+
+export const getDoctors = () => api.get<DoctorsResponse>('/doctors/medical-center')
+
+// SSE
+export const createSSE = (endpoint: string, onMessage: (data: unknown) => void, onError?: (e: Event) => void): EventSource => {
+  const token = localStorage.getItem('accessToken')
+  const url = `${import.meta.env.VITE_API_BASE_URL}${endpoint}${token ? `?token=${token}` : ''}`
+  const es = new EventSource(url)
+  es.onmessage = e => { try { onMessage(JSON.parse(e.data)) } catch { onMessage(e.data) } }
+  if (onError) es.onerror = onError
+  return es
+}
+
+export const getDoctorSchedule = (doctorId: string, date: string, medicalCenterId: string) =>
+  api.get<DoctorScheduleResponse>(`/doctors/${doctorId}/schedule?date=${date}&medicalCenterId=${medicalCenterId}`)
+
+export const subscribeQueue = (doctorScheduleId: string, onData: (data: QueueSSEData) => void, onError?: (e: Event) => void): EventSource =>
+  createSSE(`/appointments/queue?doctorScheduleId=${doctorScheduleId}`, onData as (d: unknown) => void, onError)

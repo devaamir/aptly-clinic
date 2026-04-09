@@ -4,6 +4,9 @@ import PatientModal from '../components/PatientModal'
 import PageHeader from '../components/PageHeader'
 import InstantPauseModal from '../components/InstantPauseModal'
 import ScheduledPauseModal from '../components/ScheduledPauseModal'
+import { getDoctors, getDoctorSchedule, subscribeQueue } from '../services/api'
+import type { AppointmentDoctor, DoctorSchedule, QueueSSEData } from '../services/types'
+import { useAppContext } from '../context/AppContext'
 import verifyTickGreen from '../assets/icons/verify-tick-green.svg'
 import infoIconBlue from '../assets/icons/info-icon-blue.svg'
 import Toast from '../components/Toast'
@@ -66,6 +69,7 @@ interface Patient {
 }
 
 interface Session {
+  scheduleId: string
   label: string
   workingTime: string
   totalPatient: number
@@ -82,85 +86,29 @@ interface Doctor {
   room: string
   avatar: string
   sessions: Session[]
+  apiId: string
 }
 
-const doctors: Doctor[] = [
-  {
-    id: 1, name: 'Dr. Sarah Johnson', specialty: 'Cardiology', room: 'Room 100',
-    avatar: 'https://i.pravatar.cc/40?img=1',
-    sessions: [
-      {
-        label: '9am - 1pm', workingTime: '9:00am - 1:00pm', totalPatient: 60, completedPatient: 3, avgInterval: '8 minutes', isLive: false,
-        patients: [
-          { token: '01', name: 'Alice Brown', phone: '+91 90487 1111', arrival: '09:00 AM', age: 32, gender: 'Male', status: 'Completed', avatar: 'https://i.pravatar.cc/32?img=20' },
-          { token: '02', name: 'Bob Martin', phone: '+91 90487 2222', arrival: '09:15 AM', age: 28, gender: 'Female', status: 'Waiting', avatar: 'https://i.pravatar.cc/32?img=21' },
-          { token: '03', name: 'Carol White', phone: '+91 90487 3333', arrival: '09:30 AM', age: 28, gender: 'Female', status: 'Waiting', avatar: 'https://i.pravatar.cc/32?img=22' },
-        ],
-      },
-    ],
-  },
-  {
-    id: 2, name: 'Dr. Daniel Hamilton', specialty: 'Cardiology', room: 'Room 101',
-    avatar: 'https://i.pravatar.cc/40?img=2',
-    sessions: [
-      {
-        label: '8am - 11:30am', workingTime: '8:00am - 11:30am', totalPatient: 84, completedPatient: 5, avgInterval: '5 minutes', isLive: true,
-        patients: [
-          { token: '01', name: 'Katie Sims', phone: '+91 90487 8290', arrival: '09:00 AM', age: 32, gender: 'Male', status: 'Completed', avatar: 'https://i.pravatar.cc/32?img=5' },
-          { token: '02', name: 'Ricky Smith', phone: '+91 90487 8290', arrival: '09:00 AM', age: 32, gender: 'Male', status: 'Completed', avatar: 'https://i.pravatar.cc/32?img=6' },
-          { token: '03', name: 'Autumn Phillips', phone: '+91 90487 8290', arrival: '09:00 AM', age: 45, gender: 'Male', status: 'Skipped', avatar: 'https://i.pravatar.cc/32?img=7' },
-          { token: '04', name: 'Jerry Helfer', phone: '+91 90487 8290', arrival: '09:00 AM', age: 38, gender: 'Male', status: 'Current', avatar: 'https://i.pravatar.cc/32?img=8' },
-          { token: '05', name: 'Rodger Struck', phone: '+91 90487 8290', arrival: '09:00 AM', age: 28, gender: 'Female', status: 'Waiting', avatar: 'https://i.pravatar.cc/32?img=9' },
-          { token: '06', name: 'Bradley Lawlor', phone: '+91 90487 8290', arrival: '09:00 AM', age: 52, gender: 'Female', status: 'Cancelled', avatar: 'https://i.pravatar.cc/32?img=10' },
-          { token: '07', name: 'Chris Glasser', phone: '+91 90487 8290', arrival: '09:00 AM', age: 28, gender: 'Female', status: 'Waiting', avatar: 'https://i.pravatar.cc/32?img=11' },
-          { token: '08', name: 'John Dukes', phone: '+91 90487 8290', arrival: '09:00 AM', age: 28, gender: 'Female', status: 'Waiting', avatar: 'https://i.pravatar.cc/32?img=12' },
-          { token: '09', name: 'Judith Rodriguez', phone: '+91 90487 8290', arrival: '09:00 AM', age: 28, gender: 'Female', status: 'Waiting', avatar: 'https://i.pravatar.cc/32?img=13' },
-          { token: '10', name: 'James Hall', phone: '+91 90487 8290', arrival: '09:00 AM', age: 28, gender: 'Female', status: 'Waiting', avatar: 'https://i.pravatar.cc/32?img=14' },
-          { token: '11', name: 'Kenneth Allen', phone: '+91 90487 8290', arrival: '09:00 AM', age: 28, gender: 'Female', status: 'Waiting', avatar: 'https://i.pravatar.cc/32?img=15' },
-        ],
-      },
-      {
-        label: '2pm - 5pm', workingTime: '2:00pm - 5:00pm', totalPatient: 40, completedPatient: 0, avgInterval: '5 minutes', isLive: false,
-        patients: [
-          { token: '01', name: 'Leo Grant', phone: '+91 90487 6666', arrival: '02:00 PM', age: 28, gender: 'Female', status: 'Waiting', avatar: 'https://i.pravatar.cc/32?img=18' },
-          { token: '02', name: 'Sara Kim', phone: '+91 90487 7777', arrival: '02:15 PM', age: 28, gender: 'Female', status: 'Waiting', avatar: 'https://i.pravatar.cc/32?img=19' },
-        ],
-      },
-    ],
-  },
-  {
-    id: 3, name: 'Dr. Daniel Hamilton', specialty: 'Neurology', room: 'Room 102',
-    avatar: 'https://i.pravatar.cc/40?img=3',
-    sessions: [
-      {
-        label: '10am - 2pm', workingTime: '10:00am - 2:00pm', totalPatient: 45, completedPatient: 2, avgInterval: '10 minutes', isLive: true,
-        patients: [
-          { token: '01', name: 'Mark Spencer', phone: '+91 90487 4444', arrival: '10:00 AM', age: 38, gender: 'Male', status: 'Current', avatar: 'https://i.pravatar.cc/32?img=16' },
-          { token: '02', name: 'Nina Patel', phone: '+91 90487 5555', arrival: '10:10 AM', age: 28, gender: 'Female', status: 'Waiting', avatar: 'https://i.pravatar.cc/32?img=17' },
-        ],
-      },
-    ],
-  },
-  {
-    id: 4, name: 'Dr. Michael Chen', specialty: 'Orthopedics', room: 'Room 103',
-    avatar: 'https://i.pravatar.cc/40?img=4',
-    sessions: [
-      {
-        label: '11am - 3pm', workingTime: '11:00am - 3:00pm', totalPatient: 30, completedPatient: 0, avgInterval: '12 minutes', isLive: false,
-        patients: [
-          { token: '01', name: 'Leo Grant', phone: '+91 90487 6666', arrival: '11:00 AM', age: 28, gender: 'Female', status: 'Waiting', avatar: 'https://i.pravatar.cc/32?img=18' },
-          { token: '02', name: 'Sara Kim', phone: '+91 90487 7777', arrival: '11:15 AM', age: 28, gender: 'Female', status: 'Waiting', avatar: 'https://i.pravatar.cc/32?img=19' },
-        ],
-      },
-      {
-        label: '5pm - 8pm', workingTime: '5:00pm - 8:00pm', totalPatient: 20, completedPatient: 0, avgInterval: '12 minutes', isLive: false,
-        patients: [
-          { token: '01', name: 'Emma Wilson', phone: '+91 90487 8888', arrival: '05:00 PM', age: 28, gender: 'Female', status: 'Waiting', avatar: 'https://i.pravatar.cc/32?img=25' },
-        ],
-      },
-    ],
-  },
-]
+const mapApiDoctor = (d: AppointmentDoctor, idx: number): Doctor => ({
+  id: idx + 1,
+  apiId: d.id,
+  name: d.name,
+  specialty: d.specialties[0]?.name ?? '',
+  room: `Room ${100 + idx}`,
+  avatar: d.profilePicture || `https://i.pravatar.cc/40?u=${d.id}`,
+  sessions: [],
+})
+const mapScheduleToSession = (s: DoctorSchedule): Session => ({
+  scheduleId: s.id,
+  label: `${s.startTime.slice(0, 5)} – ${s.stopTime.slice(0, 5)}`,
+  workingTime: `${s.startTime.slice(0, 5)} - ${s.stopTime.slice(0, 5)}`,
+  totalPatient: s.tokenLimit,
+  completedPatient: s.tokenLimit - s.remainingTokenCount,
+  avgInterval: '10 minutes',
+  isLive: false,
+  patients: [],
+})
+
 const formatTo12h = (time: string) => {
   const [h, m] = time.split(':').map(Number)
   const ampm = h >= 12 ? 'PM' : 'AM'
@@ -169,21 +117,64 @@ const formatTo12h = (time: string) => {
 }
 
 const QueueManagement: FC = () => {
-  const [selectedId, setSelectedId] = useState(2)
+  const { activeContext } = useAppContext()
+  const [doctors, setDoctors] = useState<Doctor[]>([])
+  const [selectedId, setSelectedId] = useState(1)
   const [sessionIdx, setSessionIdx] = useState(0)
   const [view, setView] = useState<'list' | 'grid'>('list')
-  const [patientsMap, setPatientsMap] = useState<Record<string, Patient[]>>(
-    () => Object.fromEntries(doctors.flatMap(d => d.sessions.map((s, i) => [`${d.id}-${i}`, s.patients])))
-  )
-  const [statsMap, setStatsMap] = useState<Record<string, { completedPatient: number; totalPatient: number }>>(
-    () => Object.fromEntries(doctors.flatMap(d => d.sessions.map((s, i) => [`${d.id}-${i}`, { completedPatient: s.completedPatient, totalPatient: s.totalPatient }])))
-  )
+  const [patientsMap, setPatientsMap] = useState<Record<string, Patient[]>>({})
+  const [statsMap, setStatsMap] = useState<Record<string, { completedPatient: number; totalPatient: number }>>({})
 
-  const doctor = doctors.find(d => d.id === selectedId)!
-  const session = doctor.sessions[sessionIdx] ?? doctor.sessions[0]
+  useEffect(() => {
+    getDoctors().then(res => {
+      if (res.success && res.data.length > 0) {
+        const mapped = res.data.map(mapApiDoctor)
+        setDoctors(mapped)
+        setSelectedId(mapped[0].id)
+      }
+    }).catch(() => { })
+  }, [activeContext?.medicalCenter.id])
+
+  useEffect(() => {
+    const doc = doctors.find(d => d.id === selectedId)
+    if (!doc?.apiId || !activeContext?.medicalCenter.id) return
+    const today = new Date().toISOString().split('T')[0]
+    getDoctorSchedule(doc.apiId, today, activeContext.medicalCenter.id).then(res => {
+      if (res.success) {
+        setDoctors(prev => prev.map(d =>
+          d.id === selectedId ? { ...d, sessions: res.data.map(mapScheduleToSession) } : d
+        ))
+        setSessionIdx(0)
+      }
+    }).catch(() => { })
+  }, [selectedId, doctors.length])
+
+  // SSE: subscribe to queue for the active session
+  useEffect(() => {
+    const doc = doctors.find(d => d.id === selectedId)
+    const scheduleId = doc?.sessions[sessionIdx]?.scheduleId
+    if (!scheduleId) return
+    const es = subscribeQueue(scheduleId, (data: QueueSSEData) => {
+      const mapped: Patient[] = data.appointments.map((a, i) => ({
+        token: String(a.tokenNumber).padStart(2, '0'),
+        name: a.patient.name,
+        phone: a.patient.phoneNumber,
+        arrival: new Date(a.createdAt).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
+        age: new Date().getFullYear() - new Date(a.patient.dateOfBirth).getFullYear(),
+        gender: a.patient.gender,
+        avatar: `https://i.pravatar.cc/32?u=${i}`,
+        status: (a.tokenStatus === 'completed' ? 'Completed' : a.tokenStatus === 'skipped' ? 'Skipped' : a.tokenStatus === 'cancelled' ? 'Cancelled' : 'Waiting') as Status,
+      }))
+      setPatientsMap(prev => ({ ...prev, [`${selectedId}-${sessionIdx}`]: mapped }))
+    })
+    return () => es.close()
+  }, [selectedId, sessionIdx, doctors])
+
+  const doctor = doctors.find(d => d.id === selectedId) ?? doctors[0]
+  const session = doctor?.sessions[sessionIdx] ?? doctor?.sessions[0]
   const sessionKey = `${selectedId}-${sessionIdx}`
-  const patients = patientsMap[sessionKey] ?? session.patients
-  const stats = statsMap[sessionKey] ?? { completedPatient: session.completedPatient, totalPatient: session.totalPatient }
+  const patients = patientsMap[sessionKey] ?? session?.patients ?? []
+  const stats = statsMap[sessionKey] ?? { completedPatient: session?.completedPatient ?? 0, totalPatient: session?.totalPatient ?? 0 }
 
   const updatePatients = (updated: Patient[]) =>
     setPatientsMap(prev => ({ ...prev, [sessionKey]: updated }))
@@ -249,6 +240,8 @@ const QueueManagement: FC = () => {
       return p
     }))
   }
+
+  if (!doctor || !session) return <div style={{ padding: 24, fontFamily: 'Manrope', color: '#636A79' }}>Loading...</div>
 
   return (
     <div className="qm-container">
@@ -376,7 +369,9 @@ const QueueManagement: FC = () => {
                 </tr>
               </thead>
               <tbody>
-                {patients.map((p, idx) => (
+                {patients.length === 0 ? (
+                  <tr><td colSpan={8} style={{ textAlign: 'center', padding: '48px 16px', color: '#A0A5B1', fontSize: 14, fontFamily: 'Manrope' }}>No patients in queue</td></tr>
+                ) : patients.map((p, idx) => (
                   <tr key={p.token} className={p.status === 'Current' ? 'row-current' : ''}>
                     <td>
                       <span className={`token-badge ${p.status === 'Current' ? 'token-current' : ''}`}>

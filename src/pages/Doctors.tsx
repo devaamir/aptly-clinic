@@ -1,9 +1,12 @@
 import type { FC } from 'react'
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import PageHeader from '../components/PageHeader'
 import InputBox from '../components/InputBox'
 import Modal from '../components/Modal'
 import FormField from '../components/FormField'
+import { getDoctors } from '../services/api'
+import type { AppointmentDoctor } from '../services/types'
+import { useAppContext } from '../context/AppContext'
 import searchIcon from '../assets/icons/search-icon.svg'
 import sortIcon from '../assets/icons/sort-icon.svg'
 import reloadIcon from '../assets/icons/reload-icon.svg'
@@ -27,13 +30,16 @@ interface Doctor {
   status: 'Active' | 'Inactive'
 }
 
-const doctors: Doctor[] = [
-  { id: 'DOC001', name: 'Dr. Daniel Hamilton', avatar: 'https://i.pravatar.cc/48?img=2', specialty: 'Cardiology', phone: '+91 90487 8200', email: 'daniel@aptly.com', experience: '12 yrs', status: 'Active' },
-  { id: 'DOC002', name: 'Dr. Sarah Johnson', avatar: 'https://i.pravatar.cc/48?img=1', specialty: 'Cardiology', phone: '+91 90487 8201', email: 'sarah@aptly.com', experience: '9 yrs', status: 'Active' },
-  { id: 'DOC003', name: 'Dr. Michael Chen', avatar: 'https://i.pravatar.cc/48?img=4', specialty: 'Orthopedics', phone: '+91 90487 8202', email: 'michael@aptly.com', experience: '15 yrs', status: 'Active' },
-  { id: 'DOC004', name: 'Dr. Mark Spencer', avatar: 'https://i.pravatar.cc/48?img=3', specialty: 'Neurology', phone: '+91 90487 8203', email: 'mark@aptly.com', experience: '11 yrs', status: 'Inactive' },
-  { id: 'DOC005', name: 'Dr. Emily Carter', avatar: 'https://i.pravatar.cc/48?img=11', specialty: 'Pediatrics', phone: '+91 90487 8204', email: 'emily@aptly.com', experience: '7 yrs', status: 'Active' },
-]
+const mapDoctor = (d: AppointmentDoctor): Doctor => ({
+  id: d.referenceId,
+  name: d.name,
+  avatar: d.profilePicture || `https://i.pravatar.cc/48?u=${d.id}`,
+  specialty: d.specialties[0]?.name ?? '',
+  phone: d.phoneNumber,
+  email: d.emailAddress,
+  experience: `${d.yearsOfExperience} yrs`,
+  status: 'Active',
+})
 
 const statusProps = {
   Active: { bgColor: '#ECFDF3', textColor: '#027A48', dotColor: '#12B76A' },
@@ -41,12 +47,22 @@ const statusProps = {
 }
 
 const Doctors: FC<{ onViewProfile: (d: Doctor) => void }> = ({ onViewProfile }) => {
+  const { activeContext } = useAppContext()
+  const [doctors, setDoctors] = useState<Doctor[]>([])
+  const [loading, setLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState('')
   const [showAdd, setShowAdd] = useState(false)
   const [doctorAdded, setDoctorAdded] = useState(false)
   const [toast, setToast] = useState<string | null>(null)
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
+
+  useEffect(() => {
+    setLoading(true)
+    getDoctors().then(res => {
+      if (res.success) setDoctors(res.data.map(mapDoctor))
+    }).catch(() => {}).finally(() => setLoading(false))
+  }, [activeContext?.medicalCenter.id])
 
   const filtered = doctors.filter(d =>
     !searchQuery.trim() ||
@@ -81,6 +97,9 @@ const Doctors: FC<{ onViewProfile: (d: Doctor) => void }> = ({ onViewProfile }) 
       </div>
 
       <div className="doc-main-card doc-table-card">
+        {loading ? (
+          <div className="apt-loader-wrap"><div className="apt-loader" /></div>
+        ) : (
         <table className="doc-table">
           <colgroup>
             <col style={{ width: '5%' }} />
@@ -133,6 +152,7 @@ const Doctors: FC<{ onViewProfile: (d: Doctor) => void }> = ({ onViewProfile }) 
             ))}
           </tbody>
         </table>
+        )}
       </div>
 
       {showAdd && (

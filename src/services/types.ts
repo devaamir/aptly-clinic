@@ -76,3 +76,31 @@ export interface Patient {
   creator: AppointmentUser; creatorRole: string
 }
 export interface PatientsResponse { success: boolean; data: Patient[] }
+
+// Doctors
+export interface DoctorsResponse { success: boolean; data: AppointmentDoctor[] }
+
+// Doctor Schedule
+export interface DoctorSchedule {
+  id: string; dayOfWeek: string; startTime: string; stopTime: string
+  tokenLimit: number; createdAt: string; updatedAt: string; remainingTokenCount: number
+}
+export interface DoctorScheduleResponse { success: boolean; data: DoctorSchedule[] }
+
+// Queue SSE
+export interface QueueAppointment {
+  tokenNumber: number
+  tokenStatus: string
+  createdAt: string
+  updatedAt: string
+  patient: { name: string; phoneNumber: string; gender: string; dateOfBirth: string }
+  doctor: { estimateConsultationTime: number }
+}
+export interface ActivePause {
+  id: string; date: string; startTime: string; stopTime: string
+  status: string; createdAt: string; updatedAt: string
+}
+export interface QueueSSEData {
+  appointments: QueueAppointment[]
+  activePauses: ActivePause[]
+}
