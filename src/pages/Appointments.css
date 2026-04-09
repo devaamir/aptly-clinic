@@ -738,3 +738,23 @@
   font-weight: 500;
   font-family: 'Manrope', sans-serif;
 }
+
+.apt-loader-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 64px;
+}
+
+.apt-loader {
+  width: 32px;
+  height: 32px;
+  border: 3px solid #E0E2E6;
+  border-top-color: var(--color-accent);
+  border-radius: 50%;
+  animation: apt-spin 0.7s linear infinite;
+}
+
+@keyframes apt-spin {
+  to { transform: rotate(360deg); }
+}

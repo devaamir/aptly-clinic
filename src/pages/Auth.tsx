@@ -3,6 +3,7 @@ import { useState } from 'react'
 import InputBox from '../components/InputBox'
 import Button from '../components/Button'
 import AuthLayout from '../components/AuthLayout'
+import { useAppContext } from '../context/AppContext'
 import { login } from '../services/api'
 import smsIcon from '../assets/icons/sms.svg'
 import lockIcon from '../assets/icons/lock.svg'
@@ -20,6 +21,7 @@ interface AuthProps {
 }
 
 const Auth: FC<AuthProps> = ({ onLogin }) => {
+  const { setTokens, setUser } = useAppContext()
   const [screen, setScreen] = useState<Screen>('login')
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirm, setShowConfirm] = useState(false)
@@ -38,8 +40,8 @@ const Auth: FC<AuthProps> = ({ onLogin }) => {
     setError(''); setLoading(true)
     try {
       const res = await login(email, password)
-      localStorage.setItem('accessToken', res.data.accessToken)
-      localStorage.setItem('refreshToken', res.data.refreshToken)
+      setTokens(res.data.accessToken, res.data.refreshToken)
+      setUser({ ...res.data.user })
       onLogin()
     } catch (err: unknown) {
       const msg = (err as { response?: { data?: { message?: string } } })?.response?.data?.message

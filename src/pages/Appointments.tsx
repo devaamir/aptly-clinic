@@ -8,6 +8,7 @@ import Modal from '../components/Modal'
 import FormField from '../components/FormField'
 import { bookingProps, statusProps } from '../data/appointments'
 import type { Appointment, AptStatus, BookingMethod } from '../data/appointments'
+import { useAppContext } from '../context/AppContext'
 import { getAppointments } from '../services/api'
 import type { Appointment as ApiAppointment } from '../services/api'
 import calendarIcon from '../assets/icons/calendar.svg'
@@ -31,7 +32,7 @@ const mapApiAppointment = (a: ApiAppointment): Appointment => ({
   token: String(a.tokenNumber).padStart(2, '0'),
   doctor: a.doctor.name,
   doctorAvatar: a.doctor.profilePicture || `https://i.pravatar.cc/32?u=${a.doctor.id}`,
-  specialty: a.doctor.specialities[0]?.name ?? '',
+  specialty: a.doctor.specialties[0]?.name ?? '',
   bookingMethod: a.creatorRole === 'patient' ? 'Online' : 'Offline' as BookingMethod,
   bookedDate: new Date(a.createdAt).toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' }),
   status: (a.tokenStatus === 'pending' ? 'Confirmed' : a.tokenStatus === 'completed' ? 'Completed' : 'Cancelled') as AptStatus,
@@ -41,13 +42,16 @@ type Filter = 'Today' | 'Tomorrow' | 'This Week' | 'Date' | 'Date Range'
 
 const Appointments: FC = () => {
   const [searchQuery, setSearchQuery] = useState('')
+  const { activeContext } = useAppContext()
   const [appointments, setAppointments] = useState<Appointment[]>([])
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
+    setLoading(true)
     getAppointments().then(res => {
       if (res.success) setAppointments(res.data.map(mapApiAppointment))
-    }).catch(() => {})
-  }, [])
+    }).catch(() => {}).finally(() => setLoading(false))
+  }, [activeContext?.medicalCenter.id])
   const [filter, setFilter] = useState<Filter>('Today')
   const [filterDate, setFilterDate] = useState<string | null>(null)
   const [filterRangeStart, setFilterRangeStart] = useState<string | null>(null)
@@ -202,6 +206,9 @@ const Appointments: FC = () => {
 
       {/* Patient List */}
       <div className="apt-main-card apt-table-card">
+        {loading ? (
+          <div className="apt-loader-wrap"><div className="apt-loader" /></div>
+        ) : (
         <table className="apt-table">
           <thead>
             <tr>
@@ -256,6 +263,7 @@ const Appointments: FC = () => {
             ))}
           </tbody>
         </table>
+        )}
       </div>
 
       {selected && (

@@ -1,0 +1,51 @@
+.sp-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 16px;
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  background: #fff;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.sp-card:hover {
+  background: #F8F9FB;
+  border-color: #2879E4;
+}
+
+.sp-avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.sp-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+}
+
+.sp-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: #0A0A0A;
+  font-family: 'Manrope', sans-serif;
+}
+
+.sp-role {
+  font-size: 12px;
+  font-weight: 400;
+  color: #636A79;
+  font-family: 'Manrope', sans-serif;
+  text-transform: capitalize;
+}
+
+.sp-arrow {
+  font-size: 20px;
+  color: #A0A5B1;
+}

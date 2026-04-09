@@ -1,10 +1,13 @@
 import type { FC } from 'react'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import PageHeader from '../components/PageHeader'
 import InputBox from '../components/InputBox'
 import Badge from '../components/Badge'
 import SlidePanel from '../components/SlidePanel'
 import { appointments, statusProps as aptStatusProps, bookingProps } from '../data/appointments'
+import { getPatients } from '../services/api'
+import type { Patient as ApiPatient } from '../services/types'
+import { useAppContext } from '../context/AppContext'
 import upDownArrow from '../assets/icons/up-down-arrow.svg'
 import exportIcon from '../assets/icons/export-icon.svg'
 import importIcon from '../assets/icons/import-icon.svg'
@@ -23,8 +26,6 @@ interface Patient {
   dob: string
   age: number
   lastVisit: string
-  doctor: string
-  specialty: string
   status: 'Active' | 'Inactive'
 }
 
@@ -33,20 +34,32 @@ const statusProps: Record<Patient['status'], { bgColor: string; textColor: strin
   Inactive: { bgColor: '#F2F4F7', textColor: '#344054', dotColor: '#636A79' },
 }
 
-const patients: Patient[] = [
-  { id: 'PAT001', name: 'Katie Sims', avatar: 'https://i.pravatar.cc/32?img=5', phone: '+91 90487 8290', gender: 'Female', dob: 'Jan 12, 1994', age: 32, lastVisit: 'Mar 30, 2026', doctor: 'Dr. Daniel Hamilton', specialty: 'Cardiology', status: 'Active' },
-  { id: 'PAT002', name: 'Ricky Smith', avatar: 'https://i.pravatar.cc/32?img=6', phone: '+91 90487 8291', gender: 'Male', dob: 'Mar 5, 1981', age: 45, lastVisit: 'Mar 28, 2026', doctor: 'Dr. Sarah Johnson', specialty: 'Cardiology', status: 'Active' },
-  { id: 'PAT003', name: 'Autumn Phillips', avatar: 'https://i.pravatar.cc/32?img=7', phone: '+91 90487 8292', gender: 'Female', dob: 'Jul 22, 1998', age: 28, lastVisit: 'Mar 25, 2026', doctor: 'Dr. Michael Chen', specialty: 'Orthopedics', status: 'Inactive' },
-  { id: 'PAT004', name: 'Jerry Helfer', avatar: 'https://i.pravatar.cc/32?img=8', phone: '+91 90487 8293', gender: 'Male', dob: 'Sep 3, 1988', age: 38, lastVisit: 'Mar 30, 2026', doctor: 'Dr. Daniel Hamilton', specialty: 'Cardiology', status: 'Active' },
-  { id: 'PAT005', name: 'Rodger Struck', avatar: 'https://i.pravatar.cc/32?img=9', phone: '+91 90487 8294', gender: 'Male', dob: 'Feb 14, 1974', age: 52, lastVisit: 'Mar 20, 2026', doctor: 'Dr. Sarah Johnson', specialty: 'Cardiology', status: 'Active' },
-  { id: 'PAT006', name: 'Bradley Lawlor', avatar: 'https://i.pravatar.cc/32?img=10', phone: '+91 90487 8295', gender: 'Male', dob: 'Nov 30, 1984', age: 41, lastVisit: 'Mar 15, 2026', doctor: 'Dr. Michael Chen', specialty: 'Orthopedics', status: 'Inactive' },
-  { id: 'PAT007', name: 'Emily Carter', avatar: 'https://i.pravatar.cc/32?img=11', phone: '+91 90487 8296', gender: 'Female', dob: 'Apr 8, 1990', age: 36, lastVisit: 'Mar 29, 2026', doctor: 'Dr. Emily Carter', specialty: 'Pediatrics', status: 'Active' },
-  { id: 'PAT008', name: 'Mark Spencer', avatar: 'https://i.pravatar.cc/32?img=12', phone: '+91 90487 8297', gender: 'Male', dob: 'Jun 17, 1979', age: 47, lastVisit: 'Mar 10, 2026', doctor: 'Dr. Mark Spencer', specialty: 'Neurology', status: 'Active' },
-]
+const mapPatient = (p: ApiPatient): Patient => ({
+  id: p.referenceId,
+  name: p.name,
+  avatar: `https://i.pravatar.cc/32?u=${p.id}`,
+  phone: p.phoneNumber,
+  gender: p.gender,
+  dob: new Date(p.dateOfBirth).toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' }),
+  age: new Date().getFullYear() - new Date(p.dateOfBirth).getFullYear(),
+  lastVisit: new Date(p.updatedAt).toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' }),
+  status: p.deletedAt ? 'Inactive' : 'Active',
+})
 
 const Patients: FC = () => {
+  const { activeContext } = useAppContext()
+  const [patients, setPatients] = useState<Patient[]>([])
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null)
+
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    setLoading(true)
+    getPatients().then(res => {
+      if (res.success) setPatients(res.data.map(mapPatient))
+    }).catch(() => {}).finally(() => setLoading(false))
+  }, [activeContext?.medicalCenter.id])
 
   const filtered = patients.filter(p =>
     !searchQuery.trim() ||
@@ -81,7 +94,13 @@ const Patients: FC = () => {
       </div>
 
       <div className="pat-main-card pat-table-card">
+        {loading ? (
+          <div className="pat-loader-wrap">
+            <div className="pat-loader" />
+          </div>
+        ) : (
         <table className="pat-table">
+          {filtered.length > 0 && (
           <colgroup>
             <col style={{ width: '5%' }} />
             <col style={{ width: '14%' }} />
@@ -92,6 +111,7 @@ const Patients: FC = () => {
             <col style={{ width: '20%' }} />
             <col />
           </colgroup>
+          )}
           <thead>
             <tr>
               <th className="pat-label">PATIENT ID</th>
@@ -106,7 +126,7 @@ const Patients: FC = () => {
           </thead>
           <tbody>
             {filtered.length === 0 ? (
-              <tr><td colSpan={8} className="pat-no-results">No patients found</td></tr>
+              <tr><td colSpan={8} className="pat-no-results" style={{ textAlign: 'center' }}>No patients found</td></tr>
             ) : filtered.map(p => (
               <tr key={p.id}>
                 <td className="pat-id">{p.id}</td>
@@ -131,6 +151,7 @@ const Patients: FC = () => {
             ))}
           </tbody>
         </table>
+        )}
       </div>
 
       {selectedPatient && (

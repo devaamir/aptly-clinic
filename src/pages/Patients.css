@@ -149,6 +149,7 @@
   font-size: 14px;
   font-weight: 500;
   font-family: 'Manrope', sans-serif;
+  width: 100%;
 }
 
 .pat-search-clear {
@@ -175,4 +176,24 @@
 .pat-dots-btn img {
   width: 20px;
   height: 20px;
+}
+
+.pat-loader-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 64px;
+}
+
+.pat-loader {
+  width: 32px;
+  height: 32px;
+  border: 3px solid #E0E2E6;
+  border-top-color: var(--color-accent);
+  border-radius: 50%;
+  animation: pat-spin 0.7s linear infinite;
+}
+
+@keyframes pat-spin {
+  to { transform: rotate(360deg); }
 }

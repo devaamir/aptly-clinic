@@ -129,3 +129,97 @@
   align-items: center;
   flex-shrink: 0;
 }
+
+.topbar-profile {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.topbar-profile-info {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0;
+}
+
+.topbar-hospital-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: #0A0A0A;
+  font-family: 'Manrope', sans-serif;
+  line-height: 1.2;
+}
+
+.topbar-role {
+  font-size: 11px;
+  font-weight: 400;
+  color: #636A79;
+  font-family: 'Manrope', sans-serif;
+}
+
+.profile-menu {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  background: #fff;
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+  min-width: 220px;
+  z-index: 100;
+  overflow: hidden;
+}
+
+.profile-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px;
+  cursor: pointer;
+}
+
+.profile-menu-item:hover {
+  background: #F8F9FB;
+}
+
+.profile-menu-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.profile-menu-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: #0A0A0A;
+  font-family: 'Manrope', sans-serif;
+  line-height: 1.2;
+}
+
+.profile-menu-role {
+  font-size: 11px;
+  font-weight: 400;
+  color: #636A79;
+  font-family: 'Manrope', sans-serif;
+}
+
+.profile-menu-divider {
+  height: 1px;
+  background: var(--color-border);
+}
+
+.profile-menu-logout {
+  padding: 12px 16px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #FF5A4F;
+  font-family: 'Manrope', sans-serif;
+  cursor: pointer;
+}
+
+.profile-menu-logout:hover {
+  background: #FEF3F2;
+}
