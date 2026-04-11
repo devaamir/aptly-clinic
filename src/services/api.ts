@@ -1,7 +1,7 @@
 import axios from 'axios'
-import type { LoginResponse, AppointmentsResponse, ContextsResponse, SwitchContextResponse, DoctorScheduleResponse, DoctorsResponse, PatientsResponse } from './types'
+import type { LoginResponse, AppointmentsResponse, ContextsResponse, SwitchContextResponse, DoctorScheduleResponse, DoctorsResponse, PatientsResponse, QueueSSEData } from './types'
 
-export type { LoginResponse, AppointmentsResponse, ContextsResponse, SwitchContextResponse, DoctorScheduleResponse, DoctorsResponse, PatientsResponse }
+export type { LoginResponse, AppointmentsResponse, ContextsResponse, SwitchContextResponse, DoctorScheduleResponse, DoctorsResponse, PatientsResponse, QueueSSEData }
 export * from './types'
 
 const client = axios.create({
@@ -66,11 +66,25 @@ export const getPatients = () => api.get<PatientsResponse>('/patients')
 export const getDoctors = () => api.get<DoctorsResponse>('/doctors/medical-center')
 
 // SSE
+import { EventSourcePolyfill } from 'event-source-polyfill'
+
 export const createSSE = (endpoint: string, onMessage: (data: unknown) => void, onError?: (e: Event) => void): EventSource => {
   const token = localStorage.getItem('accessToken')
-  const url = `${import.meta.env.VITE_API_BASE_URL}${endpoint}${token ? `?token=${token}` : ''}`
-  const es = new EventSource(url)
-  es.onmessage = e => { try { onMessage(JSON.parse(e.data)) } catch { onMessage(e.data) } }
+  const base = (import.meta.env.VITE_API_BASE_URL ?? '').replace(/\/$/, '')
+  const path = endpoint.startsWith('/') ? endpoint : `/${endpoint}`
+  const url = `${base}${path}`
+  const es = new EventSourcePolyfill(url, {
+    headers: { Authorization: `Bearer ${token}` },
+  }) as unknown as EventSource
+  es.onmessage = e => {
+    try {
+      console.log(e.data);
+      onMessage(JSON.parse(e.data))
+    } catch {
+      console.log(e.data);
+      onMessage(e.data)
+    }
+  }
   if (onError) es.onerror = onError
   return es
 }
