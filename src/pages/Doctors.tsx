@@ -4,8 +4,8 @@ import PageHeader from '../components/PageHeader'
 import InputBox from '../components/InputBox'
 import Modal from '../components/Modal'
 import FormField from '../components/FormField'
-import { getDoctors } from '../services/api'
-import type { AppointmentDoctor } from '../services/types'
+import { getDoctors, createDoctor, getDoctor } from '../services/api'
+import type { AppointmentDoctor, DoctorDetail } from '../services/types'
 import { useAppContext } from '../context/AppContext'
 import searchIcon from '../assets/icons/search-icon.svg'
 import sortIcon from '../assets/icons/sort-icon.svg'
@@ -21,6 +21,7 @@ import './Doctors.css'
 
 interface Doctor {
   id: string
+  doctorUuid: string
   name: string
   avatar: string
   specialty: string
@@ -32,6 +33,7 @@ interface Doctor {
 
 const mapDoctor = (d: AppointmentDoctor): Doctor => ({
   id: d.referenceId,
+  doctorUuid: d.id,
   name: d.name,
   avatar: d.profilePicture || `https://i.pravatar.cc/48?u=${d.id}`,
   specialty: d.specialties[0]?.name ?? '',
@@ -46,8 +48,8 @@ const statusProps = {
   Inactive: { bgColor: '#F2F4F7', textColor: '#344054', dotColor: '#636A79' },
 }
 
-const Doctors: FC<{ onViewProfile: (d: Doctor) => void }> = ({ onViewProfile }) => {
-  const { activeContext } = useAppContext()
+const Doctors: FC<{ onViewProfile: (d: DoctorDetail) => void }> = ({ onViewProfile }) => {
+  const { activeContext, specialties, medicalSystems, qualifications } = useAppContext()
   const [doctors, setDoctors] = useState<Doctor[]>([])
   const [loading, setLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState('')
@@ -56,6 +58,37 @@ const Doctors: FC<{ onViewProfile: (d: Doctor) => void }> = ({ onViewProfile }) 
   const [toast, setToast] = useState<string | null>(null)
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const [form, setForm] = useState({ name: '', phoneNumber: '', emailAddress: '', about: '', consultationFee: '', yearsOfExperience: '', advanceBookingLimit: '', estimateConsultationTime: '', medicalSystemId: '', specialtyIds: '' })
+  const [addLoading, setAddLoading] = useState(false)
+  const [selectedSpecialtyIds, setSelectedSpecialtyIds] = useState<string[]>([])
+  const [selectedQualificationIds, setSelectedQualificationIds] = useState<string[]>([])
+
+  const resetForm = () => {
+    setForm({ name: '', phoneNumber: '', emailAddress: '', about: '', consultationFee: '', yearsOfExperience: '', advanceBookingLimit: '', estimateConsultationTime: '', medicalSystemId: '', specialtyIds: '' })
+    setSelectedSpecialtyIds([])
+    setSelectedQualificationIds([])
+  }
+
+  const handleAddDoctor = async () => {
+    if (!form.name || !form.phoneNumber || !form.yearsOfExperience || !form.medicalSystemId || !selectedQualificationIds.length || selectedSpecialtyIds.length === 0) return
+    setAddLoading(true)
+    try {
+      const res = await createDoctor({
+        name: form.name,
+        phoneNumber: form.phoneNumber,
+        yearsOfExperience: Number(form.yearsOfExperience),
+        medicalSystemId: form.medicalSystemId,
+        qualificationIds: selectedQualificationIds,
+        specialtyIds: selectedSpecialtyIds,
+        ...(form.emailAddress && { emailAddress: form.emailAddress }),
+        ...(form.about && { about: form.about }),
+        ...(form.consultationFee && { consultationFee: Number(form.consultationFee) }),
+        ...(form.advanceBookingLimit && { advanceBookingLimit: Number(form.advanceBookingLimit) }),
+        ...(form.estimateConsultationTime && { estimateConsultationTime: Number(form.estimateConsultationTime) }),
+      })
+      if (res.success) setDoctorAdded(true)
+    } catch { /* error handled silently */ } finally { setAddLoading(false) }
+  }
 
   useEffect(() => {
     setLoading(true)
@@ -146,7 +179,7 @@ const Doctors: FC<{ onViewProfile: (d: Doctor) => void }> = ({ onViewProfile }) 
                   </span>
                 </td>
                 <td>
-                  <button className="doc-view-btn" onClick={() => onViewProfile(d)}>View Profile</button>
+                  <button className="doc-view-btn" onClick={() => getDoctor(d.doctorUuid).then(r => { if (r.success) onViewProfile(r.data) }).catch(() => {})}>View Profile</button>
                 </td>
               </tr>
             ))}
@@ -165,7 +198,7 @@ const Doctors: FC<{ onViewProfile: (d: Doctor) => void }> = ({ onViewProfile }) 
                 </div>
                 <h2 className="doc-success-title">Doctor Added Successfully</h2>
                 <p className="doc-success-desc">An invitation email has been sent.<br />The doctor must complete account setup by creating a password before accessing the portal.</p>
-                <button className="ip-btn ip-submit" style={{ marginTop: 8 }} onClick={() => { setShowAdd(false); setDoctorAdded(false); setAvatarPreview(null); setToast('Doctor added successfully') }}>Done</button>
+                <button className="ip-btn ip-submit" style={{ marginTop: 8 }} onClick={() => { setShowAdd(false); setDoctorAdded(false); setAvatarPreview(null); resetForm(); setToast('Doctor added successfully') }}>Done</button>
               </div>
             ) : (
               <>
@@ -187,44 +220,48 @@ const Doctors: FC<{ onViewProfile: (d: Doctor) => void }> = ({ onViewProfile }) 
                         onChange={e => { const file = e.target.files?.[0]; if (file) setAvatarPreview(URL.createObjectURL(file)) }} />
                     </div>
                     <div style={{ marginBottom: 18 }}>
-                      <FormField label="Full Name" placeholder="Enter full name" />
+                      <FormField label="Full Name" placeholder="Enter full name" value={form.name} onChange={e => setForm(p => ({ ...p, name: (e.target as HTMLInputElement).value }))} />
                     </div>
                     <div style={{ marginBottom: 18 }}>
-                      <FormField as="select" label="Specialty" options={[
-                        { label: 'Cardiology', value: 'cardiology' },
-                        { label: 'Neurology', value: 'neurology' },
-                        { label: 'Orthopedics', value: 'orthopedics' },
-                        { label: 'Pediatrics', value: 'pediatrics' },
-                      ]} />
-                    </div>
-                    <div className="sch-form-row">
-                      <FormField label="Phone Number" placeholder="Enter phone" type="tel" prefix="+91" />
-                      <FormField label="Email" placeholder="Enter email" type="email" />
+                      <FormField as="select" label="Medical System" value={form.medicalSystemId} onChange={e => setForm(p => ({ ...p, medicalSystemId: (e.target as HTMLSelectElement).value }))}
+                        options={medicalSystems.map(m => ({ label: m.name, value: m.id }))} />
                     </div>
                     <div style={{ marginBottom: 18 }}>
-                      <FormField as="select" label="Gender" options={[{ label: 'Male', value: 'male' }, { label: 'Female', value: 'female' }]} />
-                    </div>
-                    <div className="sch-form-row">
-                      <FormField label="Qualification" placeholder="e.g. MBBS, MD" />
-                      <FormField label="Experience (years)" placeholder="e.g. 5" type="number" min={0} />
-                    </div>
-                    <div className="sch-form-row">
-                      <FormField as="select" label="Avg Time / Patient" options={Array.from({length: 12}, (_, i) => ({ label: `${(i+1)*5} min`, value: `${(i+1)*5}` }))} />
-                      <FormField label="Consultation Fee" placeholder="e.g. 500" type="number" min={0} />
-                    </div>
-                    <div className="sch-form-row">
-                      <FormField label="License Number" placeholder="Enter license no." />
+                      <FormField as="select" label="Specialty" value={selectedSpecialtyIds[0] ?? ''} onChange={e => setSelectedSpecialtyIds([(e.target as HTMLSelectElement).value])}
+                        options={specialties.map(s => ({ label: s.name, value: s.id }))} />
                     </div>
                     <div style={{ marginBottom: 18 }}>
-                      <label className="form-field-label">Biography / About<span className="form-field-required"> *</span></label>
-                      <textarea className="doc-textarea" placeholder="Write a short bio..." rows={4} style={{ height: 92 }} />
+                      <div className="form-field">
+                        <label className="form-field-label">Qualification <span className="form-field-required"> *</span></label>
+                        <select multiple className="form-field-input" style={{ height: 96 }}
+                          value={selectedQualificationIds}
+                          onChange={e => setSelectedQualificationIds(Array.from(e.target.selectedOptions, o => o.value))}>
+                          {qualifications.map(q => <option key={q.id} value={q.id}>{q.name}</option>)}
+                        </select>
+                      </div>
+                    </div>
+                    <div className="sch-form-row">
+                      <FormField label="Phone Number" placeholder="Enter phone" type="tel" prefix="+91" value={form.phoneNumber} onChange={e => setForm(p => ({ ...p, phoneNumber: (e.target as HTMLInputElement).value }))} />
+                      <FormField label="Email" placeholder="Enter email" type="email" value={form.emailAddress} onChange={e => setForm(p => ({ ...p, emailAddress: (e.target as HTMLInputElement).value }))} />
+                    </div>
+                    <div className="sch-form-row">
+                      <FormField label="Experience (years)" placeholder="e.g. 5" type="number" min={0} value={form.yearsOfExperience} onChange={e => setForm(p => ({ ...p, yearsOfExperience: (e.target as HTMLInputElement).value }))} />
+                      <FormField label="Avg Time / Patient (min)" placeholder="e.g. 15" type="number" min={0} value={form.estimateConsultationTime} onChange={e => setForm(p => ({ ...p, estimateConsultationTime: (e.target as HTMLInputElement).value }))} />
+                    </div>
+                    <div className="sch-form-row">
+                      <FormField label="Consultation Fee" placeholder="e.g. 500" type="number" min={0} value={form.consultationFee} onChange={e => setForm(p => ({ ...p, consultationFee: (e.target as HTMLInputElement).value }))} />
+                      <FormField label="Advance Booking Limit (days)" placeholder="e.g. 7" type="number" min={0} value={form.advanceBookingLimit} onChange={e => setForm(p => ({ ...p, advanceBookingLimit: (e.target as HTMLInputElement).value }))} />
+                    </div>
+                    <div style={{ marginBottom: 18 }}>
+                      <label className="form-field-label">Biography / About</label>
+                      <textarea className="doc-textarea" placeholder="Write a short bio..." rows={4} style={{ height: 92 }} value={form.about} onChange={e => setForm(p => ({ ...p, about: e.target.value }))} />
                     </div>
                   </div>
                 </div>
                 <div className="sch-divider" />
                 <div className="ip-actions" style={{ padding: '16px 24px' }}>
                   <button className="ip-btn ip-cancel" onClick={() => setShowAdd(false)}>Cancel</button>
-                  <button className="ip-btn ip-submit" onClick={() => setDoctorAdded(true)}>Add Doctor</button>
+                  <button className="ip-btn ip-submit" onClick={handleAddDoctor} disabled={addLoading}>{addLoading ? 'Adding...' : 'Add Doctor'}</button>
                 </div>
               </>
             )}

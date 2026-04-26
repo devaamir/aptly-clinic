@@ -1,0 +1,90 @@
+.delete-account-content {
+  width: 100%;
+  max-width: 440px;
+}
+
+.delete-account-title {
+  font-family: 'Manrope', sans-serif;
+  font-size: 32px;
+  font-weight: 700;
+  color: var(--color-text);
+  margin: 0 0 8px 0;
+}
+
+.delete-account-subtitle {
+  font-family: 'Manrope', sans-serif;
+  font-size: 14px;
+  color: var(--color-textSecondary);
+  margin: 0 0 32px 0;
+}
+
+.delete-account-form {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.delete-account-btn {
+  font-family: 'Manrope', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  color: white;
+  background: var(--color-accent);
+  border: none;
+  border-radius: 8px;
+  padding: 12px 24px;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.delete-account-btn:hover:not(:disabled) {
+  opacity: 0.9;
+}
+
+.delete-account-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.delete-account-btn-danger {
+  background: #F04438;
+}
+
+.delete-account-btn-secondary {
+  font-family: 'Manrope', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-textSecondary);
+  background: transparent;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  padding: 12px 24px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.delete-account-btn-secondary:hover:not(:disabled) {
+  background: var(--color-bgSecondary);
+}
+
+.delete-account-btn-secondary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.delete-account-success {
+  text-align: center;
+}
+
+.delete-account-success-icon {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: #ECFDF3;
+  color: #027A48;
+  font-size: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 24px;
+}

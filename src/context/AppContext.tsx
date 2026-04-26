@@ -1,6 +1,7 @@
 import type { FC, ReactNode } from 'react'
-import { createContext, useContext, useState } from 'react'
-import type { UserContext, UserMedicalCenter } from '../services/types'
+import { createContext, useContext, useState, useEffect } from 'react'
+import type { UserContext, UserMedicalCenter, Speciality, MedicalSystem, Qualification } from '../services/types'
+import { getSpecialties, getMedicalSystems, getQualifications } from '../services/api'
 
 interface AuthUser {
   id: string
@@ -22,6 +23,9 @@ interface AppContextValue {
   activeContext: UserContext | null
   setActiveContext: (c: UserContext) => void
   logout: () => void
+  specialties: Speciality[]
+  medicalSystems: MedicalSystem[]
+  qualifications: Qualification[]
 }
 
 const AppContext = createContext<AppContextValue>(null!)
@@ -31,6 +35,9 @@ export const AppProvider: FC<{ children: ReactNode }> = ({ children }) => {
   const [accessToken, setAccessToken] = useState<string | null>(localStorage.getItem('accessToken'))
   const [refreshToken, setRefreshToken] = useState<string | null>(localStorage.getItem('refreshToken'))
   const [contexts, setContexts] = useState<UserContext[]>([])
+  const [specialties, setSpecialties] = useState<Speciality[]>([])
+  const [medicalSystems, setMedicalSystems] = useState<MedicalSystem[]>([])
+  const [qualifications, setQualifications] = useState<Qualification[]>([])
   const [activeContext, setActiveContextState] = useState<UserContext | null>(() => {
     const stored = localStorage.getItem('selectedClinic')
     const role = localStorage.getItem('selectedRole')
@@ -39,6 +46,13 @@ export const AppProvider: FC<{ children: ReactNode }> = ({ children }) => {
     }
     return null
   })
+
+  useEffect(() => {
+    if (!accessToken) return
+    getSpecialties().then(r => { if (r.success) setSpecialties(r.data) }).catch(() => {})
+    getMedicalSystems().then(r => { if (r.success) setMedicalSystems(r.data) }).catch(() => {})
+    getQualifications().then(r => { if (r.success) setQualifications(r.data) }).catch(() => {})
+  }, [accessToken])
 
   const setTokens = (access: string, refresh: string) => {
     setAccessToken(access)
@@ -58,6 +72,9 @@ export const AppProvider: FC<{ children: ReactNode }> = ({ children }) => {
     setAccessToken(null)
     setRefreshToken(null)
     setContexts([])
+    setSpecialties([])
+    setMedicalSystems([])
+    setQualifications([])
     setActiveContextState(null)
     localStorage.removeItem('accessToken')
     localStorage.removeItem('refreshToken')
@@ -66,7 +83,7 @@ export const AppProvider: FC<{ children: ReactNode }> = ({ children }) => {
   }
 
   return (
-    <AppContext.Provider value={{ user, setUser, accessToken, refreshToken, setTokens, contexts, setContexts, activeContext, setActiveContext, logout }}>
+    <AppContext.Provider value={{ user, setUser, accessToken, refreshToken, setTokens, contexts, setContexts, activeContext, setActiveContext, logout, specialties, medicalSystems, qualifications }}>
       {children}
     </AppContext.Provider>
   )

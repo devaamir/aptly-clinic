@@ -79,6 +79,51 @@ export interface PatientsResponse { success: boolean; data: Patient[] }
 
 // Doctors
 export interface DoctorsResponse { success: boolean; data: AppointmentDoctor[] }
+export interface DoctorMedicalCenter extends UserMedicalCenter {
+  isVerified: boolean
+  schedules: AppointmentSchedule[]
+}
+export interface DoctorDetail {
+  id: string; name: string; referenceId: string; phoneNumber: string; emailAddress: string
+  yearsOfExperience: number; advanceBookingLimit: number; estimateConsultationTime: number
+  latitude: number; longitude: number; address: string; district: string; state: string
+  country: string; about: string; consultationFee: number; profilePicture: string
+  createdAt: string; updatedAt: string
+  specialties: Speciality[]; medicalSystem: MedicalSystem; qualifications: Qualification[]
+  medicalCenters: DoctorMedicalCenter[]
+}
+export interface GetDoctorResponse { success: boolean; data: DoctorDetail }
+export interface SpecialtiesResponse { success: boolean; data: Speciality[] }
+export interface MedicalSystemsResponse { success: boolean; data: MedicalSystem[] }
+export interface QualificationsResponse { success: boolean; data: Qualification[] }
+
+export interface UpdateScheduleRequest {
+  toAdd: { dayOfWeek: string; startTime: string; stopTime: string; tokenLimit: number }[]
+  toUpdate: { id: string; startTime: string; stopTime: string; tokenLimit: number }[]
+  toRemove: string[]
+  force: boolean
+}
+export interface UpdateScheduleResponse { success: boolean; data: AppointmentSchedule[] }
+export interface CreateDoctorRequest {
+  phoneNumber: string
+  emailAddress?: string
+  about?: string
+  consultationFee?: number
+  yearsOfExperience: number
+  advanceBookingLimit?: number
+  estimateConsultationTime?: number
+  latitude?: number
+  longitude?: number
+  address?: string
+  district?: string
+  state?: string
+  country?: string
+  profilePicture?: string
+  medicalSystemId: string
+  qualificationIds: string[]
+  specialtyIds: string[]
+}
+export interface CreateDoctorResponse { success: boolean; data: AppointmentDoctor }
 
 // Doctor Schedule
 export interface DoctorSchedule {
@@ -89,6 +134,7 @@ export interface DoctorScheduleResponse { success: boolean; data: DoctorSchedule
 
 // Queue SSE
 export interface QueueAppointment {
+  id: string
   tokenNumber: number
   tokenStatus: string
   createdAt: string

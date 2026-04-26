@@ -1,7 +1,7 @@
 import axios from 'axios'
-import type { LoginResponse, AppointmentsResponse, ContextsResponse, SwitchContextResponse, DoctorScheduleResponse, DoctorsResponse, PatientsResponse, QueueSSEData } from './types'
+import type { LoginResponse, AppointmentsResponse, ContextsResponse, SwitchContextResponse, DoctorScheduleResponse, DoctorsResponse, GetDoctorResponse, SpecialtiesResponse, MedicalSystemsResponse, QualificationsResponse, CreateDoctorResponse, PatientsResponse, QueueSSEData } from './types'
 
-export type { LoginResponse, AppointmentsResponse, ContextsResponse, SwitchContextResponse, DoctorScheduleResponse, DoctorsResponse, PatientsResponse, QueueSSEData }
+export type { LoginResponse, AppointmentsResponse, ContextsResponse, SwitchContextResponse, DoctorScheduleResponse, DoctorsResponse, GetDoctorResponse, SpecialtiesResponse, MedicalSystemsResponse, QualificationsResponse, CreateDoctorResponse, PatientsResponse, QueueSSEData }
 export * from './types'
 
 const client = axios.create({
@@ -65,6 +65,20 @@ export const getPatients = () => api.get<PatientsResponse>('/patients')
 
 export const getDoctors = () => api.get<DoctorsResponse>('/doctors/medical-center')
 
+export const getDoctor = (id: string) => api.get<GetDoctorResponse>(`/doctors/${id}`)
+
+export const getSpecialties = () => api.get<SpecialtiesResponse>('/metadata/specialties')
+
+export const getMedicalSystems = () => api.get<MedicalSystemsResponse>('/metadata/medical-systems')
+
+export const getQualifications = () => api.get<QualificationsResponse>('/metadata/qualifications')
+
+export const createDoctor = (body: import('./types').CreateDoctorRequest) =>
+  api.post<CreateDoctorResponse>('/doctors', body)
+
+export const updateDoctorSchedule = (doctorId: string, body: import('./types').UpdateScheduleRequest) =>
+  api.post<import('./types').UpdateScheduleResponse>(`/doctors/${doctorId}/schedule`, body)
+
 // SSE
 import { EventSourcePolyfill } from 'event-source-polyfill'
 
@@ -94,3 +108,6 @@ export const getDoctorSchedule = (doctorId: string, date: string, medicalCenterI
 
 export const subscribeQueue = (doctorScheduleId: string, onData: (data: QueueSSEData) => void, onError?: (e: Event) => void): EventSource =>
   createSSE(`/appointments/queue?doctorScheduleId=${doctorScheduleId}`, onData as (d: unknown) => void, onError)
+
+export const updateAppointmentStatus = (appointmentId: string, tokenStatus: 'pending' | 'done' | 'cancelled') =>
+  api.patch<{ success: boolean }>(`/appointments/${appointmentId}/status`, { tokenStatus })

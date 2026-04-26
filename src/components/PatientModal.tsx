@@ -10,6 +10,7 @@ interface Patient {
   age: number
   gender: string
   avatar: string
+  status: string
 }
 
 interface PatientModalProps {
@@ -40,7 +41,9 @@ const PatientModal: FC<PatientModalProps> = ({ patient, onClose, onCall, onCance
           <button className="modal-btn call-btn" onClick={onCall}>
             <img src={phoneIcon} alt="" className="modal-btn-icon" /> Call
           </button>
-          <button className="modal-btn cancel-btn" onClick={onCancel}>Cancel Token</button>
+          {patient.status === 'pending' && (
+            <button className="modal-btn cancel-btn" onClick={onCancel}>Cancel Token</button>
+          )}
         </div>
       </div>
     </Modal>

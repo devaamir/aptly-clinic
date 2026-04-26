@@ -8,6 +8,7 @@ import Patients from './Patients'
 import Doctors from './Doctors'
 import { useEffect } from 'react'
 import DoctorProfile from './DoctorProfile'
+import type { DoctorDetail } from '../services/types'
 import Modal from '../components/Modal'
 import LeaveManagement from './LeaveManagement'
 import Specialties from './Specialties'
@@ -29,7 +30,7 @@ import './Dashboard.css'
 
 type ActivePage = 'Dashboard' | 'Queue Management' | 'Appointments' | 'Patients' | 'Doctors' | 'Leave Management' | 'Settings'
 
-interface Doctor { id: string; name: string; avatar: string; specialty: string; phone: string; email: string; experience: string; status: 'Active' | 'Inactive' }
+interface Doctor { id: string; doctorUuid: string; name: string; avatar: string; specialty: string; phone: string; email: string; experience: string; status: 'Active' | 'Inactive' }
 
 const navItems: { label: ActivePage; icon: string }[] = [
   { label: 'Dashboard', icon: dashboardIcon },
@@ -44,7 +45,7 @@ const navItems: { label: ActivePage; icon: string }[] = [
 const Dashboard: FC = () => {
   const { activeContext, contexts, setTokens, setActiveContext, setContexts, logout } = useAppContext()
   const [activePage, setActivePage] = useState<ActivePage>('Dashboard')
-  const [viewDoctor, setViewDoctor] = useState<Doctor | null>(null)
+  const [viewDoctor, setViewDoctor] = useState<DoctorDetail | null>(null)
   const [showProfileMenu, setShowProfileMenu] = useState(false)
   const [switchTarget, setSwitchTarget] = useState<{ name: string; role: string; avatar: string; id: string } | null>(null)
   const [showLogout, setShowLogout] = useState(false)

@@ -35,7 +35,7 @@ const mapApiAppointment = (a: ApiAppointment): Appointment => ({
   specialty: a.doctor.specialties[0]?.name ?? '',
   bookingMethod: a.creatorRole === 'patient' ? 'Online' : 'Offline' as BookingMethod,
   bookedDate: new Date(a.createdAt).toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' }),
-  status: (a.tokenStatus === 'pending' ? 'Confirmed' : a.tokenStatus === 'completed' ? 'Completed' : 'Cancelled') as AptStatus,
+  status: (a.tokenStatus === 'cancelled' ? 'Cancelled' : 'Confirmed') as AptStatus,
 })
 
 type Filter = 'Today' | 'Tomorrow' | 'This Week' | 'Date' | 'Date Range'

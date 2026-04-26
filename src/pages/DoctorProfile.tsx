@@ -2,7 +2,8 @@ import type { FC } from 'react'
 import { useState } from 'react'
 import Badge from '../components/Badge'
 import Modal from '../components/Modal'
-import { appointments, statusProps as aptStatusProps, bookingProps } from '../data/appointments'
+import type { DoctorDetail } from '../services/types'
+import { updateDoctorSchedule } from '../services/api'
 import patientsGreenIcon from '../assets/icons/patients-green-icon.svg'
 import patientsRedIcon from '../assets/icons/patients-red-icon.svg'
 import clockBlueIcon from '../assets/icons/clock-blue-icon.svg'
@@ -14,16 +15,6 @@ import buildingIcon from '../assets/icons/building-icon.svg'
 import dollarIcon from '../assets/icons/dollar-icon.svg'
 import './DoctorProfile.css'
 
-interface Doctor {
-  id: string
-  name: string
-  avatar: string
-  specialty: string
-  phone: string
-  email: string
-  experience: string
-  status: 'Active' | 'Inactive'
-}
 
 const statusProps = {
   Active: { bgColor: '#ECFDF3', textColor: '#027A48', dotColor: '#12B76A' },
@@ -31,55 +22,103 @@ const statusProps = {
 }
 
 interface DoctorProfileProps {
-  doctor: Doctor
+  doctor: DoctorDetail
   onBack: () => void
 }
 
 const DoctorProfile: FC<DoctorProfileProps> = ({ doctor, onBack }) => {
-  const doctorApts = appointments.filter(a => a.doctor === doctor.name)
   const [activeTab, setActiveTab] = useState<'Overview' | 'Schedule' | 'Leaves' | 'Documents'>('Overview')
 
-  const weekSchedule = [
-    { day: 'Monday', short: 'Mon', sessions: [{ time: '9:00 AM – 1:00 PM', tokens: 16, hours: '4 hours' }, { time: '2:00 PM – 4:00 PM', tokens: 8, hours: '2 hours' }] },
-    { day: 'Tuesday', short: 'Tue', sessions: [{ time: '9:00 AM – 1:00 PM', tokens: 16, hours: '4 hours' }] },
-    { day: 'Wednesday', short: 'Wed', sessions: [] },
-    { day: 'Thursday', short: 'Thu', sessions: [{ time: '9:00 AM – 1:00 PM', tokens: 16, hours: '4 hours' }, { time: '2:00 PM – 4:00 PM', tokens: 8, hours: '2 hours' }] },
-    { day: 'Friday', short: 'Fri', sessions: [{ time: '9:00 AM – 1:00 PM', tokens: 16, hours: '4 hours' }] },
-    { day: 'Saturday', short: 'Sat', sessions: [] },
-    { day: 'Sunday', short: 'Sun', sessions: [] },
-  ]
+  const to12Hour = (time: string) => {
+    const [h, m] = time.slice(0, 5).split(':')
+    const hour = parseInt(h)
+    const ampm = hour >= 12 ? 'PM' : 'AM'
+    const h12 = hour % 12 || 12
+    return `${h12}:${m} ${ampm}`
+  }
+
+  const allSchedules = doctor.medicalCenters.flatMap(mc => mc.schedules)
+
+  const DAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
+  const weekSchedule = DAYS.map(day => {
+    const sessions = allSchedules.filter(s => s.dayOfWeek.toLowerCase() === day.toLowerCase())
+    return { day, short: day.slice(0, 3), sessions }
+  })
 
   const [showModify, setShowModify] = useState(false)
+
+  type ShiftRow = { id?: string; startTime: string; stopTime: string; tokenLimit: number }
+  const initShifts = () => Object.fromEntries(
+    DAYS.map(day => [day, allSchedules
+      .filter(s => s.dayOfWeek.toLowerCase() === day.toLowerCase())
+      .map(s => ({ id: s.id, startTime: s.startTime.slice(0, 5), stopTime: s.stopTime.slice(0, 5), tokenLimit: s.tokenLimit }))
+    ])
+  )
   const [dayToggles, setDayToggles] = useState<Record<string, boolean>>(
     Object.fromEntries(weekSchedule.map(d => [d.day, d.sessions.length > 0]))
   )
-  const [dayShifts, setDayShifts] = useState<Record<string, { time: string; tokens: number; hours: string }[]>>(
-    Object.fromEntries(weekSchedule.map(d => [d.day, d.sessions]))
-  )
+  const [dayShifts, setDayShifts] = useState<Record<string, ShiftRow[]>>(initShifts)
+  const [saveLoading, setSaveLoading] = useState(false)
 
   const addShift = (day: string) =>
-    setDayShifts(p => ({ ...p, [day]: [...p[day], { time: '09:00 AM – 01:00 PM', tokens: 16, hours: '4 hours' }] }))
+    setDayShifts(p => ({ ...p, [day]: [...p[day], { startTime: '09:00', stopTime: '17:00', tokenLimit: 20 }] }))
 
   const removeShift = (day: string, idx: number) =>
     setDayShifts(p => ({ ...p, [day]: p[day].filter((_, i) => i !== idx) }))
+
+  const updateShift = (day: string, idx: number, field: keyof ShiftRow, value: string | number) =>
+    setDayShifts(p => ({ ...p, [day]: p[day].map((s, i) => i === idx ? { ...s, [field]: value } : s) }))
+
+  const handleSaveSchedule = async () => {
+    const originalIds = new Set(allSchedules.map(s => s.id))
+    const toAdd: { dayOfWeek: string; startTime: string; stopTime: string; tokenLimit: number }[] = []
+    const toUpdate: { id: string; startTime: string; stopTime: string; tokenLimit: number }[] = []
+    const keptIds = new Set<string>()
+
+    DAYS.forEach(day => {
+      if (!dayToggles[day]) return
+      dayShifts[day].forEach(s => {
+        const startTime = s.startTime + ':00'
+        const stopTime = s.stopTime + ':00'
+        if (s.id) {
+          keptIds.add(s.id)
+          toUpdate.push({ id: s.id, startTime, stopTime, tokenLimit: s.tokenLimit })
+        } else {
+          toAdd.push({ dayOfWeek: day.toLowerCase(), startTime, stopTime, tokenLimit: s.tokenLimit })
+        }
+      })
+    })
+
+    const toRemove = [...originalIds].filter(id => !keptIds.has(id))
+
+    setSaveLoading(true)
+    try {
+      const response = await updateDoctorSchedule(doctor.id, { toAdd, toUpdate, toRemove, force: false })
+      if (response.success) {
+        doctor.medicalCenters[0].schedules = response.data
+        setDayShifts(initShifts())
+        setShowModify(false)
+      }
+    } catch { /* silent */ } finally { setSaveLoading(false) }
+  }
 
   return (
     <div className="dp-container">
       <div className="dp-body">
         {/* Profile Card */}
         <div className="dp-profile-card">
-          <img src={doctor.avatar} alt={doctor.name} className="dp-avatar" />
+          <img src={doctor.profilePicture || `https://i.pravatar.cc/96?u=${doctor.id}`} alt={doctor.name} className="dp-avatar" />
           <div className="dp-profile-info">
             <div className="dp-name-row">
               <span className="dp-name">{doctor.name}</span>
-              <Badge text={doctor.status} {...statusProps[doctor.status]} />
+              <Badge text="Active" {...statusProps['Active']} />
             </div>
-            <span className="dp-specialty">{doctor.specialty}</span>
+            <span className="dp-specialty">{doctor.specialties[0]?.name ?? ''}</span>
             <div className="dp-info-row">
               {[
-                { icon: qualificationIcon, value: 'MBBS, MD' },
-                { icon: experienceIcon, value: doctor.experience },
-                { icon: phoneIcon, value: doctor.phone },
+                { icon: qualificationIcon, value: doctor.qualifications.map(q => q.name).join(', ') || '—' },
+                { icon: experienceIcon, value: `${doctor.yearsOfExperience} yrs` },
+                { icon: phoneIcon, value: doctor.phoneNumber },
               ].map((item, i) => (
                 <div key={i} className="dp-info-item">
                   <img src={item.icon} alt="" />
@@ -89,9 +128,9 @@ const DoctorProfile: FC<DoctorProfileProps> = ({ doctor, onBack }) => {
             </div>
             <div className="dp-info-row">
               {[
-                { icon: emailIcon, value: doctor.email },
-                { icon: buildingIcon, value: 'Full Time' },
-                { icon: dollarIcon, value: '₹500' },
+                { icon: emailIcon, value: doctor.emailAddress },
+                { icon: buildingIcon, value: doctor.medicalSystem?.name ?? '—' },
+                { icon: dollarIcon, value: doctor.consultationFee ? `₹${doctor.consultationFee}` : '—' },
               ].map((item, i) => (
                 <div key={i} className="dp-info-item">
                   <img src={item.icon} alt="" />
@@ -100,7 +139,7 @@ const DoctorProfile: FC<DoctorProfileProps> = ({ doctor, onBack }) => {
               ))}
             </div>
             <div className="dp-meta-text">
-              Doctor ID: {doctor.id} &bull; Joined Mar 15, 2018
+              Doctor ID: {doctor.referenceId} &bull; Joined {new Date(doctor.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
             </div>
           </div>
         </div>
@@ -121,7 +160,7 @@ const DoctorProfile: FC<DoctorProfileProps> = ({ doctor, onBack }) => {
                 {[
                   { label: 'Monthly Patients', value: '124', icon: patientsGreenIcon },
                   { label: 'Total Patients', value: '1,840', icon: patientsRedIcon },
-                  { label: 'Avg Time / Patient', value: '18 min', icon: clockBlueIcon },
+                  { label: 'Avg Time / Patient', value: `${doctor.estimateConsultationTime} min`, icon: clockBlueIcon },
                 ].map(s => (
                   <div key={s.label} className="dp-stat-card">
                     <img src={s.icon} alt="" style={{ width: 20, height: 20, marginBottom: 8 }} />
@@ -143,7 +182,7 @@ const DoctorProfile: FC<DoctorProfileProps> = ({ doctor, onBack }) => {
                       <div className="dp-schedule-sessions">
                         {item.sessions.length === 0
                           ? <span className="dp-schedule-off">Off</span>
-                          : item.sessions.map(s => <span key={s.time} className="dp-schedule-session">{s.time}</span>)
+                          : item.sessions.map(s => <span key={s.id} className="dp-schedule-session">{to12Hour(s.startTime)} – {to12Hour(s.stopTime)}</span>)
                         }
                       </div>
                     </div>
@@ -171,11 +210,10 @@ const DoctorProfile: FC<DoctorProfileProps> = ({ doctor, onBack }) => {
                   {item.sessions.length > 0 && (
                     <div className="dp-day-sessions">
                       {item.sessions.map(s => (
-                        <div key={s.time} className="dp-session-card">
-                          <span className="dp-session-time">{s.time}</span>
+                        <div key={s.id} className="dp-session-card">
+                          <span className="dp-session-time">{to12Hour(s.startTime)} – {to12Hour(s.stopTime)}</span>
                           <div className="dp-session-meta">
-                            <span>Max {s.tokens} Tokens</span>
-                            <span>{s.hours}</span>
+                            <span>Max {s.tokenLimit} Tokens</span>
                           </div>
                         </div>
                       ))}
@@ -264,15 +302,15 @@ const DoctorProfile: FC<DoctorProfileProps> = ({ doctor, onBack }) => {
                             <div className="dp-modify-inputs">
                               <div className="dp-modify-input-group">
                                 <label className="dp-modify-input-label">Start Time</label>
-                                <input type="time" className="dp-modify-input" defaultValue={s.time.split(' – ')[0].trim().replace(' AM', '').replace(' PM', '')} />
+                                <input type="time" className="dp-modify-input" value={s.startTime} onChange={e => updateShift(item.day, si, 'startTime', e.target.value)} />
                               </div>
                               <div className="dp-modify-input-group">
                                 <label className="dp-modify-input-label">End Time</label>
-                                <input type="time" className="dp-modify-input" defaultValue={s.time.split(' – ')[1].trim().replace(' AM', '').replace(' PM', '')} />
+                                <input type="time" className="dp-modify-input" value={s.stopTime} onChange={e => updateShift(item.day, si, 'stopTime', e.target.value)} />
                               </div>
                               <div className="dp-modify-input-group">
                                 <label className="dp-modify-input-label">Max Tokens</label>
-                                <input type="number" className="dp-modify-input" defaultValue={s.tokens} min={1} />
+                                <input type="number" className="dp-modify-input" value={s.tokenLimit} min={1} onChange={e => updateShift(item.day, si, 'tokenLimit', Number(e.target.value))} />
                               </div>
                               <button className="dp-remove-shift-btn" onClick={() => removeShift(item.day, si)}>✕</button>
                             </div>
@@ -287,7 +325,7 @@ const DoctorProfile: FC<DoctorProfileProps> = ({ doctor, onBack }) => {
             <div className="sch-divider" />
             <div className="ip-actions" style={{ padding: '16px 24px' }}>
               <button className="ip-btn ip-cancel" onClick={() => setShowModify(false)}>Cancel</button>
-              <button className="ip-btn ip-submit">Save Changes</button>
+              <button className="ip-btn ip-submit" onClick={handleSaveSchedule} disabled={saveLoading}>{saveLoading ? 'Saving...' : 'Save Changes'}</button>
             </div>
           </div>
         </Modal>
