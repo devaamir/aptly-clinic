@@ -1,5 +1,7 @@
 import type { FC } from 'react'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { RecaptchaVerifier, signInWithPhoneNumber, type ConfirmationResult } from 'firebase/auth'
+import { auth } from '../services/firebase'
 import AuthLayout from '../components/AuthLayout'
 import FormField from '../components/FormField'
 import './DeleteAccount.css'
@@ -9,33 +11,57 @@ const DeleteAccount: FC = () => {
   const [phoneNumber, setPhoneNumber] = useState('')
   const [otp, setOtp] = useState('')
   const [loading, setLoading] = useState(false)
+  const [confirmationResult, setConfirmationResult] = useState<ConfirmationResult | null>(null)
+  const [error, setError] = useState('')
+
+  useEffect(() => {
+    // Initialize reCAPTCHA
+    if (!window.recaptchaVerifier) {
+      window.recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
+        size: 'invisible',
+        callback: () => {
+          // reCAPTCHA solved
+        },
+      })
+      window.recaptchaVerifier.render()
+    }
+  }, [])
 
   const handleSendOtp = async () => {
     if (!phoneNumber || phoneNumber.length < 10) return
     setLoading(true)
+    setError('')
+    
     try {
-      // TODO: Call API to send OTP
-      // await api.post('/auth/send-otp', { phoneNumber })
-      setTimeout(() => {
-        setStep('otp')
-        setLoading(false)
-      }, 1000)
-    } catch {
+      const appVerifier = window.recaptchaVerifier
+      
+      // Force captcha execution
+      await appVerifier.verify()
+      
+      const fullPhoneNumber = `+91${phoneNumber}`
+      const result = await signInWithPhoneNumber(auth, fullPhoneNumber, appVerifier)
+      setConfirmationResult(result)
+      setStep('otp')
+    } catch (err: any) {
+      setError(err.message || 'Failed to send OTP')
+    } finally {
       setLoading(false)
     }
   }
 
   const handleVerifyAndDelete = async () => {
-    if (!otp || otp.length < 4) return
+    if (!otp || otp.length < 6 || !confirmationResult) return
     setLoading(true)
+    setError('')
+    
     try {
-      // TODO: Call API to verify OTP and delete account
-      // await api.post('/auth/delete-account', { phoneNumber, otp })
-      setTimeout(() => {
-        setStep('success')
-        setLoading(false)
-      }, 1000)
-    } catch {
+      await confirmationResult.confirm(otp)
+      // TODO: Call your backend API to delete the account
+      // await api.post('/auth/delete-account', { phoneNumber })
+      setStep('success')
+    } catch (err: any) {
+      setError('Invalid OTP. Please try again.')
+    } finally {
       setLoading(false)
     }
   }
@@ -43,12 +69,15 @@ const DeleteAccount: FC = () => {
   return (
     <AuthLayout>
       <div className="delete-account-content">
+        <div id="recaptcha-container"></div>
+        
         {step === 'phone' && (
           <>
             <h1 className="delete-account-title">Delete Account</h1>
             <p className="delete-account-subtitle">
               Enter your phone number to receive a verification code
             </p>
+            {error && <div className="delete-account-error">{error}</div>}
             <div className="delete-account-form">
               <FormField
                 label="Phone Number"
@@ -75,24 +104,25 @@ const DeleteAccount: FC = () => {
             <p className="delete-account-subtitle">
               Enter the verification code sent to +91 {phoneNumber}
             </p>
+            {error && <div className="delete-account-error">{error}</div>}
             <div className="delete-account-form">
               <FormField
                 label="OTP"
                 type="text"
-                placeholder="Enter OTP"
+                placeholder="Enter 6-digit OTP"
                 value={otp}
                 onChange={e => setOtp((e.target as HTMLInputElement).value)}
               />
               <button
                 className="delete-account-btn delete-account-btn-danger"
                 onClick={handleVerifyAndDelete}
-                disabled={loading || otp.length < 4}
+                disabled={loading || otp.length < 6}
               >
                 {loading ? 'Verifying...' : 'Delete Account'}
               </button>
               <button
                 className="delete-account-btn-secondary"
-                onClick={() => setStep('phone')}
+                onClick={() => { setStep('phone'); setOtp(''); setError('') }}
                 disabled={loading}
               >
                 Back

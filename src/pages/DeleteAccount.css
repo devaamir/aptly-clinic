@@ -18,6 +18,16 @@
   margin: 0 0 32px 0;
 }
 
+.delete-account-error {
+  font-family: 'Manrope', sans-serif;
+  font-size: 14px;
+  color: #F04438;
+  background: #FEF3F2;
+  padding: 12px 16px;
+  border-radius: 8px;
+  margin-bottom: 16px;
+}
+
 .delete-account-form {
   display: flex;
   flex-direction: column;
