@@ -45,16 +45,16 @@ const formatTime = (mins: number): string => {
 const getEstimatedTime = (patients: any[], currentIndex: number, avgInterval: string): string => {
   const now = new Date()
   const intervalMins = parseInt(avgInterval) || 5
-  
+
   // Count pending/ongoing patients before this one
-  const patientsAhead = patients.slice(0, currentIndex).filter(p => 
+  const patientsAhead = patients.slice(0, currentIndex).filter(p =>
     p.status === 'pending' || p.status === 'ongoing'
   ).length
-  
+
   const estimatedMins = now.getMinutes() + (patientsAhead * intervalMins)
   const estimatedHours = now.getHours() + Math.floor(estimatedMins / 60)
   const finalMins = estimatedMins % 60
-  
+
   return formatTime((estimatedHours % 24) * 60 + finalMins)
 }
 
@@ -198,14 +198,14 @@ const QueueManagement: FC = () => {
         status: (a.tokenStatus === 'done' ? 'done' : a.tokenStatus === 'skipped' ? 'skipped' : a.tokenStatus === 'cancelled' ? 'cancelled' : a.tokenStatus === 'ongoing' ? 'ongoing' : 'pending') as Status,
       }))
       setPatientsMap(prev => ({ ...prev, [`${selectedId}-${sessionIdx}`]: mapped }))
-      
+
       // Update avgInterval from first appointment's doctor data
       if (data.appointments.length > 0 && doc) {
         const avgMins = data.appointments[0].doctor.estimateConsultationTime
-        setDoctors(prev => prev.map(d => 
+        setDoctors(prev => prev.map(d =>
           d.id === selectedId ? {
             ...d,
-            sessions: d.sessions.map((s, i) => 
+            sessions: d.sessions.map((s, i) =>
               i === sessionIdx ? { ...s, avgInterval: `${avgMins} minutes` } : s
             )
           } : d
@@ -220,15 +220,15 @@ const QueueManagement: FC = () => {
   const sessionKey = `${selectedId}-${sessionIdx}`
   const patients = patientsMap[sessionKey] ?? session?.patients ?? []
   const completedCount = patients.filter(p => p.status === 'done').length
-  const stats = statsMap[sessionKey] ?? { 
-    completedPatient: completedCount, 
-    totalPatient: patients.length || session?.totalPatient || 0 
+  const stats = statsMap[sessionKey] ?? {
+    completedPatient: completedCount,
+    totalPatient: patients.length || session?.totalPatient || 0
   }
 
-  const allConsulted = patients.length > 0 && patients.every(p => 
-    p.status === 'done' || 
-    p.status === 'cancelled' || 
-    p.status === 'skipped' || 
+  const allConsulted = patients.length > 0 && patients.every(p =>
+    p.status === 'done' ||
+    p.status === 'cancelled' ||
+    p.status === 'skipped' ||
     (p.status === 'ongoing' && p.isSilentConsult)
   )
 
@@ -270,7 +270,7 @@ const QueueManagement: FC = () => {
   const closeModal = () => setSelectedPatient(null)
 
   const handleCancelToken = async () => {
-    if (!selectedPatient || selectedPatient.status !== 'pending') return
+    if (!selectedPatient || (selectedPatient.status !== 'pending' && selectedPatient.status !== 'skipped')) return
     try {
       const response = await updateAppointmentStatus(selectedPatient.appointmentId, 'cancelled')
       if (response.success) {
@@ -282,7 +282,7 @@ const QueueManagement: FC = () => {
 
   const handleConsult = async (patient: Patient) => {
     if (patient.status !== 'skipped') return
-    
+
     try {
       const response = await updateAppointmentStatus(patient.appointmentId, 'ongoing')
       if (response.success) {
@@ -310,7 +310,7 @@ const QueueManagement: FC = () => {
       setShowStartConfirm(true)
       return
     }
-    
+
     // Show confirmation modal for Next Token
     setShowNextConfirm(true)
   }
@@ -333,7 +333,7 @@ const QueueManagement: FC = () => {
   const handleConfirmNext = async () => {
     const ongoingIdx = patients.findIndex(p => p.status === 'ongoing')
     if (ongoingIdx === -1) return
-    
+
     setNextLoading(true)
     try {
       const response = await updateAppointmentStatus(patients[ongoingIdx].appointmentId, 'done')
@@ -362,21 +362,23 @@ const QueueManagement: FC = () => {
   const handleSkip = async () => {
     const ongoingIdx = patients.findIndex(p => p.status === 'ongoing')
     if (ongoingIdx === -1) return
-    const nextPending = patients.findIndex((p, i) => i > ongoingIdx && p.status === 'pending')
-    if (nextPending !== -1) {
-      try {
-        const response = await updateAppointmentStatus(patients[nextPending].appointmentId, 'ongoing')
-        if (response.success) {
+    try {
+      const skipResponse = await updateAppointmentStatus(patients[ongoingIdx].appointmentId, 'skipped')
+      if (!skipResponse.success) return
+      const nextPending = patients.findIndex((p, i) => i > ongoingIdx && p.status === 'pending')
+      if (nextPending !== -1) {
+        const nextResponse = await updateAppointmentStatus(patients[nextPending].appointmentId, 'ongoing')
+        if (nextResponse.success) {
           updatePatients(patients.map((p, i) => {
             if (i === ongoingIdx) return { ...p, status: 'skipped' }
             if (i === nextPending) return { ...p, status: 'ongoing' }
             return p
           }))
         }
-      } catch { /* silent */ }
-    } else {
-      updatePatients(patients.map((p, i) => i === ongoingIdx ? { ...p, status: 'skipped' } : p))
-    }
+      } else {
+        updatePatients(patients.map((p, i) => i === ongoingIdx ? { ...p, status: 'skipped' } : p))
+      }
+    } catch { /* silent */ }
   }
 
   if (!doctor) return <div style={{ padding: 24, fontFamily: 'Manrope', color: '#636A79' }}>Loading...</div>
@@ -424,151 +426,151 @@ const QueueManagement: FC = () => {
           </div>
         ) : (
           <>
-        {/* Session Tabs */}
-        <div className="session-tabs">
-          {doctor.sessions.map((s, i) => (
-            <button
-              key={i}
-              className={`session-tab ${sessionIdx === i ? 'active' : ''}`}
-              onClick={() => setSessionIdx(i)}
-            >
-              {s.label}
-            </button>
-          ))}
-        </div>
-
-        {/* Doctor Card */}
-        {pausedDuration ? (
-          <div className="session-banner pause-banner">
-            <div className="pause-banner-left">
-              <img src={instantPauseIcon} alt="" className="banner-icon" />
-              <span>Queue is paused for {pausedDuration}. Waiting patients have been notified. Resume to continue the queue.</span>
-            </div>
-            <button className="resume-btn" onClick={() => { setPausedDuration(null); setToast('Successfully Resumed') }}>Resume</button>
-          </div>
-        ) : !session.isLive && (
-          <div className="session-banner">
-            Queue hasn't started yet. Scheduled to begin at {session.workingTime.split(' - ')[0]}.
-          </div>
-        )}
-
-        {scheduledPause && (
-          <div className="session-banner scheduled-banner">
-            <div className="pause-banner-left">
-              <img src={infoIconBlue} alt="" className="banner-icon" />
-              <span>Scheduled pause started at {formatTo12h(scheduledPause.startAt)} for {scheduledPause.duration}.</span>
-            </div>
-            <button className="cancel-schedule-btn" onClick={() => setScheduledPause(null)}>Cancel Schedule</button>
-          </div>
-        )}
-
-        {allConsulted && session.isLive && (
-          <div className="session-banner">
-            All patients have been consulted. Waiting for new appointments or session end time.
-          </div>
-        )}
-
-        <div className="qm-doctor-card">
-          <div className="doctor-info">
-            <img src={doctor.avatar} alt={doctor.name} className="doctor-avatar" />
-            <div>
-              <h2 className="doctor-name">{doctor.name}</h2>
-              <p className="doctor-meta">{doctor.specialty} • {doctor.room}</p>
-            </div>
-            {session.isLive && <Badge text="Live" bgColor="#ECFDF3" textColor="#027A48" dotColor="#12B76A" />}
-          </div>
-          <div className="doctor-actions">
-            <button className="action-btn" disabled={!session.isLive || !!pausedDuration} onClick={() => setShowPauseModal(true)}><img src={instantPauseIcon} alt="" className="btn-icon" /> Instant Pause</button>
-            <button className="action-btn" disabled={!session.isLive || !!pausedDuration} onClick={() => setShowScheduledModal(true)}><img src={scheduledPauseIcon} alt="" className="btn-icon" /> Scheduled Pause</button>
-            <button className="action-btn" disabled={!session.isLive || !!pausedDuration || !patients.some(p => p.status === 'ongoing')} onClick={handleSkip}><img src={skipIcon} alt="" className="btn-icon" /> Skip</button>
-            <button className="action-btn next-token" disabled={!session.isLive || !!pausedDuration || allConsulted} onClick={handleNextToken}>
-              {!patients.some(p => p.status === 'ongoing') && patients.some(p => p.status === 'pending') && !patients.some(p => p.status === 'done' || p.status === 'skipped') ? 'Start Now' : 'Next Token'} <img src={rightArrow} alt="" className="btn-icon" />
-            </button>
-          </div>
-        </div>
-
-        {/* Stats */}
-        <div className="qm-stats">
-          <div className="stat-item">
-            <span className="stat-label">Working Time</span>
-            <span className="stat-value">{session.workingTime}</span>
-          </div>
-          <div className="stat-item">
-            <span className="stat-label">Total Patient</span>
-            <span className="stat-value">{stats.totalPatient}</span>
-          </div>
-          <div className="stat-item">
-            <span className="stat-label">Completed Patient</span>
-            <span className="stat-value">{stats.completedPatient}</span>
-          </div>
-          <div className="stat-item" style={{ borderRight: '0' }}>
-            <span className="stat-label">Average Interval</span>
-            <span className="stat-value">{session.avgInterval}</span>
-          </div>
-        </div>
-
-        {/* Queue Table / Grid */}
-        <div className="qm-table-wrapper">
-          {view === 'list' ? (
-            <table className="qm-table">
-              <thead>
-                <tr>
-                  <th>TOKEN</th>
-                  <th>PATIENT</th>
-                  <th>PHONE</th>
-                  <th>EST. TIME</th>
-                  <th>STATUS</th>
-                  <th></th>
-                </tr>
-              </thead>
-              <tbody>
-                {patients.length === 0 ? (
-                  <tr><td colSpan={8} style={{ textAlign: 'center', padding: '48px 16px', color: '#A0A5B1', fontSize: 14, fontFamily: 'Manrope' }}>No patients in queue</td></tr>
-                ) : patients.map((p, idx) => (
-                  <tr key={p.token} className={p.status === 'ongoing' && !p.isSilentConsult ? 'row-current' : ''}>
-                    <td>
-                      <span className={`token-badge ${p.status === 'ongoing' && !p.isSilentConsult ? 'token-current' : ''}`}>
-                        {p.token}
-                      </span>
-                    </td>
-                    <td>
-                      <div className="patient-cell">
-                        <img src={p.avatar} alt={p.name} className="patient-avatar" />
-                        {p.name}
-                      </div>
-                    </td>
-                    <td>{p.phone}</td>
-                    <td>{getEstimatedTime(patients, idx, session.avgInterval)}</td>
-                    <td><Badge text={p.status} {...statusBadgeProps[p.status]} /></td>
-                    <td>
-                      <div className="row-actions">
-                        {p.status === 'skipped' && (
-                          <button className="action-btn" style={{ padding: '6px 12px', fontSize: 13 }} onClick={() => handleConsult(p)}>Consult</button>
-                        )}
-                        {p.status === 'ongoing' && p.isSilentConsult && (
-                          <button className="action-btn" style={{ padding: '6px 12px', fontSize: 13 }} onClick={() => handleDone(p)}>Done</button>
-                        )}
-                        <button className="qm-icon-btn dots-btn" onClick={() => openModal(p)}><img src={dotsIcon} alt="more" /></button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          ) : (
-            <div className="qm-grid">
-              {patients.map(p => (
-                <div key={p.token} onClick={() => openModal(p)} className={`grid-token ${p.status === 'ongoing' && !p.isSilentConsult ? 'grid-token-current' : ''} ${p.status === 'done' ? 'grid-token-completed' : ''} ${p.status === 'skipped' ? 'grid-token-skipped' : ''} ${p.status === 'cancelled' ? 'grid-token-cancelled' : ''} ${p.status === 'pending' ? 'grid-token-waiting' : ''}`}>
-                  <span className="grid-token-number">{p.token}</span>
-                  {p.status !== 'ongoing' && p.status !== 'pending' && (
-                    <Badge text={p.status} {...statusBadgeProps[p.status]} />
-                  )}
-                </div>
+            {/* Session Tabs */}
+            <div className="session-tabs">
+              {doctor.sessions.map((s, i) => (
+                <button
+                  key={i}
+                  className={`session-tab ${sessionIdx === i ? 'active' : ''}`}
+                  onClick={() => setSessionIdx(i)}
+                >
+                  {s.label}
+                </button>
               ))}
             </div>
-          )}
-        </div>
-        </>
+
+            {/* Doctor Card */}
+            {pausedDuration ? (
+              <div className="session-banner pause-banner">
+                <div className="pause-banner-left">
+                  <img src={instantPauseIcon} alt="" className="banner-icon" />
+                  <span>Queue is paused for {pausedDuration}. Waiting patients have been notified. Resume to continue the queue.</span>
+                </div>
+                <button className="resume-btn" onClick={() => { setPausedDuration(null); setToast('Successfully Resumed') }}>Resume</button>
+              </div>
+            ) : !session.isLive && (
+              <div className="session-banner">
+                Queue hasn't started yet. Scheduled to begin at {session.workingTime.split(' - ')[0]}.
+              </div>
+            )}
+
+            {scheduledPause && (
+              <div className="session-banner scheduled-banner">
+                <div className="pause-banner-left">
+                  <img src={infoIconBlue} alt="" className="banner-icon" />
+                  <span>Scheduled pause started at {formatTo12h(scheduledPause.startAt)} for {scheduledPause.duration}.</span>
+                </div>
+                <button className="cancel-schedule-btn" onClick={() => setScheduledPause(null)}>Cancel Schedule</button>
+              </div>
+            )}
+
+            {allConsulted && session.isLive && (
+              <div className="session-banner">
+                All patients have been consulted. Waiting for new appointments or session end time.
+              </div>
+            )}
+
+            <div className="qm-doctor-card">
+              <div className="doctor-info">
+                <img src={doctor.avatar} alt={doctor.name} className="doctor-avatar" />
+                <div>
+                  <h2 className="doctor-name">{doctor.name}</h2>
+                  <p className="doctor-meta">{doctor.specialty} • {doctor.room}</p>
+                </div>
+                {session.isLive && <Badge text="Live" bgColor="#ECFDF3" textColor="#027A48" dotColor="#12B76A" />}
+              </div>
+              <div className="doctor-actions">
+                <button className="action-btn" disabled={!session.isLive || !!pausedDuration} onClick={() => setShowPauseModal(true)}><img src={instantPauseIcon} alt="" className="btn-icon" /> Instant Pause</button>
+                <button className="action-btn" disabled={!session.isLive || !!pausedDuration} onClick={() => setShowScheduledModal(true)}><img src={scheduledPauseIcon} alt="" className="btn-icon" /> Scheduled Pause</button>
+                <button className="action-btn" disabled={!session.isLive || !!pausedDuration || !patients.some(p => p.status === 'ongoing')} onClick={handleSkip}><img src={skipIcon} alt="" className="btn-icon" /> Skip</button>
+                <button className="action-btn next-token" disabled={!session.isLive || !!pausedDuration || allConsulted} onClick={handleNextToken}>
+                  {!patients.some(p => p.status === 'ongoing') && patients.some(p => p.status === 'pending') && !patients.some(p => p.status === 'done' || p.status === 'skipped') ? 'Start Now' : 'Next Token'} <img src={rightArrow} alt="" className="btn-icon" />
+                </button>
+              </div>
+            </div>
+
+            {/* Stats */}
+            <div className="qm-stats">
+              <div className="stat-item">
+                <span className="stat-label">Working Time</span>
+                <span className="stat-value">{session.workingTime}</span>
+              </div>
+              <div className="stat-item">
+                <span className="stat-label">Total Patient</span>
+                <span className="stat-value">{stats.totalPatient}</span>
+              </div>
+              <div className="stat-item">
+                <span className="stat-label">Completed Patient</span>
+                <span className="stat-value">{stats.completedPatient}</span>
+              </div>
+              <div className="stat-item" style={{ borderRight: '0' }}>
+                <span className="stat-label">Average Interval</span>
+                <span className="stat-value">{session.avgInterval}</span>
+              </div>
+            </div>
+
+            {/* Queue Table / Grid */}
+            <div className="qm-table-wrapper">
+              {view === 'list' ? (
+                <table className="qm-table">
+                  <thead>
+                    <tr>
+                      <th>TOKEN</th>
+                      <th>PATIENT</th>
+                      <th>PHONE</th>
+                      <th>EST. TIME</th>
+                      <th>STATUS</th>
+                      <th></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {patients.length === 0 ? (
+                      <tr><td colSpan={8} style={{ textAlign: 'center', padding: '48px 16px', color: '#A0A5B1', fontSize: 14, fontFamily: 'Manrope' }}>No patients in queue</td></tr>
+                    ) : patients.map((p, idx) => (
+                      <tr key={p.token} className={p.status === 'ongoing' && !p.isSilentConsult ? 'row-current' : ''}>
+                        <td>
+                          <span className={`token-badge ${p.status === 'ongoing' && !p.isSilentConsult ? 'token-current' : ''}`}>
+                            {p.token}
+                          </span>
+                        </td>
+                        <td>
+                          <div className="patient-cell">
+                            <img src={p.avatar} alt={p.name} className="patient-avatar" />
+                            {p.name}
+                          </div>
+                        </td>
+                        <td>{p.phone}</td>
+                        <td>{getEstimatedTime(patients, idx, session.avgInterval)}</td>
+                        <td><Badge text={p.status} {...statusBadgeProps[p.status]} /></td>
+                        <td>
+                          <div className="row-actions">
+                            {p.status === 'skipped' && (
+                              <button className="action-btn" style={{ padding: '6px 12px', fontSize: 13 }} onClick={() => handleConsult(p)}>Consult</button>
+                            )}
+                            {p.status === 'ongoing' && p.isSilentConsult && (
+                              <button className="action-btn" style={{ padding: '6px 12px', fontSize: 13 }} onClick={() => handleDone(p)}>Done</button>
+                            )}
+                            <button className="qm-icon-btn dots-btn" onClick={() => openModal(p)}><img src={dotsIcon} alt="more" /></button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              ) : (
+                <div className="qm-grid">
+                  {patients.map(p => (
+                    <div key={p.token} onClick={() => openModal(p)} className={`grid-token ${p.status === 'ongoing' && !p.isSilentConsult ? 'grid-token-current' : ''} ${p.status === 'done' ? 'grid-token-completed' : ''} ${p.status === 'skipped' ? 'grid-token-skipped' : ''} ${p.status === 'cancelled' ? 'grid-token-cancelled' : ''} ${p.status === 'pending' ? 'grid-token-waiting' : ''}`}>
+                      <span className="grid-token-number">{p.token}</span>
+                      {p.status !== 'ongoing' && p.status !== 'pending' && (
+                        <Badge text={p.status} {...statusBadgeProps[p.status]} />
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </>
         )}
 
       </div>

@@ -112,7 +112,7 @@ export const getDoctorSchedule = (doctorId: string, date: string, medicalCenterI
 export const subscribeQueue = (doctorScheduleId: string, onData: (data: QueueSSEData) => void, onError?: (e: Event) => void): EventSource =>
   createSSE(`/appointments/queue?doctorScheduleId=${doctorScheduleId}`, onData as (d: unknown) => void, onError)
 
-export const updateAppointmentStatus = (appointmentId: string, tokenStatus: 'pending' | 'done' | 'cancelled') =>
+export const updateAppointmentStatus = (appointmentId: string, tokenStatus: 'pending' | 'done' | 'cancelled' | 'skipped' | 'ongoing') =>
   api.patch<{ success: boolean }>(`/appointments/${appointmentId}/status`, { tokenStatus })
 
 export const setPassword = (token: string, password: string) =>

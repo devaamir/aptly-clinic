@@ -41,7 +41,7 @@ const PatientModal: FC<PatientModalProps> = ({ patient, onClose, onCall, onCance
           <button className="modal-btn call-btn" onClick={onCall}>
             <img src={phoneIcon} alt="" className="modal-btn-icon" /> Call
           </button>
-          {patient.status === 'pending' && (
+          {(patient.status === 'pending' || patient.status === 'skipped') && (
             <button className="modal-btn cancel-btn" onClick={onCancel}>Cancel Token</button>
           )}
         </div>
