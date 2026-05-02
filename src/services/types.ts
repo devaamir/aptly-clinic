@@ -15,6 +15,11 @@ export interface LoginResponse {
       role: string
       medicalCenterId: string
     }
+    context: {
+      role: string
+      medicalCenterId: string | null
+    }
+    hasMultipleContexts: boolean
   }
 }
 
@@ -125,6 +130,19 @@ export interface CreateDoctorRequest {
 }
 export interface CreateDoctorResponse { success: boolean; data: AppointmentDoctor }
 
+export interface UpdateDoctorRequest {
+  name?: string
+  emailAddress?: string
+  about?: string
+  consultationFee?: number
+  yearsOfExperience?: number
+  advanceBookingLimit?: number
+  estimateConsultationTime?: number
+  medicalSystemId?: string
+  qualificationIds?: string[]
+  specialtyIds?: string[]
+}
+
 // Doctor Schedule
 export interface DoctorSchedule {
   id: string; dayOfWeek: string; startTime: string; stopTime: string
@@ -150,3 +168,13 @@ export interface QueueSSEData {
   appointments: QueueAppointment[]
   activePauses: ActivePause[]
 }
+
+// Create Clinic
+export interface ClinicData {
+  id: string; name: string; type: string; phoneNumber: string; emailAddress: string
+  latitude: number; longitude: number; address: string; district: string; state: string
+  country: string; about: string; alternatePhoneNumber: string; websiteUrl: string
+  profilePicture: string; isVerified: boolean; createdAt: string; updatedAt: string
+  specialties: Speciality[]; medicalSystem: MedicalSystem
+}
+export interface CreateClinicResponse { success: boolean; data: ClinicData }

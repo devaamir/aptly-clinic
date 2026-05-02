@@ -128,7 +128,7 @@ const Dashboard: FC = () => {
         {activePage === 'Appointments' && <Appointments />}
         {activePage === 'Patients' && <Patients />}
         {activePage === 'Doctors' && !viewDoctor && <Doctors onViewProfile={setViewDoctor} />}
-        {activePage === 'Doctors' && viewDoctor && <DoctorProfile doctor={viewDoctor} onBack={() => setViewDoctor(null)} />}
+        {activePage === 'Doctors' && viewDoctor && <DoctorProfile doctor={viewDoctor} onBack={() => setViewDoctor(null)} onEdit={updated => setViewDoctor(updated)} />}
         {activePage === 'Leave Management' && <LeaveManagement />}
         {activePage === 'Settings' && <Settings />}
       </main>

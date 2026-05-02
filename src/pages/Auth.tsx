@@ -17,7 +17,7 @@ import './Auth.css'
 type Screen = 'login' | 'set-password' | 'success' | 'link-expired'
 
 interface AuthProps {
-  onLogin: () => void
+  onLogin: (isNewAccount: boolean) => void
 }
 
 const Auth: FC<AuthProps> = ({ onLogin }) => {
@@ -42,7 +42,7 @@ const Auth: FC<AuthProps> = ({ onLogin }) => {
       const res = await login(email, password)
       setTokens(res.data.accessToken, res.data.refreshToken)
       setUser({ ...res.data.user })
-      onLogin()
+      onLogin(res.data.context?.medicalCenterId === null)
     } catch (err: unknown) {
       const msg = (err as { response?: { data?: { message?: string } } })?.response?.data?.message
       setError(msg || 'Invalid email or password.')
@@ -131,7 +131,7 @@ const Auth: FC<AuthProps> = ({ onLogin }) => {
           </div>
           <h2 className="form-title">Successfully Reset</h2>
           <p className="form-subtitle">Your password has been successfully set. Click below to log in.</p>
-          <Button label="Continue" onClick={onLogin} />
+          <Button label="Continue" onClick={() => onLogin(false)} />
         </div>
       )}
       {screen === 'link-expired' && (

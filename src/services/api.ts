@@ -76,6 +76,9 @@ export const getQualifications = () => api.get<QualificationsResponse>('/metadat
 export const createDoctor = (body: import('./types').CreateDoctorRequest) =>
   api.post<CreateDoctorResponse>('/doctors', body)
 
+export const updateDoctor = (doctorId: string, body: import('./types').UpdateDoctorRequest) =>
+  api.patch<CreateDoctorResponse>(`/doctors/${doctorId}`, body)
+
 export const updateDoctorSchedule = (doctorId: string, body: import('./types').UpdateScheduleRequest) =>
   api.post<import('./types').UpdateScheduleResponse>(`/doctors/${doctorId}/schedule`, body)
 
@@ -111,3 +114,11 @@ export const subscribeQueue = (doctorScheduleId: string, onData: (data: QueueSSE
 
 export const updateAppointmentStatus = (appointmentId: string, tokenStatus: 'pending' | 'done' | 'cancelled') =>
   api.patch<{ success: boolean }>(`/appointments/${appointmentId}/status`, { tokenStatus })
+
+export const setPassword = (token: string, password: string) =>
+  api.post<{ success: boolean }>('/auth/set-password', { token, password })
+
+export const createClinic = (body: FormData) =>
+  client.post<import('./types').CreateClinicResponse>('/clinics', body, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  }).then(r => r.data)

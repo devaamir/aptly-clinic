@@ -86,7 +86,10 @@ const Doctors: FC<{ onViewProfile: (d: DoctorDetail) => void }> = ({ onViewProfi
         ...(form.advanceBookingLimit && { advanceBookingLimit: Number(form.advanceBookingLimit) }),
         ...(form.estimateConsultationTime && { estimateConsultationTime: Number(form.estimateConsultationTime) }),
       })
-      if (res.success) setDoctorAdded(true)
+      if (res.success) {
+        setDoctors(prev => [mapDoctor(res.data), ...prev])
+        setDoctorAdded(true)
+      }
     } catch { /* error handled silently */ } finally { setAddLoading(false) }
   }
 

@@ -2,8 +2,10 @@ import type { FC } from 'react'
 import { useState } from 'react'
 import Badge from '../components/Badge'
 import Modal from '../components/Modal'
+import FormField from '../components/FormField'
 import type { DoctorDetail } from '../services/types'
-import { updateDoctorSchedule } from '../services/api'
+import { updateDoctorSchedule, updateDoctor } from '../services/api'
+import { useAppContext } from '../context/AppContext'
 import patientsGreenIcon from '../assets/icons/patients-green-icon.svg'
 import patientsRedIcon from '../assets/icons/patients-red-icon.svg'
 import clockBlueIcon from '../assets/icons/clock-blue-icon.svg'
@@ -24,10 +26,58 @@ const statusProps = {
 interface DoctorProfileProps {
   doctor: DoctorDetail
   onBack: () => void
+  onEdit?: (updated: DoctorDetail) => void
 }
 
-const DoctorProfile: FC<DoctorProfileProps> = ({ doctor, onBack }) => {
+const DoctorProfile: FC<DoctorProfileProps> = ({ doctor, onBack, onEdit }) => {
+  const { specialties, medicalSystems, qualifications } = useAppContext()
   const [activeTab, setActiveTab] = useState<'Overview' | 'Schedule' | 'Leaves' | 'Documents'>('Overview')
+  const [showEditDoctor, setShowEditDoctor] = useState(false)
+  const showEdit = showEditDoctor
+  const [editForm, setEditForm] = useState({
+    name: doctor.name ?? '',
+    emailAddress: doctor.emailAddress ?? '',
+    about: doctor.about ?? '',
+    consultationFee: doctor.consultationFee?.toString() ?? '',
+    yearsOfExperience: doctor.yearsOfExperience?.toString() ?? '',
+    advanceBookingLimit: doctor.advanceBookingLimit?.toString() ?? '',
+    estimateConsultationTime: doctor.estimateConsultationTime?.toString() ?? '',
+    medicalSystemId: doctor.medicalSystem?.id ?? '',
+  })
+  const [editSpecialtyIds, setEditSpecialtyIds] = useState<string[]>(doctor.specialties.map(s => s.id))
+  const [editQualificationIds, setEditQualificationIds] = useState<string[]>(doctor.qualifications.map(q => q.id))
+  const [editLoading, setEditLoading] = useState(false)
+  const [editError, setEditError] = useState('')
+
+  const setEdit = (key: keyof typeof editForm) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) =>
+    setEditForm(f => ({ ...f, [key]: e.target.value }))
+
+  const handleSaveEdit = async () => {
+    setEditLoading(true)
+    setEditError('')
+    try {
+      const res = await updateDoctor(doctor.id, {
+        name: editForm.name || undefined,
+        emailAddress: editForm.emailAddress || undefined,
+        about: editForm.about || undefined,
+        consultationFee: editForm.consultationFee ? Number(editForm.consultationFee) : undefined,
+        yearsOfExperience: editForm.yearsOfExperience ? Number(editForm.yearsOfExperience) : undefined,
+        advanceBookingLimit: editForm.advanceBookingLimit ? Number(editForm.advanceBookingLimit) : undefined,
+        estimateConsultationTime: editForm.estimateConsultationTime ? Number(editForm.estimateConsultationTime) : undefined,
+        medicalSystemId: editForm.medicalSystemId || undefined,
+        specialtyIds: editSpecialtyIds,
+        qualificationIds: editQualificationIds,
+      })
+      if (res.success) {
+        onEdit?.({ ...doctor, ...res.data })
+        setShowEditDoctor(false)
+      }
+    } catch (err: any) {
+      setEditError(err.response?.data?.message || 'Failed to update doctor.')
+    } finally {
+      setEditLoading(false)
+    }
+  }
 
   const to12Hour = (time: string) => {
     const [h, m] = time.slice(0, 5).split(':')
@@ -112,6 +162,7 @@ const DoctorProfile: FC<DoctorProfileProps> = ({ doctor, onBack }) => {
             <div className="dp-name-row">
               <span className="dp-name">{doctor.name}</span>
               <Badge text="Active" {...statusProps['Active']} />
+              <button className="dp-edit-btn" onClick={() => setShowEditDoctor(true)}>Edit Doctor</button>
             </div>
             <span className="dp-specialty">{doctor.specialties[0]?.name ?? ''}</span>
             <div className="dp-info-row">
@@ -272,6 +323,64 @@ const DoctorProfile: FC<DoctorProfileProps> = ({ doctor, onBack }) => {
         )}
         {activeTab === 'Documents' && <div className="dp-tab-placeholder">Documents content coming soon.</div>}
       </div>
+
+      {showEdit && (
+        <Modal onClose={() => setShowEditDoctor(false)}>
+          <div style={{ width: 520 }}>
+            <div className="sch-header">
+              <h2 className="sch-title">Edit Doctor</h2>
+              <button className="sch-close" onClick={() => setShowEditDoctor(false)}>✕</button>
+            </div>
+            <div className="sch-divider" />
+            <div className="modal-body-scroll">
+              <div className="sch-body">
+                {editError && <div style={{ color: '#F04438', background: '#FEF3F2', padding: '10px 14px', borderRadius: 8, marginBottom: 16, fontSize: 13 }}>{editError}</div>}
+                <div style={{ marginBottom: 18 }}>
+                  <FormField label="Full Name" value={editForm.name} onChange={setEdit('name')} />
+                </div>
+                <div style={{ marginBottom: 18 }}>
+                  <FormField label="Email" type="email" value={editForm.emailAddress} onChange={setEdit('emailAddress')} showRequired={false} />
+                </div>
+                <div style={{ marginBottom: 18 }}>
+                  <FormField as="select" label="Medical System" value={editForm.medicalSystemId} onChange={setEdit('medicalSystemId')}
+                    options={medicalSystems.map(m => ({ label: m.name, value: m.id }))} />
+                </div>
+                <div style={{ marginBottom: 18 }}>
+                  <FormField as="select" label="Specialty" value={editSpecialtyIds[0] ?? ''} onChange={e => setEditSpecialtyIds([(e.target as HTMLSelectElement).value])}
+                    options={specialties.map(s => ({ label: s.name, value: s.id }))} />
+                </div>
+                <div style={{ marginBottom: 18 }}>
+                  <div className="form-field">
+                    <label className="form-field-label">Qualification <span className="form-field-required"> *</span></label>
+                    <select multiple className="form-field-input" style={{ height: 96 }}
+                      value={editQualificationIds}
+                      onChange={e => setEditQualificationIds(Array.from(e.target.selectedOptions, o => o.value))}>
+                      {qualifications.map(q => <option key={q.id} value={q.id}>{q.name}</option>)}
+                    </select>
+                  </div>
+                </div>
+                <div className="sch-form-row">
+                  <FormField label="Experience (years)" type="number" min={0} value={editForm.yearsOfExperience} onChange={setEdit('yearsOfExperience')} showRequired={false} />
+                  <FormField label="Avg Time / Patient (min)" type="number" min={0} value={editForm.estimateConsultationTime} onChange={setEdit('estimateConsultationTime')} showRequired={false} />
+                </div>
+                <div className="sch-form-row">
+                  <FormField label="Consultation Fee" type="number" min={0} value={editForm.consultationFee} onChange={setEdit('consultationFee')} showRequired={false} />
+                  <FormField label="Advance Booking Limit (days)" type="number" min={0} value={editForm.advanceBookingLimit} onChange={setEdit('advanceBookingLimit')} showRequired={false} />
+                </div>
+                <div style={{ marginBottom: 18 }}>
+                  <label className="form-field-label">About</label>
+                  <textarea className="doc-textarea" rows={4} style={{ height: 92 }} value={editForm.about} onChange={e => setEditForm(f => ({ ...f, about: e.target.value }))} />
+                </div>
+              </div>
+            </div>
+            <div className="sch-divider" />
+            <div className="ip-actions" style={{ padding: '16px 24px' }}>
+              <button className="ip-btn ip-cancel" onClick={() => setShowEditDoctor(false)}>Cancel</button>
+              <button className="ip-btn ip-submit" onClick={handleSaveEdit} disabled={editLoading}>{editLoading ? 'Saving...' : 'Save Changes'}</button>
+            </div>
+          </div>
+        </Modal>
+      )}
 
       {showModify && (
         <Modal onClose={() => setShowModify(false)}>
