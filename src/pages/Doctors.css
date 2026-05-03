@@ -320,3 +320,20 @@
   max-width: 380px;
 }
 
+
+.doc-delete-btn {
+  background: #FEF3F2;
+  border: none;
+  border-radius: 6px;
+  padding: 6px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  font-family: 'Manrope', sans-serif;
+  color: #F04438;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.doc-delete-btn:hover {
+  background: #FECDCA;
+}

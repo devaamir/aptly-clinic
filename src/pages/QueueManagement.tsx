@@ -26,6 +26,7 @@ import phoneIcon from '../assets/icons/phone-icon.svg'
 import dotsIcon from '../assets/icons/3dots-icon.svg'
 import Badge from '../components/Badge'
 import './QueueManagement.css'
+import doctorProfileImg from '../assets/images/doctor-profile.png'
 
 const parseMinutes = (time: string): number => {
   const t = time.toLowerCase().replace(/\s/g, '')
@@ -108,7 +109,7 @@ const mapApiDoctor = (d: AppointmentDoctor, idx: number): Doctor => ({
   name: d.name,
   specialty: d.specialties[0]?.name ?? '',
   room: `Room ${100 + idx}`,
-  avatar: d.profilePicture || `https://i.pravatar.cc/40?u=${d.id}`,
+  avatar: d.profilePicture || doctorProfileImg,
   sessions: [],
 })
 const mapScheduleToSession = (s: DoctorSchedule): Session => {

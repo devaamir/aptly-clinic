@@ -4,7 +4,7 @@ import PageHeader from '../components/PageHeader'
 import InputBox from '../components/InputBox'
 import Modal from '../components/Modal'
 import FormField from '../components/FormField'
-import { getDoctors, createDoctor, getDoctor } from '../services/api'
+import { getDoctors, createDoctor, getDoctor, deleteDoctor } from '../services/api'
 import type { AppointmentDoctor, DoctorDetail } from '../services/types'
 import { useAppContext } from '../context/AppContext'
 import searchIcon from '../assets/icons/search-icon.svg'
@@ -17,6 +17,7 @@ import cameraIcon from '../assets/icons/camera-icon.svg'
 import smsIcon from '../assets/icons/sms.svg'
 import avatarIcon from '../assets/icons/avatar-icon.svg'
 import addIcon from '../assets/icons/add-icon-white.svg'
+import doctorProfileImg from '../assets/images/doctor-profile.png'
 import './Doctors.css'
 
 interface Doctor {
@@ -35,7 +36,7 @@ const mapDoctor = (d: AppointmentDoctor): Doctor => ({
   id: d.referenceId,
   doctorUuid: d.id,
   name: d.name,
-  avatar: d.profilePicture || `https://i.pravatar.cc/48?u=${d.id}`,
+  avatar: d.profilePicture || doctorProfileImg,
   specialty: d.specialties[0]?.name ?? '',
   phone: d.phoneNumber,
   email: d.emailAddress,
@@ -58,34 +59,68 @@ const Doctors: FC<{ onViewProfile: (d: DoctorDetail) => void }> = ({ onViewProfi
   const [toast, setToast] = useState<string | null>(null)
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const avatarFileRef = useRef<File | null>(null)
   const [form, setForm] = useState({ name: '', phoneNumber: '', emailAddress: '', about: '', consultationFee: '', yearsOfExperience: '', advanceBookingLimit: '', estimateConsultationTime: '', medicalSystemId: '', specialtyIds: '' })
   const [addLoading, setAddLoading] = useState(false)
   const [selectedSpecialtyIds, setSelectedSpecialtyIds] = useState<string[]>([])
   const [selectedQualificationIds, setSelectedQualificationIds] = useState<string[]>([])
+  const [deleteTarget, setDeleteTarget] = useState<Doctor | null>(null)
+  const [deleteLoading, setDeleteLoading] = useState(false)
 
   const resetForm = () => {
     setForm({ name: '', phoneNumber: '', emailAddress: '', about: '', consultationFee: '', yearsOfExperience: '', advanceBookingLimit: '', estimateConsultationTime: '', medicalSystemId: '', specialtyIds: '' })
     setSelectedSpecialtyIds([])
     setSelectedQualificationIds([])
+    avatarFileRef.current = null
+  }
+
+  const handleDelete = async () => {
+    if (!deleteTarget) return
+    setDeleteLoading(true)
+    try {
+      await deleteDoctor(deleteTarget.doctorUuid, activeContext!.medicalCenter.id)
+      setDoctors(prev => prev.filter(d => d.doctorUuid !== deleteTarget.doctorUuid))
+      setDeleteTarget(null)
+    } catch { /* silent */ } finally { setDeleteLoading(false) }
   }
 
   const handleAddDoctor = async () => {
     if (!form.name || !form.phoneNumber || !form.yearsOfExperience || !form.medicalSystemId || !selectedQualificationIds.length || selectedSpecialtyIds.length === 0) return
     setAddLoading(true)
     try {
-      const res = await createDoctor({
-        name: form.name,
-        phoneNumber: form.phoneNumber,
-        yearsOfExperience: Number(form.yearsOfExperience),
-        medicalSystemId: form.medicalSystemId,
-        qualificationIds: selectedQualificationIds,
-        specialtyIds: selectedSpecialtyIds,
-        ...(form.emailAddress && { emailAddress: form.emailAddress }),
-        ...(form.about && { about: form.about }),
-        ...(form.consultationFee && { consultationFee: Number(form.consultationFee) }),
-        ...(form.advanceBookingLimit && { advanceBookingLimit: Number(form.advanceBookingLimit) }),
-        ...(form.estimateConsultationTime && { estimateConsultationTime: Number(form.estimateConsultationTime) }),
-      })
+      const file = avatarFileRef.current
+      let body: import('../services/types').CreateDoctorRequest | FormData
+      if (file) {
+        const fd = new FormData()
+        fd.append('name', form.name)
+        fd.append('phoneNumber', form.phoneNumber)
+        fd.append('yearsOfExperience', form.yearsOfExperience)
+        fd.append('medicalSystemId', form.medicalSystemId)
+        selectedQualificationIds.forEach(id => fd.append('qualificationIds', id))
+        selectedSpecialtyIds.forEach(id => fd.append('specialtyIds', id))
+        if (form.emailAddress) fd.append('emailAddress', form.emailAddress)
+        if (form.about) fd.append('about', form.about)
+        if (form.consultationFee) fd.append('consultationFee', form.consultationFee)
+        if (form.advanceBookingLimit) fd.append('advanceBookingLimit', form.advanceBookingLimit)
+        if (form.estimateConsultationTime) fd.append('estimateConsultationTime', form.estimateConsultationTime)
+        fd.append('profilePicture', file)
+        body = fd
+      } else {
+        body = {
+          name: form.name,
+          phoneNumber: form.phoneNumber,
+          yearsOfExperience: Number(form.yearsOfExperience),
+          medicalSystemId: form.medicalSystemId,
+          qualificationIds: selectedQualificationIds,
+          specialtyIds: selectedSpecialtyIds,
+          ...(form.emailAddress && { emailAddress: form.emailAddress }),
+          ...(form.about && { about: form.about }),
+          ...(form.consultationFee && { consultationFee: Number(form.consultationFee) }),
+          ...(form.advanceBookingLimit && { advanceBookingLimit: Number(form.advanceBookingLimit) }),
+          ...(form.estimateConsultationTime && { estimateConsultationTime: Number(form.estimateConsultationTime) }),
+        }
+      }
+      const res = await createDoctor(body)
       if (res.success) {
         setDoctors(prev => [mapDoctor(res.data), ...prev])
         setDoctorAdded(true)
@@ -182,7 +217,10 @@ const Doctors: FC<{ onViewProfile: (d: DoctorDetail) => void }> = ({ onViewProfi
                   </span>
                 </td>
                 <td>
-                  <button className="doc-view-btn" onClick={() => getDoctor(d.doctorUuid).then(r => { if (r.success) onViewProfile(r.data) }).catch(() => {})}>View Profile</button>
+                  <div style={{ display: 'flex', gap: 8 }}>
+                    <button className="doc-view-btn" onClick={() => getDoctor(d.doctorUuid).then(r => { if (r.success) onViewProfile(r.data) }).catch(() => {})}>View Profile</button>
+                    <button className="doc-delete-btn" onClick={() => setDeleteTarget(d)}>Delete</button>
+                  </div>
                 </td>
               </tr>
             ))}
@@ -220,7 +258,7 @@ const Doctors: FC<{ onViewProfile: (d: DoctorDetail) => void }> = ({ onViewProfi
                         </div>
                       </div>
                       <input ref={fileInputRef} type="file" accept="image/*" style={{ display: 'none' }}
-                        onChange={e => { const file = e.target.files?.[0]; if (file) setAvatarPreview(URL.createObjectURL(file)) }} />
+                        onChange={e => { const file = e.target.files?.[0]; if (file) { avatarFileRef.current = file; setAvatarPreview(URL.createObjectURL(file)) } }} />
                     </div>
                     <div style={{ marginBottom: 18 }}>
                       <FormField label="Full Name" placeholder="Enter full name" value={form.name} onChange={e => setForm(p => ({ ...p, name: (e.target as HTMLInputElement).value }))} />
@@ -272,6 +310,23 @@ const Doctors: FC<{ onViewProfile: (d: DoctorDetail) => void }> = ({ onViewProfi
         </Modal>
       )}
       {toast && <Toast message={toast} onClose={() => setToast(null)} icon={<img src={verifyTickGreen} alt="" />} />}
+
+      {deleteTarget && (
+        <Modal onClose={() => setDeleteTarget(null)}>
+          <div style={{ width: 380, padding: 24, textAlign: 'center' }}>
+            <h3 style={{ margin: '0 0 8px', fontSize: 16, fontWeight: 700, color: '#0A0A0A', fontFamily: 'Manrope' }}>Delete Doctor</h3>
+            <p style={{ margin: '0 0 20px', fontSize: 13, color: '#636A79', fontFamily: 'Manrope' }}>
+              Are you sure you want to remove <strong>{deleteTarget.name}</strong> from this clinic? This action cannot be undone.
+            </p>
+            <div style={{ display: 'flex', gap: 10 }}>
+              <button className="ip-btn ip-cancel" style={{ flex: 1 }} onClick={() => setDeleteTarget(null)} disabled={deleteLoading}>Cancel</button>
+              <button className="ip-btn ip-submit" style={{ flex: 1, background: '#F04438' }} onClick={handleDelete} disabled={deleteLoading}>
+                {deleteLoading ? 'Deleting...' : 'Delete'}
+              </button>
+            </div>
+          </div>
+        </Modal>
+      )}
     </div>
   )
 }

@@ -18,6 +18,7 @@ import reloadIcon from '../assets/icons/reload-icon.svg'
 import addIcon from '../assets/icons/add-icon-white.svg'
 import dotsIcon from '../assets/icons/3dots-icon.svg'
 import './Appointments.css'
+import doctorProfileImg from '../assets/images/doctor-profile.png'
 
 const mapApiAppointment = (a: ApiAppointment): Appointment => ({
   id: a.referenceId,
@@ -31,7 +32,7 @@ const mapApiAppointment = (a: ApiAppointment): Appointment => ({
   session: `${a.schedule.startTime.slice(0, 5)} – ${a.schedule.stopTime.slice(0, 5)}`,
   token: String(a.tokenNumber).padStart(2, '0'),
   doctor: a.doctor.name,
-  doctorAvatar: a.doctor.profilePicture || `https://i.pravatar.cc/32?u=${a.doctor.id}`,
+  doctorAvatar: a.doctor.profilePicture || doctorProfileImg,
   specialty: a.doctor.specialties[0]?.name ?? '',
   bookingMethod: a.creatorRole === 'patient' ? 'Online' : 'Offline' as BookingMethod,
   bookedDate: new Date(a.createdAt).toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' }),

@@ -73,11 +73,18 @@ export const getMedicalSystems = () => api.get<MedicalSystemsResponse>('/metadat
 
 export const getQualifications = () => api.get<QualificationsResponse>('/metadata/qualifications')
 
-export const createDoctor = (body: import('./types').CreateDoctorRequest) =>
-  api.post<CreateDoctorResponse>('/doctors', body)
+export const createDoctor = (body: import('./types').CreateDoctorRequest | FormData) =>
+  body instanceof FormData
+    ? client.post<CreateDoctorResponse>('/doctors', body, { headers: { 'Content-Type': 'multipart/form-data' } }).then(r => r.data)
+    : api.post<CreateDoctorResponse>('/doctors', body)
 
-export const updateDoctor = (doctorId: string, body: import('./types').UpdateDoctorRequest) =>
-  api.patch<CreateDoctorResponse>(`/doctors/${doctorId}`, body)
+export const updateDoctor = (doctorId: string, body: import('./types').UpdateDoctorRequest | FormData) =>
+  body instanceof FormData
+    ? client.patch<CreateDoctorResponse>(`/doctors/${doctorId}`, body, { headers: { 'Content-Type': 'multipart/form-data' } }).then(r => r.data)
+    : api.patch<CreateDoctorResponse>(`/doctors/${doctorId}`, body)
+
+export const deleteDoctor = (doctorId: string, medicalCenterId: string) =>
+  client.delete<{ success: boolean }>(`/doctors/${doctorId}/medical-center`, { data: {} }).then(r => r.data)
 
 export const updateDoctorSchedule = (doctorId: string, body: import('./types').UpdateScheduleRequest) =>
   api.post<import('./types').UpdateScheduleResponse>(`/doctors/${doctorId}/schedule`, body)

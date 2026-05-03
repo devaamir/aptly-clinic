@@ -1,11 +1,13 @@
 import type { FC } from 'react'
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import Badge from '../components/Badge'
 import Modal from '../components/Modal'
 import FormField from '../components/FormField'
 import type { DoctorDetail } from '../services/types'
 import { updateDoctorSchedule, updateDoctor } from '../services/api'
 import { useAppContext } from '../context/AppContext'
+import cameraIcon from '../assets/icons/camera-icon.svg'
+import doctorProfileImg from '../assets/images/doctor-profile.png'
 import patientsGreenIcon from '../assets/icons/patients-green-icon.svg'
 import patientsRedIcon from '../assets/icons/patients-red-icon.svg'
 import clockBlueIcon from '../assets/icons/clock-blue-icon.svg'
@@ -48,6 +50,9 @@ const DoctorProfile: FC<DoctorProfileProps> = ({ doctor, onBack, onEdit }) => {
   const [editQualificationIds, setEditQualificationIds] = useState<string[]>(doctor.qualifications.map(q => q.id))
   const [editLoading, setEditLoading] = useState(false)
   const [editError, setEditError] = useState('')
+  const [editAvatarFile, setEditAvatarFile] = useState<File | null>(null)
+  const [editAvatarPreview, setEditAvatarPreview] = useState<string | null>(null)
+  const editFileRef = useRef<HTMLInputElement>(null)
 
   const setEdit = (key: keyof typeof editForm) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) =>
     setEditForm(f => ({ ...f, [key]: e.target.value }))
@@ -56,18 +61,36 @@ const DoctorProfile: FC<DoctorProfileProps> = ({ doctor, onBack, onEdit }) => {
     setEditLoading(true)
     setEditError('')
     try {
-      const res = await updateDoctor(doctor.id, {
-        name: editForm.name || undefined,
-        emailAddress: editForm.emailAddress || undefined,
-        about: editForm.about || undefined,
-        consultationFee: editForm.consultationFee ? Number(editForm.consultationFee) : undefined,
-        yearsOfExperience: editForm.yearsOfExperience ? Number(editForm.yearsOfExperience) : undefined,
-        advanceBookingLimit: editForm.advanceBookingLimit ? Number(editForm.advanceBookingLimit) : undefined,
-        estimateConsultationTime: editForm.estimateConsultationTime ? Number(editForm.estimateConsultationTime) : undefined,
-        medicalSystemId: editForm.medicalSystemId || undefined,
-        specialtyIds: editSpecialtyIds,
-        qualificationIds: editQualificationIds,
-      })
+      let body: import('../services/types').UpdateDoctorRequest | FormData
+      if (editAvatarFile) {
+        const fd = new FormData()
+        if (editForm.name) fd.append('name', editForm.name)
+        if (editForm.emailAddress) fd.append('emailAddress', editForm.emailAddress)
+        if (editForm.about) fd.append('about', editForm.about)
+        if (editForm.consultationFee) fd.append('consultationFee', editForm.consultationFee)
+        if (editForm.yearsOfExperience) fd.append('yearsOfExperience', editForm.yearsOfExperience)
+        if (editForm.advanceBookingLimit) fd.append('advanceBookingLimit', editForm.advanceBookingLimit)
+        if (editForm.estimateConsultationTime) fd.append('estimateConsultationTime', editForm.estimateConsultationTime)
+        if (editForm.medicalSystemId) fd.append('medicalSystemId', editForm.medicalSystemId)
+        editSpecialtyIds.forEach(id => fd.append('specialtyIds', id))
+        editQualificationIds.forEach(id => fd.append('qualificationIds', id))
+        fd.append('profilePicture', editAvatarFile)
+        body = fd
+      } else {
+        body = {
+          name: editForm.name || undefined,
+          emailAddress: editForm.emailAddress || undefined,
+          about: editForm.about || undefined,
+          consultationFee: editForm.consultationFee ? Number(editForm.consultationFee) : undefined,
+          yearsOfExperience: editForm.yearsOfExperience ? Number(editForm.yearsOfExperience) : undefined,
+          advanceBookingLimit: editForm.advanceBookingLimit ? Number(editForm.advanceBookingLimit) : undefined,
+          estimateConsultationTime: editForm.estimateConsultationTime ? Number(editForm.estimateConsultationTime) : undefined,
+          medicalSystemId: editForm.medicalSystemId || undefined,
+          specialtyIds: editSpecialtyIds,
+          qualificationIds: editQualificationIds,
+        }
+      }
+      const res = await updateDoctor(doctor.id, body)
       if (res.success) {
         onEdit?.({ ...doctor, ...res.data })
         setShowEditDoctor(false)
@@ -157,7 +180,7 @@ const DoctorProfile: FC<DoctorProfileProps> = ({ doctor, onBack, onEdit }) => {
       <div className="dp-body">
         {/* Profile Card */}
         <div className="dp-profile-card">
-          <img src={doctor.profilePicture || `https://i.pravatar.cc/96?u=${doctor.id}`} alt={doctor.name} className="dp-avatar" />
+          <img src={doctor.profilePicture || doctorProfileImg} alt={doctor.name} className="dp-avatar" />
           <div className="dp-profile-info">
             <div className="dp-name-row">
               <span className="dp-name">{doctor.name}</span>
@@ -335,6 +358,15 @@ const DoctorProfile: FC<DoctorProfileProps> = ({ doctor, onBack, onEdit }) => {
             <div className="modal-body-scroll">
               <div className="sch-body">
                 {editError && <div style={{ color: '#F04438', background: '#FEF3F2', padding: '10px 14px', borderRadius: 8, marginBottom: 16, fontSize: 13 }}>{editError}</div>}
+                <div className="doc-avatar-upload" style={{ marginBottom: 24 }}>
+                  <div className="doc-avatar-wrap" onClick={() => editFileRef.current?.click()}>
+                    <img src={editAvatarPreview ?? doctor.profilePicture ?? doctorProfileImg} alt="" className="doc-avatar-circle" />
+                    <div className="doc-camera-btn">
+                      <img src={cameraIcon} alt="camera" style={{ width: 18, height: 18 }} />
+                    </div>
+                  </div>
+                  <input ref={editFileRef} type="file" accept="image/*" hidden onChange={e => { const f = e.target.files?.[0]; if (f) { setEditAvatarFile(f); setEditAvatarPreview(URL.createObjectURL(f)) } }} />
+                </div>
                 <div style={{ marginBottom: 18 }}>
                   <FormField label="Full Name" value={editForm.name} onChange={setEdit('name')} />
                 </div>
