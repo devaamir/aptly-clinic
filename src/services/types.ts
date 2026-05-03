@@ -63,6 +63,7 @@ export interface UserMedicalCenter {
   country: string; about: string; alternatePhoneNumber: string; websiteUrl: string
   profilePicture: string; createdAt: string; updatedAt: string
   creator: MedicalCenterCreator
+  specialties: Speciality[]
 }
 export interface UserContext { role: string; medicalCenter: UserMedicalCenter }
 export interface ContextsResponse { success: boolean; data: UserContext[] }
@@ -81,6 +82,23 @@ export interface Patient {
   creator: AppointmentUser; creatorRole: string
 }
 export interface PatientsResponse { success: boolean; data: Patient[] }
+export interface PatientSearchResponse { success: boolean; data: Patient[] }
+
+// Create Appointment
+export interface CreateAppointmentRequest {
+  appointmentDate: string
+  doctorScheduleId: string
+  patientId: string
+}
+export interface CreatedAppointment {
+  id: string; referenceId: string; tokenNumber: number; appointmentDate: string
+  tokenStatus: string; creatorRole: string; cancellerRole: string; createdAt: string; updatedAt: string
+  doctor: AppointmentDoctor; patient: AppointmentPatient
+  creator: AppointmentUser; canceller: AppointmentUser
+  schedule: AppointmentSchedule & { deletedAt: null | string }
+  medicalCenter: UserMedicalCenter & { isVerified: boolean; deletedAt: null | string }
+}
+export interface CreateAppointmentResponse { success: boolean; data: CreatedAppointment }
 
 // Doctors
 export interface DoctorsResponse { success: boolean; data: AppointmentDoctor[] }
@@ -146,7 +164,7 @@ export interface UpdateDoctorRequest {
 // Doctor Schedule
 export interface DoctorSchedule {
   id: string; dayOfWeek: string; startTime: string; stopTime: string
-  tokenLimit: number; createdAt: string; updatedAt: string; remainingTokenCount: number
+  tokenLimit: number; createdAt: string; updatedAt: string; deletedAt: null | string; remainingTokenCount: number
 }
 export interface DoctorScheduleResponse { success: boolean; data: DoctorSchedule[] }
 
@@ -168,6 +186,29 @@ export interface QueueSSEData {
   appointments: QueueAppointment[]
   activePauses: ActivePause[]
 }
+
+// Doctors List (public search)
+export interface DoctorListMedicalCenterSchedule {
+  id: string; dayOfWeek: string; startTime: string; stopTime: string
+  tokenLimit: number; createdAt: string; updatedAt: string; deletedAt: null | string
+}
+export interface DoctorListMedicalCenter {
+  id: string; name: string; type: string; phoneNumber: string; emailAddress: string
+  latitude: number; longitude: number; address: string; district: string; state: string
+  country: string; about: string; alternatePhoneNumber: string; websiteUrl: string
+  profilePicture: string; isVerified: boolean; createdAt: string; updatedAt: string; deletedAt: null | string
+  distanceInMeters: number; nextSchedule: DoctorListMedicalCenterSchedule | null
+}
+export interface DoctorListItem {
+  id: string; name: string; referenceId: string; phoneNumber: string; emailAddress: string
+  yearsOfExperience: number; advanceBookingLimit: number; estimateConsultationTime: number
+  latitude: number; longitude: number; address: string; district: string; state: string
+  country: string; about: string; consultationFee: number; profilePicture: string
+  createdAt: string; updatedAt: string; deletedAt: null | string
+  specialties: Speciality[]; medicalCenters: DoctorListMedicalCenter[]
+  medicalSystem: MedicalSystem; qualifications: Qualification[]
+}
+export interface DoctorsListResponse { success: boolean; data: DoctorListItem[]; pagination: Pagination }
 
 // Create Clinic
 export interface ClinicData {

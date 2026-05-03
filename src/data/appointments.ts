@@ -3,6 +3,7 @@ export type BookingMethod = 'Online' | 'Offline'
 
 export interface Appointment {
   id: string
+  uuid?: string
   patient: string
   avatar: string
   phone: string

@@ -337,3 +337,96 @@
 .doc-delete-btn:hover {
   background: #FECDCA;
 }
+
+/* Doctor name search dropdown */
+.doc-name-search-wrap {
+  position: relative;
+}
+
+.doc-name-search-spinner {
+  width: 14px;
+  height: 14px;
+  border: 2px solid #e0e0e0;
+  border-top-color: #4A90E2;
+  border-radius: 50%;
+  animation: doc-spin 0.6s linear infinite;
+  flex-shrink: 0;
+  margin-right: 10px;
+}
+
+.doc-name-clear-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #9AA0AC;
+  font-size: 13px;
+  padding: 0 10px 0 4px;
+  line-height: 1;
+  flex-shrink: 0;
+}
+.doc-name-clear-btn:hover { color: #F04438; }
+
+@keyframes doc-spin {
+  to { transform: translateY(-50%) rotate(360deg); }
+}
+
+.doc-name-dropdown {
+  position: fixed;
+  background: #fff;
+  border: 1px solid #E4E7EC;
+  border-radius: 8px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.10);
+  list-style: none;
+  margin: 0;
+  padding: 4px 0;
+  z-index: 9999;
+  max-height: 240px;
+  overflow-y: auto;
+}
+
+.doc-name-dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.doc-name-dropdown-item:hover {
+  background: #F5F7FA;
+}
+
+.doc-name-dropdown-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.doc-name-dropdown-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.doc-name-dropdown-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: #0A0A0A;
+  font-family: Manrope, sans-serif;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.doc-name-dropdown-specialties {
+  font-size: 11px;
+  color: #636A79;
+  font-family: Manrope, sans-serif;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}

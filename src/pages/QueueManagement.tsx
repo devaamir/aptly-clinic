@@ -27,6 +27,7 @@ import dotsIcon from '../assets/icons/3dots-icon.svg'
 import Badge from '../components/Badge'
 import './QueueManagement.css'
 import doctorProfileImg from '../assets/images/doctor-profile.png'
+import userProfileImg from '../assets/images/user-profile.png'
 
 const parseMinutes = (time: string): number => {
   const t = time.toLowerCase().replace(/\s/g, '')
@@ -195,7 +196,7 @@ const QueueManagement: FC = () => {
         arrival: new Date(a.createdAt).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
         age: new Date().getFullYear() - new Date(a.patient.dateOfBirth).getFullYear(),
         gender: a.patient.gender,
-        avatar: `https://i.pravatar.cc/32?u=${i}`,
+        avatar: userProfileImg,
         status: (a.tokenStatus === 'done' ? 'done' : a.tokenStatus === 'skipped' ? 'skipped' : a.tokenStatus === 'cancelled' ? 'cancelled' : a.tokenStatus === 'ongoing' ? 'ongoing' : 'pending') as Status,
       }))
       setPatientsMap(prev => ({ ...prev, [`${selectedId}-${sessionIdx}`]: mapped }))
@@ -484,7 +485,7 @@ const QueueManagement: FC = () => {
                 <button className="action-btn" disabled={!session.isLive || !!pausedDuration} onClick={() => setShowPauseModal(true)}><img src={instantPauseIcon} alt="" className="btn-icon" /> Instant Pause</button>
                 <button className="action-btn" disabled={!session.isLive || !!pausedDuration} onClick={() => setShowScheduledModal(true)}><img src={scheduledPauseIcon} alt="" className="btn-icon" /> Scheduled Pause</button>
                 <button className="action-btn" disabled={!session.isLive || !!pausedDuration || !patients.some(p => p.status === 'ongoing')} onClick={handleSkip}><img src={skipIcon} alt="" className="btn-icon" /> Skip</button>
-                <button className="action-btn next-token" disabled={!session.isLive || !!pausedDuration || allConsulted} onClick={handleNextToken}>
+                <button className="action-btn next-token" disabled={!session.isLive || !!pausedDuration || allConsulted || patients.length === 0} onClick={handleNextToken}>
                   {!patients.some(p => p.status === 'ongoing') && patients.some(p => p.status === 'pending') && !patients.some(p => p.status === 'done' || p.status === 'skipped') ? 'Start Now' : 'Next Token'} <img src={rightArrow} alt="" className="btn-icon" />
                 </button>
               </div>

@@ -4,8 +4,8 @@ import PageHeader from '../components/PageHeader'
 import InputBox from '../components/InputBox'
 import Modal from '../components/Modal'
 import FormField from '../components/FormField'
-import { getDoctors, createDoctor, getDoctor, deleteDoctor } from '../services/api'
-import type { AppointmentDoctor, DoctorDetail } from '../services/types'
+import { getDoctors, createDoctor, getDoctor, deleteDoctor, getDoctorsList } from '../services/api'
+import type { AppointmentDoctor, DoctorDetail, DoctorListItem } from '../services/types'
 import { useAppContext } from '../context/AppContext'
 import searchIcon from '../assets/icons/search-icon.svg'
 import sortIcon from '../assets/icons/sort-icon.svg'
@@ -66,11 +66,21 @@ const Doctors: FC<{ onViewProfile: (d: DoctorDetail) => void }> = ({ onViewProfi
   const [selectedQualificationIds, setSelectedQualificationIds] = useState<string[]>([])
   const [deleteTarget, setDeleteTarget] = useState<Doctor | null>(null)
   const [deleteLoading, setDeleteLoading] = useState(false)
+  const [nameSearch, setNameSearch] = useState('')
+  const [nameResults, setNameResults] = useState<DoctorListItem[]>([])
+  const [nameSearchLoading, setNameSearchLoading] = useState(false)
+  const nameSearchRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const nameInputRef = useRef<HTMLDivElement>(null)
+  const [selectedDoctor, setSelectedDoctor] = useState<DoctorListItem | null>(null)
 
   const resetForm = () => {
     setForm({ name: '', phoneNumber: '', emailAddress: '', about: '', consultationFee: '', yearsOfExperience: '', advanceBookingLimit: '', estimateConsultationTime: '', medicalSystemId: '', specialtyIds: '' })
     setSelectedSpecialtyIds([])
     setSelectedQualificationIds([])
+    setNameSearch('')
+    setNameResults([])
+    setSelectedDoctor(null)
+    setAvatarPreview(null)
     avatarFileRef.current = null
   }
 
@@ -134,6 +144,19 @@ const Doctors: FC<{ onViewProfile: (d: DoctorDetail) => void }> = ({ onViewProfi
       if (res.success) setDoctors(res.data.map(mapDoctor))
     }).catch(() => {}).finally(() => setLoading(false))
   }, [activeContext?.medicalCenter.id])
+
+  useEffect(() => {
+    if (nameSearchRef.current) clearTimeout(nameSearchRef.current)
+    if (!nameSearch.trim()) { setNameResults([]); return }
+    nameSearchRef.current = setTimeout(() => {
+      setNameSearchLoading(true)
+      getDoctorsList({ search: nameSearch, limit: 10 })
+        .then(res => { if (res.success) setNameResults(res.data) })
+        .catch(() => {})
+        .finally(() => setNameSearchLoading(false))
+    }, 350)
+    return () => { if (nameSearchRef.current) clearTimeout(nameSearchRef.current) }
+  }, [nameSearch])
 
   const filtered = doctors.filter(d =>
     !searchQuery.trim() ||
@@ -251,51 +274,126 @@ const Doctors: FC<{ onViewProfile: (d: DoctorDetail) => void }> = ({ onViewProfi
                 <div className="modal-body-scroll">
                   <div className="sch-body">
                     <div className="doc-avatar-upload">
-                      <div className="doc-avatar-wrap" onClick={() => fileInputRef.current?.click()}>
+                      <div className="doc-avatar-wrap" onClick={() => !selectedDoctor && fileInputRef.current?.click()}>
                         <img src={avatarPreview ?? avatarIcon} alt="upload" className="doc-avatar-circle" />
-                        <div className="doc-camera-btn" onClick={() => fileInputRef.current?.click()}>
-                          <img src={cameraIcon} alt="camera" style={{ width: 18, height: 18 }} />
-                        </div>
+                        {!selectedDoctor && (
+                          <div className="doc-camera-btn" onClick={() => fileInputRef.current?.click()}>
+                            <img src={cameraIcon} alt="camera" style={{ width: 18, height: 18 }} />
+                          </div>
+                        )}
                       </div>
                       <input ref={fileInputRef} type="file" accept="image/*" style={{ display: 'none' }}
                         onChange={e => { const file = e.target.files?.[0]; if (file) { avatarFileRef.current = file; setAvatarPreview(URL.createObjectURL(file)) } }} />
                     </div>
                     <div style={{ marginBottom: 18 }}>
-                      <FormField label="Full Name" placeholder="Enter full name" value={form.name} onChange={e => setForm(p => ({ ...p, name: (e.target as HTMLInputElement).value }))} />
+                      <div className="form-field">
+                        <label className="form-field-label">Full Name<span className="form-field-required"> *</span></label>
+                        <div className="form-field-input-wrap" ref={nameInputRef}>
+                          <input
+                            className="form-field-input"
+                            placeholder="Search doctor by name..."
+                            value={nameSearch}
+                            onChange={e => {
+                              setNameSearch(e.target.value)
+                              setForm(p => ({ ...p, name: e.target.value }))
+                              if (selectedDoctor) setSelectedDoctor(null)
+                            }}
+                          />
+                          {nameSearchLoading && <span className="doc-name-search-spinner" />}
+                          {selectedDoctor && (
+                            <button className="doc-name-clear-btn" onMouseDown={() => resetForm()}>✕</button>
+                          )}
+                        </div>
+                        {nameResults.length > 0 && nameInputRef.current && (() => {
+                          const r = nameInputRef.current.getBoundingClientRect()
+                          return (
+                            <ul className="doc-name-dropdown" style={{ top: r.bottom + 4, left: r.left, width: r.width }}>
+                              {nameResults.map(d => (
+                                <li key={d.id} className="doc-name-dropdown-item"
+                                  onMouseDown={() => {
+                                    setSelectedDoctor(d)
+                                    setNameSearch(d.name)
+                                    setNameResults([])
+                                    setAvatarPreview(d.profilePicture || null)
+                                    setForm({
+                                      name: d.name,
+                                      phoneNumber: d.phoneNumber,
+                                      emailAddress: d.emailAddress,
+                                      about: d.about,
+                                      consultationFee: String(d.consultationFee),
+                                      yearsOfExperience: String(d.yearsOfExperience),
+                                      advanceBookingLimit: String(d.advanceBookingLimit),
+                                      estimateConsultationTime: String(d.estimateConsultationTime),
+                                      medicalSystemId: d.medicalSystem?.id ?? '',
+                                      specialtyIds: '',
+                                    })
+                                    setSelectedSpecialtyIds(d.specialties.map(s => s.id))
+                                    setSelectedQualificationIds(d.qualifications.map(q => q.id))
+                                  }}>
+                                  <img src={d.profilePicture || doctorProfileImg} alt={d.name} className="doc-name-dropdown-avatar" />
+                                  <div className="doc-name-dropdown-info">
+                                    <span className="doc-name-dropdown-name">{d.name}</span>
+                                    <span className="doc-name-dropdown-specialties">{d.specialties.map(s => s.name).join(', ') || '—'}</span>
+                                  </div>
+                                </li>
+                              ))}
+                            </ul>
+                          )
+                        })()}
+                      </div>
                     </div>
                     <div style={{ marginBottom: 18 }}>
-                      <FormField as="select" label="Medical System" value={form.medicalSystemId} onChange={e => setForm(p => ({ ...p, medicalSystemId: (e.target as HTMLSelectElement).value }))}
-                        options={medicalSystems.map(m => ({ label: m.name, value: m.id }))} />
+                      <FormField as="select" label="Medical System" value={form.medicalSystemId}
+                        onChange={e => !selectedDoctor && setForm(p => ({ ...p, medicalSystemId: (e.target as HTMLSelectElement).value }))}
+                        options={medicalSystems.map(m => ({ label: m.name, value: m.id }))}
+                        disabled={!!selectedDoctor} />
                     </div>
                     <div style={{ marginBottom: 18 }}>
-                      <FormField as="select" label="Specialty" value={selectedSpecialtyIds[0] ?? ''} onChange={e => setSelectedSpecialtyIds([(e.target as HTMLSelectElement).value])}
-                        options={specialties.map(s => ({ label: s.name, value: s.id }))} />
+                      <FormField as="select" label="Specialty" value={selectedSpecialtyIds[0] ?? ''}
+                        onChange={e => !selectedDoctor && setSelectedSpecialtyIds([(e.target as HTMLSelectElement).value])}
+                        options={specialties.map(s => ({ label: s.name, value: s.id }))}
+                        disabled={!!selectedDoctor} />
                     </div>
                     <div style={{ marginBottom: 18 }}>
                       <div className="form-field">
                         <label className="form-field-label">Qualification <span className="form-field-required"> *</span></label>
                         <select multiple className="form-field-input" style={{ height: 96 }}
                           value={selectedQualificationIds}
-                          onChange={e => setSelectedQualificationIds(Array.from(e.target.selectedOptions, o => o.value))}>
+                          disabled={!!selectedDoctor}
+                          onChange={e => !selectedDoctor && setSelectedQualificationIds(Array.from(e.target.selectedOptions, o => o.value))}>
                           {qualifications.map(q => <option key={q.id} value={q.id}>{q.name}</option>)}
                         </select>
                       </div>
                     </div>
                     <div className="sch-form-row">
-                      <FormField label="Phone Number" placeholder="Enter phone" type="tel" prefix="+91" value={form.phoneNumber} onChange={e => setForm(p => ({ ...p, phoneNumber: (e.target as HTMLInputElement).value }))} />
-                      <FormField label="Email" placeholder="Enter email" type="email" value={form.emailAddress} onChange={e => setForm(p => ({ ...p, emailAddress: (e.target as HTMLInputElement).value }))} />
+                      <FormField label="Phone Number" placeholder="Enter phone" type="tel" prefix="+91" value={form.phoneNumber}
+                        readOnly={!!selectedDoctor}
+                        onChange={e => !selectedDoctor && setForm(p => ({ ...p, phoneNumber: (e.target as HTMLInputElement).value }))} />
+                      <FormField label="Email" placeholder="Enter email" type="email" value={form.emailAddress}
+                        readOnly={!!selectedDoctor}
+                        onChange={e => !selectedDoctor && setForm(p => ({ ...p, emailAddress: (e.target as HTMLInputElement).value }))} />
                     </div>
                     <div className="sch-form-row">
-                      <FormField label="Experience (years)" placeholder="e.g. 5" type="number" min={0} value={form.yearsOfExperience} onChange={e => setForm(p => ({ ...p, yearsOfExperience: (e.target as HTMLInputElement).value }))} />
-                      <FormField label="Avg Time / Patient (min)" placeholder="e.g. 15" type="number" min={0} value={form.estimateConsultationTime} onChange={e => setForm(p => ({ ...p, estimateConsultationTime: (e.target as HTMLInputElement).value }))} />
+                      <FormField label="Experience (years)" placeholder="e.g. 5" type="number" min={0} value={form.yearsOfExperience}
+                        readOnly={!!selectedDoctor}
+                        onChange={e => !selectedDoctor && setForm(p => ({ ...p, yearsOfExperience: (e.target as HTMLInputElement).value }))} />
+                      <FormField label="Avg Time / Patient (min)" placeholder="e.g. 15" type="number" min={0} value={form.estimateConsultationTime}
+                        readOnly={!!selectedDoctor}
+                        onChange={e => !selectedDoctor && setForm(p => ({ ...p, estimateConsultationTime: (e.target as HTMLInputElement).value }))} />
                     </div>
                     <div className="sch-form-row">
-                      <FormField label="Consultation Fee" placeholder="e.g. 500" type="number" min={0} value={form.consultationFee} onChange={e => setForm(p => ({ ...p, consultationFee: (e.target as HTMLInputElement).value }))} />
-                      <FormField label="Advance Booking Limit (days)" placeholder="e.g. 7" type="number" min={0} value={form.advanceBookingLimit} onChange={e => setForm(p => ({ ...p, advanceBookingLimit: (e.target as HTMLInputElement).value }))} />
+                      <FormField label="Consultation Fee" placeholder="e.g. 500" type="number" min={0} value={form.consultationFee}
+                        readOnly={!!selectedDoctor}
+                        onChange={e => !selectedDoctor && setForm(p => ({ ...p, consultationFee: (e.target as HTMLInputElement).value }))} />
+                      <FormField label="Advance Booking Limit (days)" placeholder="e.g. 7" type="number" min={0} value={form.advanceBookingLimit}
+                        readOnly={!!selectedDoctor}
+                        onChange={e => !selectedDoctor && setForm(p => ({ ...p, advanceBookingLimit: (e.target as HTMLInputElement).value }))} />
                     </div>
                     <div style={{ marginBottom: 18 }}>
                       <label className="form-field-label">Biography / About</label>
-                      <textarea className="doc-textarea" placeholder="Write a short bio..." rows={4} style={{ height: 92 }} value={form.about} onChange={e => setForm(p => ({ ...p, about: e.target.value }))} />
+                      <textarea className="doc-textarea" placeholder="Write a short bio..." rows={4} style={{ height: 92 }} value={form.about}
+                        readOnly={!!selectedDoctor}
+                        onChange={e => !selectedDoctor && setForm(p => ({ ...p, about: e.target.value }))} />
                     </div>
                   </div>
                 </div>

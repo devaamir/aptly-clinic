@@ -1,7 +1,7 @@
 import axios from 'axios'
-import type { LoginResponse, AppointmentsResponse, ContextsResponse, SwitchContextResponse, DoctorScheduleResponse, DoctorsResponse, GetDoctorResponse, SpecialtiesResponse, MedicalSystemsResponse, QualificationsResponse, CreateDoctorResponse, PatientsResponse, QueueSSEData } from './types'
+import type { LoginResponse, AppointmentsResponse, ContextsResponse, SwitchContextResponse, DoctorScheduleResponse, DoctorsResponse, GetDoctorResponse, SpecialtiesResponse, MedicalSystemsResponse, QualificationsResponse, CreateDoctorResponse, PatientsResponse, QueueSSEData, DoctorsListResponse, PatientSearchResponse, CreateAppointmentRequest, CreateAppointmentResponse } from './types'
 
-export type { LoginResponse, AppointmentsResponse, ContextsResponse, SwitchContextResponse, DoctorScheduleResponse, DoctorsResponse, GetDoctorResponse, SpecialtiesResponse, MedicalSystemsResponse, QualificationsResponse, CreateDoctorResponse, PatientsResponse, QueueSSEData }
+export type { LoginResponse, AppointmentsResponse, ContextsResponse, SwitchContextResponse, DoctorScheduleResponse, DoctorsResponse, GetDoctorResponse, SpecialtiesResponse, MedicalSystemsResponse, QualificationsResponse, CreateDoctorResponse, PatientsResponse, QueueSSEData, DoctorsListResponse, PatientSearchResponse, CreateAppointmentRequest, CreateAppointmentResponse }
 export * from './types'
 
 const client = axios.create({
@@ -52,6 +52,9 @@ export const login = (emailAddress: string, password: string) =>
 export const getAppointments = (page = 1, limit = 20) =>
   api.get<AppointmentsResponse>(`/appointments/medical-center?page=${page}&limit=${limit}`)
 
+export const createAppointment = (body: CreateAppointmentRequest) =>
+  api.post<CreateAppointmentResponse>('/appointments', body)
+
 export const getContexts = () => api.get<ContextsResponse>('/auth/contexts')
 
 export const switchContext = (role: string, medicalCenterId: string) =>
@@ -63,7 +66,19 @@ export const switchContext = (role: string, medicalCenterId: string) =>
 
 export const getPatients = () => api.get<PatientsResponse>('/patients')
 
+export const searchPatients = (phoneNumber: string) =>
+  api.get<PatientSearchResponse>(`/patients?phoneNumber=${encodeURIComponent(phoneNumber)}`)
+
 export const getDoctors = () => api.get<DoctorsResponse>('/doctors/medical-center')
+
+export const getDoctorsList = (params: { search?: string; page?: number; limit?: number } = {}) => {
+  const query = new URLSearchParams()
+  if (params.search) query.set('search', params.search)
+  if (params.page != null) query.set('page', String(params.page))
+  if (params.limit != null) query.set('limit', String(params.limit))
+  const qs = query.toString()
+  return api.get<DoctorsListResponse>(`/doctors${qs ? `?${qs}` : ''}`)
+}
 
 export const getDoctor = (id: string) => api.get<GetDoctorResponse>(`/doctors/${id}`)
 

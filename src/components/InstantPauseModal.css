@@ -97,3 +97,8 @@
   background: var(--color-accent);
   color: #fff;
 }
+
+.ip-submit:disabled {
+  background: #B0B7C3;
+  cursor: not-allowed;
+}

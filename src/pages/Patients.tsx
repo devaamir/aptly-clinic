@@ -15,6 +15,7 @@ import dotsIcon from '../assets/icons/3dots-icon.svg'
 import searchIcon from '../assets/icons/search-icon.svg'
 import sortIcon from '../assets/icons/sort-icon.svg'
 import reloadIcon from '../assets/icons/reload-icon.svg'
+import userProfileImg from '../assets/images/user-profile.png'
 import './Patients.css'
 
 interface Patient {
@@ -37,7 +38,7 @@ const statusProps: Record<Patient['status'], { bgColor: string; textColor: strin
 const mapPatient = (p: ApiPatient): Patient => ({
   id: p.referenceId,
   name: p.name,
-  avatar: `https://i.pravatar.cc/32?u=${p.id}`,
+  avatar: userProfileImg,
   phone: p.phoneNumber,
   gender: p.gender,
   dob: new Date(p.dateOfBirth).toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' }),
