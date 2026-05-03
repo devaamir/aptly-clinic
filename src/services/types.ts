@@ -83,6 +83,8 @@ export interface Patient {
 }
 export interface PatientsResponse { success: boolean; data: Patient[] }
 export interface PatientSearchResponse { success: boolean; data: Patient[] }
+export interface CreatePatientRequest { name: string; phoneNumber: string; gender: string; dateOfBirth: string }
+export interface CreatePatientResponse { success: boolean; message: string; data: Patient }
 
 // Create Appointment
 export interface CreateAppointmentRequest {

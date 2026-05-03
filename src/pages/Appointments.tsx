@@ -9,7 +9,7 @@ import FormField from '../components/FormField'
 import { bookingProps, statusProps } from '../data/appointments'
 import type { Appointment, AptStatus, BookingMethod } from '../data/appointments'
 import { useAppContext } from '../context/AppContext'
-import { getAppointments, searchPatients, getDoctors, getDoctorSchedule, createAppointment, updateAppointmentStatus } from '../services/api'
+import { getAppointments, searchPatients, getDoctors, getDoctorSchedule, createAppointment, updateAppointmentStatus, createPatient } from '../services/api'
 import type { Appointment as ApiAppointment, Patient, AppointmentDoctor, DoctorSchedule } from '../services/api'
 import calendarIcon from '../assets/icons/calendar.svg'
 import searchIcon from '../assets/icons/search-icon.svg'
@@ -148,13 +148,19 @@ const Appointments: FC = () => {
   const [createdAppointment, setCreatedAppointment] = useState<import('../services/api').CreatedAppointment | null>(null)
 
   const handleSubmit = async () => {
-    if (!selectedSession || !selectedPatient || !selectedDate) return
+    if (!selectedSession || !selectedDate || !/^[6-9]\d{9}$/.test(patientPhone.trim()) || !patientName.trim()) return
     setSubmitLoading(true)
     try {
+      let patientId = selectedPatient?.id
+      if (!patientId) {
+        const pr = await createPatient({ name: patientName, phoneNumber: patientPhone, gender: patientGender, dateOfBirth: patientDob })
+        if (!pr.success) return
+        patientId = pr.data.id
+      }
       const res = await createAppointment({
         appointmentDate: new Date(selectedDate).toISOString().split('T')[0],
         doctorScheduleId: selectedSession,
-        patientId: selectedPatient.id,
+        patientId,
       })
       if (res.success) {
         setCreatedAppointment(res.data)
@@ -650,7 +656,7 @@ const Appointments: FC = () => {
                       )}
                       <div className="ip-actions" style={{ padding: '16px 24px' }}>
                         <button className="ip-btn ip-cancel" onClick={resetSchedule}>Cancel</button>
-                        <button className="ip-btn ip-submit" onClick={handleSubmit} disabled={submitLoading || !patientPhone.trim() || !patientName.trim() || !selectedDoctor || !selectedSession || !!blockReason}>
+                        <button className="ip-btn ip-submit" onClick={handleSubmit} disabled={submitLoading || !/^[6-9]\d{9}$/.test(patientPhone.trim()) || !patientName.trim() || !selectedDoctor || !selectedSession || !!blockReason}>
                           {submitLoading ? 'Submitting...' : 'Submit'}
                         </button>
                       </div>
