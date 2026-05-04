@@ -92,7 +92,7 @@ const Auth: FC<AuthProps> = ({ onLogin }) => {
           </div>
 
           {error && <p style={{ color: '#F04438', fontSize: 13, marginBottom: 8, fontFamily: 'Manrope' }}>{error}</p>}
-          <Button label={loading ? 'Logging in...' : 'Login'} style={{ marginBottom: '24px' }} onClick={handleLogin} />          <p className="trouble-text">Having trouble logging in? <a href="#">Contact Us</a></p>
+          <Button label={loading ? 'Logging in...' : 'Login'} style={{ marginBottom: '24px' }} onClick={handleLogin} />          <p className="trouble-text">Having trouble logging in? <a href="https://wa.me/919778798511" target="_blank" rel="noreferrer">Contact Us</a></p>
         </>
       )}
 

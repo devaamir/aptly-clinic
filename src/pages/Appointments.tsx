@@ -22,7 +22,7 @@ import doctorProfileImg from '../assets/images/doctor-profile.png'
 import userProfileImg from '../assets/images/user-profile.png'
 
 const to12h = (t: string) => {
-  const [h, m] = t.split(':').map(Number)
+  const [h, m] = t.slice(0, 5).split(':').map(Number)
   const ampm = h >= 12 ? 'PM' : 'AM'
   return `${h % 12 || 12}:${String(m).padStart(2, '0')} ${ampm}`
 }
@@ -37,7 +37,7 @@ const mapApiAppointment = (a: ApiAppointment): Appointment => ({
   dob: a.patient.dateOfBirth,
   age: new Date().getFullYear() - new Date(a.patient.dateOfBirth).getFullYear(),
   date: new Date(a.appointmentDate).toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' }),
-  session: `${a.schedule.startTime.slice(0, 5)} – ${a.schedule.stopTime.slice(0, 5)}`,
+  session: `${to12h(a.schedule.startTime)} – ${to12h(a.schedule.stopTime)}`,
   token: String(a.tokenNumber).padStart(2, '0'),
   doctor: a.doctor.name,
   doctorAvatar: a.doctor.profilePicture || doctorProfileImg,
