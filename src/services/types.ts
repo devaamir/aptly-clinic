@@ -184,6 +184,7 @@ export interface ActivePause {
   id: string; date: string; startTime: string; stopTime: string
   status: string; createdAt: string; updatedAt: string
 }
+export interface PauseScheduleResponse { success: boolean; data: ActivePause }
 export interface QueueSSEData {
   appointments: QueueAppointment[]
   activePauses: ActivePause[]

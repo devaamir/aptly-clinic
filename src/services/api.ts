@@ -140,6 +140,12 @@ export const subscribeQueue = (doctorScheduleId: string, onData: (data: QueueSSE
 export const updateAppointmentStatus = (appointmentId: string, tokenStatus: 'pending' | 'done' | 'cancelled' | 'skipped' | 'ongoing') =>
   api.patch<{ success: boolean }>(`/appointments/${appointmentId}/status`, { tokenStatus })
 
+export const pauseSchedule = (scheduleId: string, body: { date: string; startTime: string; stopTime: string }) =>
+  api.post<import('./types').PauseScheduleResponse>(`/doctors/schedules/${scheduleId}/pause`, body)
+
+export const cancelSchedulePause = (pauseId: string) =>
+  api.patch<import('./types').PauseScheduleResponse>(`/doctors/schedules/pauses/${pauseId}/cancel`, {})
+
 export const setPassword = (token: string, password: string) =>
   api.post<{ success: boolean }>('/auth/set-password', { token, password })
 
