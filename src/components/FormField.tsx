@@ -19,6 +19,7 @@ interface SelectProps extends BaseProps, SelectHTMLAttributes<HTMLSelectElement>
   as: 'select'
   options: { label: string; value: string }[]
   prefix?: never
+  selectPlaceholder?: string
 }
 
 type FormFieldProps = InputProps | SelectProps
@@ -26,6 +27,7 @@ type FormFieldProps = InputProps | SelectProps
 const FormField: FC<FormFieldProps> = ({ label, showRequired = true, as, ...props }) => {
   const inputRef = useRef<HTMLInputElement>(null)
   const inputProps = props as InputProps
+  const selectPlaceholder = (props as SelectProps).selectPlaceholder ?? 'Select'
 
   return (
     <div className="form-field">
@@ -35,7 +37,7 @@ const FormField: FC<FormFieldProps> = ({ label, showRequired = true, as, ...prop
       {as === 'select' ? (
         <div className="form-field-select-wrap">
           <select className="form-field-input form-field-select" {...(props as SelectHTMLAttributes<HTMLSelectElement>)}>
-            <option value="">Select</option>
+            <option value="">{selectPlaceholder}</option>
             {(props as SelectProps).options?.map(o => (
               <option key={o.value} value={o.value}>{o.label}</option>
             ))}

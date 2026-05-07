@@ -51,7 +51,8 @@ type Filter = 'Today' | 'Tomorrow' | 'This Week' | 'Date' | 'Date Range'
 
 const Appointments: FC = () => {
   const [searchQuery, setSearchQuery] = useState('')
-  const { activeContext, specialties } = useAppContext()
+  const { activeContext } = useAppContext()
+  const specialties = activeContext?.medicalCenter?.specialties ?? []
 
 
   const [appointments, setAppointments] = useState<Appointment[]>([])
@@ -104,7 +105,7 @@ const Appointments: FC = () => {
 
   useEffect(() => {
     if (!selectedDoctor || !activeContext) { setDoctorSchedules([]); return }
-    const dateStr = new Date(selectedDate).toISOString().split('T')[0]
+    const dateStr = new Date(selectedDate).toLocaleDateString('en-CA', { timeZone: 'Asia/Kolkata' })
     setScheduleLoading(true)
     getDoctorSchedule(selectedDoctor, dateStr, activeContext.medicalCenter.id)
       .then(res => { if (res.success) setDoctorSchedules(res.data) })
@@ -123,12 +124,12 @@ const Appointments: FC = () => {
     return d
   })
 
-  const todayStr = new Date().toISOString().split('T')[0]
-  const maxDateStr = (() => { const d = new Date(); d.setDate(d.getDate() + 29); return d.toISOString().split('T')[0] })()
+  const todayStr = new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Kolkata' })
+  const maxDateStr = (() => { const d = new Date(); d.setDate(d.getDate() + 29); return d.toLocaleDateString('en-CA', { timeZone: 'Asia/Kolkata' }) })()
 
   const filteredDoctors = selectedSpecialty
     ? clinicDoctors.filter(d => d.specialties.some(s => s.id === selectedSpecialty))
-    : clinicDoctors
+    : []
 
   const [submitLoading, setSubmitLoading] = useState(false)
   const [cancelLoading, setCancelLoading] = useState(false)
@@ -158,7 +159,7 @@ const Appointments: FC = () => {
         patientId = pr.data.id
       }
       const res = await createAppointment({
-        appointmentDate: new Date(selectedDate).toISOString().split('T')[0],
+        appointmentDate: new Date(selectedDate).toLocaleDateString('en-CA', { timeZone: 'Asia/Kolkata' }),
         doctorScheduleId: selectedSession,
         patientId,
       })
@@ -570,6 +571,8 @@ const Appointments: FC = () => {
                         value={selectedDoctor}
                         onChange={e => { setSelectedDoctor((e.target as HTMLSelectElement).value); setSelectedSession(null) }}
                         options={filteredDoctors.map(d => ({ label: d.name, value: d.id }))}
+                        selectPlaceholder={!selectedSpecialty ? 'Select a specialty first' : filteredDoctors.length === 0 ? 'No doctors found for this specialty' : 'Select'}
+                        disabled={!selectedSpecialty || filteredDoctors.length === 0}
                       />
                     </div>
                     <h3 className="sch-section-title" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>

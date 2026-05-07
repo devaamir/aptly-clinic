@@ -22,7 +22,7 @@ const SelectProfile: FC<SelectProfileProps> = ({ onSelect }) => {
       const res = await switchContext(ctx.role, ctx.medicalCenter.id)
       if (res.success) {
         setTokens(res.data.accessToken, res.data.refreshToken)
-        setActiveContext(ctx)
+        setActiveContext({ role: ctx.role, medicalCenter: res.data.medicalCenter })
         onSelect(ctx)
       }
     } catch {

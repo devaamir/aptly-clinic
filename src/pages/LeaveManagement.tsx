@@ -60,7 +60,7 @@ const LeaveManagement: FC = () => {
   const [showCancel, setShowCancel] = useState(false)
   const [specialty, setSpecialty] = useState('')
   const [doctor, setDoctor] = useState('')
-  const todayStr = new Date().toISOString().split('T')[0]
+  const todayStr = new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Kolkata' })
   const [startDate, setStartDate] = useState(todayStr)
   const [endDate, setEndDate] = useState(todayStr)
   const [halfDay, setHalfDay] = useState(false)

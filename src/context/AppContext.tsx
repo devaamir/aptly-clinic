@@ -38,14 +38,7 @@ export const AppProvider: FC<{ children: ReactNode }> = ({ children }) => {
   const [specialties, setSpecialties] = useState<Speciality[]>([])
   const [medicalSystems, setMedicalSystems] = useState<MedicalSystem[]>([])
   const [qualifications, setQualifications] = useState<Qualification[]>([])
-  const [activeContext, setActiveContextState] = useState<UserContext | null>(() => {
-    const stored = localStorage.getItem('selectedClinic')
-    const role = localStorage.getItem('selectedRole')
-    if (stored && role) {
-      try { return { role, medicalCenter: JSON.parse(stored) as UserMedicalCenter } } catch { return null }
-    }
-    return null
-  })
+  const [activeContext, setActiveContextState] = useState<UserContext | null>(null)
 
   useEffect(() => {
     if (!accessToken) return
@@ -63,8 +56,6 @@ export const AppProvider: FC<{ children: ReactNode }> = ({ children }) => {
 
   const setActiveContext = (ctx: UserContext) => {
     setActiveContextState(ctx)
-    localStorage.setItem('selectedRole', ctx.role)
-    localStorage.setItem('selectedClinic', JSON.stringify(ctx.medicalCenter))
   }
 
   const logout = () => {
@@ -78,8 +69,6 @@ export const AppProvider: FC<{ children: ReactNode }> = ({ children }) => {
     setActiveContextState(null)
     localStorage.removeItem('accessToken')
     localStorage.removeItem('refreshToken')
-    localStorage.removeItem('selectedRole')
-    localStorage.removeItem('selectedClinic')
   }
 
   return (

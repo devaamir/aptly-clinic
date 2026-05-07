@@ -72,7 +72,12 @@ export interface ContextsResponse { success: boolean; data: UserContext[] }
 export interface SwitchContextResponse {
   success: boolean
   message: string
-  data: { accessToken: string; refreshToken: string }
+  data: {
+    accessToken: string
+    refreshToken: string
+    medicalCenter: UserMedicalCenter & { isVerified: boolean; deletedAt: string | null; specialties: Speciality[]; medicalSystem: MedicalSystem }
+    doctor: AppointmentDoctor & { isVerified: boolean; deletedAt: string | null } | null
+  }
 }
 
 // Patients

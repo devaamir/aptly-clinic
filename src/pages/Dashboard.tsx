@@ -150,7 +150,10 @@ const Dashboard: FC = () => {
               if (ctx) {
                 try {
                   const res = await switchContext(ctx.role, ctx.medicalCenter.id)
-                  if (res.success) { setTokens(res.data.accessToken, res.data.refreshToken); setActiveContext(ctx) }
+                  if (res.success) {
+                    setTokens(res.data.accessToken, res.data.refreshToken)
+                    setActiveContext({ role: ctx.role, medicalCenter: res.data.medicalCenter })
+                  }
                 } catch { setActiveContext(ctx) }
               }
               setSwitchTarget(null)

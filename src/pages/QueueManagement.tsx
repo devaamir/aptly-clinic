@@ -5,7 +5,7 @@ import Modal from '../components/Modal'
 import PageHeader from '../components/PageHeader'
 import InstantPauseModal from '../components/InstantPauseModal'
 import ScheduledPauseModal from '../components/ScheduledPauseModal'
-import { getDoctors, getDoctorSchedule, subscribeQueue, updateAppointmentStatus } from '../services/api'
+import { getDoctors, getDoctorSchedule, subscribeQueue, updateAppointmentStatus, pauseSchedule, cancelSchedulePause } from '../services/api'
 import type { AppointmentDoctor, DoctorSchedule, QueueSSEData } from '../services/types'
 import { useAppContext } from '../context/AppContext'
 import verifyTickGreen from '../assets/icons/verify-tick-green.svg'
@@ -171,7 +171,7 @@ const QueueManagement: FC = () => {
   useEffect(() => {
     const doc = doctors.find(d => d.id === selectedId)
     if (!doc?.apiId || !activeContext?.medicalCenter.id) return
-    const today = new Date().toISOString().split('T')[0]
+    const today = new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Kolkata' })
     getDoctorSchedule(doc.apiId, today, activeContext.medicalCenter.id).then(res => {
       if (res.success) {
         setDoctors(prev => prev.map(d =>
@@ -200,6 +200,23 @@ const QueueManagement: FC = () => {
         status: (a.tokenStatus === 'done' ? 'done' : a.tokenStatus === 'skipped' ? 'skipped' : a.tokenStatus === 'cancelled' ? 'cancelled' : a.tokenStatus === 'ongoing' ? 'ongoing' : 'pending') as Status,
       }))
       setPatientsMap(prev => ({ ...prev, [`${selectedId}-${sessionIdx}`]: mapped }))
+
+      // Sync pause state from server
+      const active = data.activePauses?.find(p => p.status === 'active')
+      if (active) {
+        const end = new Date(`${active.date}T${active.stopTime}`)
+        if (end > new Date()) {
+          const mins = Math.ceil((end.getTime() - Date.now()) / 60000)
+          setPausedMap(prev => ({ ...prev, [`${selectedId}-${sessionIdx}`]: `${mins} min` }))
+          setPauseIdMap(prev => ({ ...prev, [`${selectedId}-${sessionIdx}`]: active.id }))
+        } else {
+          setPausedMap(prev => ({ ...prev, [`${selectedId}-${sessionIdx}`]: null }))
+          setPauseIdMap(prev => ({ ...prev, [`${selectedId}-${sessionIdx}`]: null }))
+        }
+      } else {
+        setPausedMap(prev => ({ ...prev, [`${selectedId}-${sessionIdx}`]: null }))
+        setPauseIdMap(prev => ({ ...prev, [`${selectedId}-${sessionIdx}`]: null }))
+      }
 
       // Update avgInterval from first appointment's doctor data
       if (data.appointments.length > 0 && doc) {
@@ -247,9 +264,11 @@ const QueueManagement: FC = () => {
   const [startLoading, setStartLoading] = useState(false)
   const [nextLoading, setNextLoading] = useState(false)
   const [pausedMap, setPausedMap] = useState<Record<string, string | null>>({})
+  const [pauseIdMap, setPauseIdMap] = useState<Record<string, string | null>>({})
   const [scheduledMap, setScheduledMap] = useState<Record<string, { startAt: string; duration: string } | null>>({})
 
   const pausedDuration = pausedMap[sessionKey] ?? null
+  const activePauseId = pauseIdMap[sessionKey] ?? null
   const scheduledPause = scheduledMap[sessionKey] ?? null
   const setPausedDuration = (val: string | null) => setPausedMap(prev => ({ ...prev, [sessionKey]: val }))
   const setScheduledPause = (val: { startAt: string; duration: string } | null) => setScheduledMap(prev => ({ ...prev, [sessionKey]: val }))
@@ -448,7 +467,12 @@ const QueueManagement: FC = () => {
                   <img src={instantPauseIcon} alt="" className="banner-icon" />
                   <span>Queue is paused for {pausedDuration}. Waiting patients have been notified. Resume to continue the queue.</span>
                 </div>
-                <button className="resume-btn" onClick={() => { setPausedDuration(null); setToast('Successfully Resumed') }}>Resume</button>
+                <button className="resume-btn" onClick={async () => {
+                  if (activePauseId) try { await cancelSchedulePause(activePauseId) } catch { /* silent */ }
+                  setPausedDuration(null)
+                  setPauseIdMap(prev => ({ ...prev, [sessionKey]: null }))
+                  setToast('Successfully Resumed')
+                }}>Resume</button>
               </div>
             ) : !session.isLive && (
               <div className="session-banner">
@@ -462,7 +486,11 @@ const QueueManagement: FC = () => {
                   <img src={infoIconBlue} alt="" className="banner-icon" />
                   <span>Scheduled pause started at {formatTo12h(scheduledPause.startAt)} for {scheduledPause.duration}.</span>
                 </div>
-                <button className="cancel-schedule-btn" onClick={() => setScheduledPause(null)}>Cancel Schedule</button>
+                <button className="cancel-schedule-btn" onClick={async () => {
+                  if (activePauseId) try { await cancelSchedulePause(activePauseId) } catch { /* silent */ }
+                  setScheduledPause(null)
+                  setPauseIdMap(prev => ({ ...prev, [sessionKey]: null }))
+                }}>Cancel Schedule</button>
               </div>
             )}
 
@@ -620,14 +648,47 @@ const QueueManagement: FC = () => {
       {showScheduledModal && (
         <ScheduledPauseModal
           onClose={() => setShowScheduledModal(false)}
-          onSubmit={(startAt, duration) => { setScheduledPause({ startAt, duration }); setShowScheduledModal(false) }}
+          onSubmit={async (startAt, duration) => {
+            const scheduleId = session?.scheduleId
+            if (!scheduleId) return
+            const mins = parseInt(duration)
+            const [h, m] = startAt.split(':').map(Number)
+            const end = new Date()
+            end.setHours(h, m + mins, 0, 0)
+            const pad = (n: number) => String(n).padStart(2, '0')
+            const startTime = `${pad(h)}:${pad(m)}:00`
+            const stopTime = `${pad(end.getHours())}:${pad(end.getMinutes())}:00`
+            const date = new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Kolkata' })
+            try {
+              const res = await pauseSchedule(scheduleId, { date, startTime, stopTime })
+              setScheduledPause({ startAt, duration })
+              if (res.success) setPauseIdMap(prev => ({ ...prev, [sessionKey]: res.data.id }))
+            } catch { /* silent */ }
+            setShowScheduledModal(false)
+          }}
         />
       )}
 
       {showPauseModal && (
         <InstantPauseModal
           onClose={() => setShowPauseModal(false)}
-          onSubmit={(duration) => { setPausedDuration(duration); setShowPauseModal(false) }}
+          onSubmit={async (duration) => {
+            const scheduleId = session?.scheduleId
+            if (!scheduleId) return
+            const now = new Date()
+            const mins = parseInt(duration)
+            const pad = (n: number) => String(n).padStart(2, '0')
+            const startTime = `${pad(now.getHours())}:${pad(now.getMinutes())}:00`
+            const end = new Date(now.getTime() + mins * 60000)
+            const stopTime = `${pad(end.getHours())}:${pad(end.getMinutes())}:00`
+            const date = now.toLocaleDateString('en-CA', { timeZone: 'Asia/Kolkata' })
+            try {
+              const res = await pauseSchedule(scheduleId, { date, startTime, stopTime })
+              setPausedDuration(duration)
+              if (res.success) setPauseIdMap(prev => ({ ...prev, [sessionKey]: res.data.id }))
+            } catch { /* silent */ }
+            setShowPauseModal(false)
+          }}
         />
       )}
 

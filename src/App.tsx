@@ -45,8 +45,6 @@ const App: FC = () => {
   }
 
   const handleSelectProfile = (ctx: UserContext) => {
-    localStorage.setItem('selectedRole', ctx.role)
-    localStorage.setItem('selectedClinic', JSON.stringify(ctx.medicalCenter))
     setScreen('dashboard')
   }
 
