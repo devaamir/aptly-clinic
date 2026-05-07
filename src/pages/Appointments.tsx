@@ -51,8 +51,10 @@ type Filter = 'Today' | 'Tomorrow' | 'This Week' | 'Date' | 'Date Range'
 
 const Appointments: FC = () => {
   const [searchQuery, setSearchQuery] = useState('')
-  const { activeContext } = useAppContext()
-  const specialties = activeContext?.medicalCenter?.specialties ?? []
+  const { activeContext, specialties: contextSpecialties } = useAppContext()
+  const specialties = activeContext?.medicalCenter?.specialties?.length
+    ? activeContext.medicalCenter.specialties
+    : contextSpecialties
 
 
   const [appointments, setAppointments] = useState<Appointment[]>([])
