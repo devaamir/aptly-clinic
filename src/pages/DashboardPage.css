@@ -1,5 +1,5 @@
 .dbp-container {
-  padding: 24px;
+  padding: 16px 24px;
   font-family: 'Manrope', sans-serif;
   flex: 1;
   overflow-y: auto;
@@ -9,7 +9,6 @@
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 16px;
-  margin-top: 20px;
 }
 
 .dbp-card {
@@ -23,7 +22,7 @@
 
 .dbp-card-header {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
 }
 
@@ -47,4 +46,35 @@
 .dbp-card-value {
   font-size: 32px;
   font-weight: 700;
+  color: #00001D;
+}
+
+.dbp-card-sub {
+  font-size: 14px;
+  font-weight: 400;
+  color: #494F5A;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.dbp-card-badge {
+  font-size: 12px;
+  font-weight: 500;
+  padding: 0 9px;
+  border-radius: 30px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.dbp-card-badge.positive {
+  color: #00A63E;
+  background: #EBF1ED;
+}
+
+.dbp-card-badge.negative {
+  color: #DC2626;
+  background: #FEE2E2;
 }
