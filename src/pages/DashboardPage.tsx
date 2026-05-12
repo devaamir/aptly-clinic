@@ -249,8 +249,8 @@ const DashboardPage: FC<{ onViewDoctor?: (d: DoctorDetail) => void }> = ({ onVie
                   <XAxis dataKey="month" tick={{ fontSize: 12 }} axisLine={false} tickLine={false} />
                   <YAxis hide />
                   <Tooltip content={<AptTooltip />} shared />
-                  <Bar dataKey="active" name="Active" fill="#3B82F6" radius={[0, 0, 8, 8]} stackId="a" barSize={30} />
-                  <Bar dataKey="cancelled" name="Cancelled" fill="#C1DAFF" radius={[8, 8, 0, 0]} stackId="a" barSize={30} />
+                  <Bar dataKey="active" name="Active" fill="#3B82F6" radius={[4, 4, 0, 0]} barSize={10} />
+                  <Bar dataKey="cancelled" name="Cancelled" fill="#C1DAFF" radius={[4, 4, 0, 0]} barSize={10} />
                 </BarChart>
               </ResponsiveContainer>
             </div>
@@ -276,12 +276,12 @@ const DashboardPage: FC<{ onViewDoctor?: (d: DoctorDetail) => void }> = ({ onVie
                       return ended
                         ? <span className="dbp-doctor-unavailable">Not available today</span>
                         : <div className="dbp-doctor-session-row">
-                            <div>
-                              <span className="dbp-doctor-session-label">Time:</span>
-                              <span className="dbp-doctor-session">{d.session}</span>
-                            </div>
-                            <DoctorStatus session={d.session} />
+                          <div>
+                            <span className="dbp-doctor-session-label">Time:</span>
+                            <span className="dbp-doctor-session">{d.session}</span>
                           </div>
+                          <DoctorStatus session={d.session} />
+                        </div>
                     })()}
                   </div>
                 </div>

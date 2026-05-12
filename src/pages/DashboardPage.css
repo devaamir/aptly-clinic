@@ -426,3 +426,8 @@
   color: #B54708;
   background-color: #FFFAEB;
 }
+
+.dbp-apt-charts {
+  display: flex;
+  gap: 12px;
+}
