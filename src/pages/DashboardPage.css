@@ -56,7 +56,6 @@
   display: flex;
   align-items: center;
   gap: 6px;
-  margin-top: 8px;
 }
 
 .dbp-card-badge {
@@ -77,4 +76,196 @@
 .dbp-card-badge.negative {
   color: #DC2626;
   background: #FEE2E2;
+}
+
+/* Main section */
+.dbp-main {
+  display: flex;
+  gap: 16px;
+  margin-top: 16px;
+}
+
+.dbp-left {
+  flex: 4 1 0;
+  min-width: 0;
+}
+
+.dbp-right {
+  flex: 1 1 0;
+  min-width: 0;
+  background: #fff;
+  border-radius: 10px;
+}
+
+/* Charts row */
+.dbp-charts-row {
+  display: flex;
+  gap: 16px;
+}
+
+.dbp-chart-card {
+  background: #fff;
+  border-radius: 10px;
+  padding: 16px;
+}
+
+.dbp-chart-revenue {
+  flex: 2 1 0;
+  min-width: 0;
+}
+
+.dbp-chart-appointments {
+  flex: 3 1 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.dbp-chart-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #00001D;
+  margin: 0 0 16px 0;
+}
+
+/* Today's appointments list */
+.dbp-right {
+  padding: 16px;
+  overflow-y: auto;
+  box-sizing: border-box;
+}
+
+.dbp-apt-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 4px;
+}
+
+.dbp-apt-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.dbp-apt-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.dbp-apt-info {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+}
+
+.dbp-apt-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: #00001D;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.dbp-apt-time {
+  font-size: 12px;
+  color: #494F5A;
+}
+
+.dbp-apt-status {
+  font-size: 11px;
+  font-weight: 500;
+  padding: 2px 8px;
+  border-radius: 30px;
+  flex-shrink: 0;
+}
+
+.dbp-apt-status.confirmed {
+  color: #00A63E;
+  background: #EBF1ED;
+}
+
+.dbp-apt-status.pending {
+  color: #D97706;
+  background: #FEF3C7;
+}
+
+.dbp-chart-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.dbp-chart-header .dbp-chart-title {
+  margin: 0;
+}
+
+.dbp-month-select {
+  font-size: 12px;
+  font-weight: 500;
+  color: #494F5A;
+  border: 1px solid #E5E7EB;
+  border-radius: 6px;
+  padding: 4px 8px;
+  background: #fff;
+  cursor: pointer;
+  outline: none;
+}
+
+.dbp-revenue-amount {
+  font-size: 28px;
+  font-weight: 700;
+  color: #00001D;
+  margin-bottom: 8px;
+}
+
+.dbp-apt-legend {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.dbp-legend-box {
+  width: 17px;
+  height: 17px;
+  border-radius: 3px;
+  flex-shrink: 0;
+}
+
+.dbp-legend-label {
+  font-size: 12px;
+  color: #494F5A;
+  margin-right: 6px;
+}
+
+.dbp-tooltip {
+  background: #fff;
+  border: 1px solid #E5E7EB;
+  border-radius: 6px;
+  padding: 6px 10px;
+  display: flex;
+  gap: 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+.dbp-tooltip-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  color: #00001D;
+}
+
+.dbp-tooltip-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 2px;
+  flex-shrink: 0;
 }
