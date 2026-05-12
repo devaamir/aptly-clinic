@@ -43,7 +43,8 @@ const DoctorStatus = ({ session }: { session: string }) => {
   if (parts.length < 2) return null
   const start = parse12h(parts[0])
   const end = parse12h(parts[1])
-  const isLive = cur >= start && cur <= end
+  if (cur > end) return null
+  const isLive = cur >= start
   return (
     <span className={`dbp-doctor-status ${isLive ? 'live' : 'booking'}`}>
       • {isLive ? 'Live' : 'Booking open'}
@@ -76,7 +77,7 @@ const DashboardPage: FC<{ onViewDoctor?: (d: DoctorDetail) => void }> = ({ onVie
   useEffect(() => {
     const id = activeContext?.medicalCenter.id
     if (!id) return
-    getDashboard(id).then(res => setData(res.data)).catch(() => {}).finally(() => setLoading(false))
+    getDashboard(id).then(res => setData(res.data)).catch(() => { }).finally(() => setLoading(false))
   }, [activeContext?.medicalCenter.id])
 
   const aptToday = data?.appointmentsTodayCount ?? 0
@@ -86,10 +87,10 @@ const DashboardPage: FC<{ onViewDoctor?: (d: DoctorDetail) => void }> = ({ onVie
   const monthlyGrowth = data?.monthlyAppointments.growthPercentage ?? 0
 
   const stats = [
-    { label: "Today's Appointments", value: String(aptToday), icon: appointmentBlueIcon, sub: '3 confirmed, 2 pending' },
+    { label: "Today's Appointments", value: String(aptToday), icon: appointmentBlueIcon, sub: '0 confirmed, 0 cancelled' },
     { label: 'Active Patients', value: formatNum(activePatients), icon: patientsBlueIcon, badge: `${monthlyGrowth > 0 ? '+' : ''}${monthlyGrowth.toFixed(0)}%`, arrow: monthlyGrowth >= 0 ? upArrowGreen : downArrowRed, sub: 'this month', negative: monthlyGrowth < 0 },
     { label: 'Total Patients', value: formatNum(totalPatients), icon: patientsBlueIcon, badge: `${patientGrowth > 0 ? '+' : ''}${patientGrowth.toFixed(0)}%`, arrow: patientGrowth >= 0 ? upArrowGreen : downArrowRed, sub: 'From the last month', negative: patientGrowth < 0 },
-    { label: 'Revenue', value: '₹52,000', icon: growIcon, badge: '+3%', arrow: upArrowGreen, sub: 'From the last month', negative: false },
+    { label: 'Revenue', value: '₹0', icon: growIcon, badge: '+0%', arrow: upArrowGreen, sub: 'From the last month', negative: false },
   ]
 
   const appointmentData = (data?.yearlyAppointments ?? []).map(a => ({
@@ -98,7 +99,7 @@ const DashboardPage: FC<{ onViewDoctor?: (d: DoctorDetail) => void }> = ({ onVie
     cancelled: a.cancelledCount,
   }))
 
-  const revenueData = appointmentData.map(a => ({ month: a.month, value: a.active * 500 }))
+  const revenueData = appointmentData.map(a => ({ month: a.month, value: 0 }))
 
   const activeDoctors = (data?.activeDoctors ?? []).map(d => ({
     raw: d,
@@ -208,7 +209,7 @@ const DashboardPage: FC<{ onViewDoctor?: (d: DoctorDetail) => void }> = ({ onVie
                   {months.map(m => <option key={m} value={m}>This Month {m}</option>)}
                 </select>
               </div>
-              <div className="dbp-revenue-amount">₹35,940.89</div>
+              <div className="dbp-revenue-amount">₹0</div>
               <div className="dbp-card-sub" style={{ marginBottom: 12 }}>
                 <span className="dbp-card-badge positive">
                   +2% <img src={upArrowGreen} alt="" style={{ width: 14, height: 14 }} />
@@ -269,13 +270,19 @@ const DashboardPage: FC<{ onViewDoctor?: (d: DoctorDetail) => void }> = ({ onVie
                     </div>
                   </div>
                   <div className="dbp-doctor-bottom">
-                    <div className="dbp-doctor-session-row">
-                      <div>
-                        <span className="dbp-doctor-session-label">Session time:</span>
-                        <span className="dbp-doctor-session">{d.session}</span>
-                      </div>
-                      <DoctorStatus session={d.session} />
-                    </div>
+                    {(() => {
+                      const parts = d.session.split('–').map(s => s.trim())
+                      const ended = parts.length === 2 && (new Date().getHours() * 60 + new Date().getMinutes()) > parse12h(parts[1])
+                      return ended
+                        ? <span className="dbp-doctor-unavailable">Not available today</span>
+                        : <div className="dbp-doctor-session-row">
+                            <div>
+                              <span className="dbp-doctor-session-label">Time:</span>
+                              <span className="dbp-doctor-session">{d.session}</span>
+                            </div>
+                            <DoctorStatus session={d.session} />
+                          </div>
+                    })()}
                   </div>
                 </div>
               ))}
