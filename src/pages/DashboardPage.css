@@ -359,3 +359,27 @@
 
 .dbp-doctor-status.live { color: #00A63E; }
 .dbp-doctor-status.booking { color: #3B82F6; }
+
+/* Skeleton loader */
+@keyframes dbp-shimmer {
+  0% { background-position: -400px 0 }
+  100% { background-position: 400px 0 }
+}
+
+.dbp-sk {
+  background: linear-gradient(90deg, #F0F0F0 25%, #E0E0E0 50%, #F0F0F0 75%);
+  background-size: 800px 100%;
+  animation: dbp-shimmer 1.4s infinite linear;
+  border-radius: 6px;
+}
+
+.dbp-sk-line { height: 16px; }
+.dbp-sk-block { width: 100%; border-radius: 8px; }
+.dbp-sk-circle { width: 48px; height: 48px; border-radius: 50%; flex-shrink: 0; }
+.dbp-sk-avatar { width: 60px; height: 60px; border-radius: 50%; flex-shrink: 0; }
+
+.dbp-sk-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}

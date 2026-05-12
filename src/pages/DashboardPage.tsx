@@ -70,12 +70,13 @@ const months = ['Jan 25', 'Feb 25', 'Mar 25', 'Apr 25', 'May 25', 'Jun 25', 'Jul
 const DashboardPage: FC<{ onViewDoctor?: (d: DoctorDetail) => void }> = ({ onViewDoctor }) => {
   const { activeContext } = useAppContext()
   const [data, setData] = useState<DashboardData | null>(null)
+  const [loading, setLoading] = useState(true)
   const [revenueMonth, setRevenueMonth] = useState('Jan 25')
 
   useEffect(() => {
     const id = activeContext?.medicalCenter.id
     if (!id) return
-    getDashboard(id).then(res => setData(res.data)).catch(() => {})
+    getDashboard(id).then(res => setData(res.data)).catch(() => {}).finally(() => setLoading(false))
   }, [activeContext?.medicalCenter.id])
 
   const aptToday = data?.appointmentsTodayCount ?? 0
@@ -106,6 +107,70 @@ const DashboardPage: FC<{ onViewDoctor?: (d: DoctorDetail) => void }> = ({ onVie
     specialty: d.specialties[0]?.name ?? '—',
     session: d.schedules[0] ? `${to12h(d.schedules[0].startTime)} – ${to12h(d.schedules[0].stopTime)}` : '—',
   }))
+
+  if (loading) return (
+    <div className="dbp-container">
+      <div className="dbp-stats">
+        {[...Array(4)].map((_, i) => (
+          <div key={i} className="dbp-card">
+            <div className="dbp-sk-row">
+              <div className="dbp-sk dbp-sk-line" style={{ width: '60%' }} />
+              <div className="dbp-sk dbp-sk-circle" />
+            </div>
+            <div className="dbp-sk dbp-sk-line" style={{ width: '40%', height: 36 }} />
+            <div className="dbp-sk dbp-sk-line" style={{ width: '70%', height: 14 }} />
+          </div>
+        ))}
+      </div>
+      <div className="dbp-main">
+        <div className="dbp-left">
+          <div className="dbp-charts-row">
+            <div className="dbp-chart-card dbp-chart-revenue">
+              <div className="dbp-sk dbp-sk-line" style={{ width: '50%', marginBottom: 12 }} />
+              <div className="dbp-sk dbp-sk-line" style={{ width: '35%', height: 28, marginBottom: 8 }} />
+              <div className="dbp-sk dbp-sk-line" style={{ width: '55%', height: 14, marginBottom: 16 }} />
+              <div className="dbp-sk dbp-sk-block" style={{ height: 200 }} />
+            </div>
+            <div className="dbp-chart-card dbp-chart-appointments">
+              <div className="dbp-sk dbp-sk-line" style={{ width: '50%', marginBottom: 16 }} />
+              <div className="dbp-sk dbp-sk-block" style={{ height: 200 }} />
+            </div>
+          </div>
+          <div className="dbp-chart-card" style={{ marginTop: 16 }}>
+            <div className="dbp-sk dbp-sk-line" style={{ width: '30%', marginBottom: 16 }} />
+            <div className="dbp-doctors-grid">
+              {[...Array(3)].map((_, i) => (
+                <div key={i} className="dbp-doctor-card">
+                  <div className="dbp-doctor-top">
+                    <div className="dbp-sk dbp-sk-avatar" />
+                    <div style={{ flex: 1 }}>
+                      <div className="dbp-sk dbp-sk-line" style={{ width: '80%', marginBottom: 8 }} />
+                      <div className="dbp-sk dbp-sk-line" style={{ width: '50%' }} />
+                    </div>
+                  </div>
+                  <div className="dbp-doctor-bottom">
+                    <div className="dbp-sk dbp-sk-line" style={{ width: '90%' }} />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+        <div className="dbp-right">
+          <div className="dbp-sk dbp-sk-line" style={{ width: '70%', marginBottom: 16 }} />
+          {[...Array(6)].map((_, i) => (
+            <div key={i} className="dbp-apt-item" style={{ marginBottom: 12 }}>
+              <div className="dbp-sk dbp-sk-avatar" style={{ width: 36, height: 36 }} />
+              <div style={{ flex: 1 }}>
+                <div className="dbp-sk dbp-sk-line" style={{ width: '70%', marginBottom: 6 }} />
+                <div className="dbp-sk dbp-sk-line" style={{ width: '40%' }} />
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  )
 
   return (
     <div className="dbp-container">
