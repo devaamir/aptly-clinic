@@ -153,3 +153,20 @@ export const createClinic = (body: FormData) =>
   client.post<import('./types').CreateClinicResponse>('/clinics', body, {
     headers: { 'Content-Type': 'multipart/form-data' },
   }).then(r => r.data)
+
+export interface DashboardData {
+  appointmentsTodayCount: number
+  monthlyAppointments: { currentCount: number; previousCount: number; growthPercentage: number }
+  patients: { currentCount: number; previousCount: number; growthPercentage: number }
+  yearlyAppointments: { month: string; confirmedCount: number; cancelledCount: number }[]
+  activeDoctors: {
+    id: string
+    name: string
+    profilePicture: string | null
+    specialties: { id: string; name: string }[]
+    schedules: { id: string; dayOfWeek: string; startTime: string; stopTime: string }[]
+  }[]
+}
+
+export const getDashboard = (medicalCenterId: string) =>
+  api.get<{ success: boolean; data: DashboardData }>(`/ui/dashboard?medicalCenterId=${medicalCenterId}`)

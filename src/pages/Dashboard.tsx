@@ -123,7 +123,7 @@ const Dashboard: FC = () => {
           </div>
         </div>
         <div className="topbar-divider" />
-        {activePage === 'Dashboard' && <DashboardPage />}
+        {activePage === 'Dashboard' && <DashboardPage onViewDoctor={d => { setViewDoctor(d); setActivePage('Doctors') }} />}
         {activePage === 'Queue Management' && <QueueManagement />}
         {activePage === 'Appointments' && <Appointments />}
         {activePage === 'Patients' && <Patients />}

@@ -279,16 +279,32 @@
 
 .dbp-doctor-card {
   display: flex;
-  align-items: center;
+  flex-direction: column;
+  justify-content: space-between;
   gap: 12px;
-  background: #F8FAFC;
+  background: #ffffff;
+  border: 1px solid #E0E2E6;
   border-radius: 10px;
   padding: 12px;
 }
 
+.dbp-doctor-top {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.dbp-doctor-bottom {
+  background: #F8FAFC;
+  border-top: 1px solid #E0E2E6;
+  padding: 8px 12px;
+  margin: 0 -12px -12px;
+  border-radius: 0 0 10px 10px;
+}
+
 .dbp-doctor-avatar {
-  width: 44px;
-  height: 44px;
+  width: 60px;
+  height: 60px;
   border-radius: 50%;
   object-fit: cover;
   flex-shrink: 0;
@@ -302,9 +318,9 @@
 }
 
 .dbp-doctor-name {
-  font-size: 13px;
-  font-weight: 600;
-  color: #00001D;
+  font-size: 16px;
+  font-weight: 700;
+  color: #1C1E22;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -312,7 +328,8 @@
 
 .dbp-doctor-specialty {
   font-size: 12px;
-  color: #494F5A;
+  font-weight: 500;
+  color: #636A79;
 }
 
 .dbp-doctor-session {
@@ -320,3 +337,25 @@
   color: #3B82F6;
   font-weight: 500;
 }
+
+.dbp-doctor-session-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.dbp-doctor-session-label {
+  font-size: 11px;
+  color: #636A79;
+  margin-right: 4px;
+}
+
+.dbp-doctor-status {
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.dbp-doctor-status.live { color: #00A63E; }
+.dbp-doctor-status.booking { color: #3B82F6; }

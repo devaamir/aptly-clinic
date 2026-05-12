@@ -1,66 +1,55 @@
 import type { FC } from 'react'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, BarChart, Bar, CartesianGrid } from 'recharts'
+import { getDashboard } from '../services/api'
+import type { DashboardData } from '../services/api'
+import { useAppContext } from '../context/AppContext'
 import growIcon from '../assets/icons/grow-icon.svg'
 import appointmentBlueIcon from '../assets/icons/appointment-blue-icon.svg'
 import patientsBlueIcon from '../assets/icons/patients-blue-icon.svg'
 import upArrowGreen from '../assets/icons/up-arrow-green.svg'
 import downArrowRed from '../assets/icons/down-arrow-red.svg'
-import userProfileImg from '../assets/images/user-profile.png'
 import doctorProfileImg from '../assets/images/doctor-profile.png'
 import './DashboardPage.css'
 
-const formatPatients = (n: number) => n >= 1000 ? `${(n / 1000).toFixed(1).replace(/\.0$/, '')}K` : `${n}`
+import type { DoctorDetail } from '../services/types'
 
-const stats = [
-  { label: "Today's Appointments", value: '24', icon: appointmentBlueIcon, sub: '3 confirmed, 2 pending' },
-  { label: 'Active Patients', value: formatPatients(120), icon: patientsBlueIcon, badge: '+7%', arrow: upArrowGreen, sub: 'this month' },
-  { label: 'Total Patients', value: formatPatients(1840), icon: patientsBlueIcon, badge: '-8%', arrow: downArrowRed, sub: 'From the last month', negative: true },
-  { label: 'Revenue', value: '₹52,000', icon: growIcon, badge: '+3%', arrow: upArrowGreen, sub: 'From the last month' },
-]
+const formatNum = (n: number) => n >= 1000 ? `${(n / 1000).toFixed(1).replace(/\.0$/, '')}K` : `${n}`
 
-const revenueData = [
-  { month: 'Jan', value: 30000 },
-  { month: 'Feb', value: 42000 },
-  { month: 'Mar', value: 35000 },
-  { month: 'Apr', value: 50000 },
-  { month: 'May', value: 52000 },
-  { month: 'Jun', value: 47000 },
-]
+const to12h = (t: string) => {
+  const [h, m] = t.slice(0, 5).split(':').map(Number)
+  const ampm = h >= 12 ? 'PM' : 'AM'
+  return `${h % 12 || 12}:${String(m).padStart(2, '0')} ${ampm}`
+}
 
-const appointmentData = [
-  { month: 'Jan', active: 80, cancelled: 20 },
-  { month: 'Feb', active: 120, cancelled: 30 },
-  { month: 'Mar', active: 60, cancelled: 10 },
-  { month: 'Apr', active: 150, cancelled: 40 },
-  { month: 'May', active: 100, cancelled: 25 },
-  { month: 'Jun', active: 40, cancelled: 15 },
-  { month: 'Jul', active: 90, cancelled: 20 },
-  { month: 'Aug', active: 110, cancelled: 35 },
-  { month: 'Sep', active: 75, cancelled: 18 },
-  { month: 'Oct', active: 130, cancelled: 28 },
-  { month: 'Nov', active: 95, cancelled: 22 },
-  { month: 'Dec', active: 60, cancelled: 12 },
-]
+const MONTH_SHORT: Record<string, string> = {
+  January: 'Jan', February: 'Feb', March: 'Mar', April: 'Apr',
+  May: 'May', June: 'Jun', July: 'Jul', August: 'Aug',
+  September: 'Sep', October: 'Oct', November: 'Nov', December: 'Dec',
+}
 
-const activeDoctors = [
-  { name: 'Dr. Daniel Hamilton', specialty: 'Cardiology', session: '09:00 AM – 01:00 PM' },
-  { name: 'Dr. Sarah Johnson', specialty: 'Neurology', session: '10:00 AM – 02:00 PM' },
-  { name: 'Dr. Priya Menon', specialty: 'Dermatology', session: '08:30 AM – 12:30 PM' },
-  { name: 'Dr. Arjun Nair', specialty: 'Orthopedics', session: '11:00 AM – 03:00 PM' },
-  { name: 'Dr. Fatima Sheikh', specialty: 'Pediatrics', session: '09:30 AM – 01:30 PM' },
-]
+const parse12h = (t: string) => {
+  const [time, ampm] = t.trim().split(' ')
+  let [h, m] = time.split(':').map(Number)
+  if (ampm === 'PM' && h !== 12) h += 12
+  if (ampm === 'AM' && h === 12) h = 0
+  return h * 60 + m
+}
 
-const todayPatients = [
-  { name: 'Aisha Patel', time: '09:00 AM', status: 'Confirmed' },
-  { name: 'Ravi Kumar', time: '09:30 AM', status: 'Pending' },
-  { name: 'Meera Nair', time: '10:00 AM', status: 'Confirmed' },
-  { name: 'John Mathew', time: '10:30 AM', status: 'Confirmed' },
-  { name: 'Priya Singh', time: '11:00 AM', status: 'Pending' },
-  { name: 'Arjun Das', time: '11:30 AM', status: 'Confirmed' },
-  { name: 'Fatima Banu', time: '12:00 PM', status: 'Confirmed' },
-  { name: 'Samuel Roy', time: '02:00 PM', status: 'Pending' },
-]
+const DoctorStatus = ({ session }: { session: string }) => {
+  const now = new Date()
+  const cur = now.getHours() * 60 + now.getMinutes()
+  const parts = session.split('–').map(s => s.trim())
+  if (parts.length < 2) return null
+  const start = parse12h(parts[0])
+  const end = parse12h(parts[1])
+  const isLive = cur >= start && cur <= end
+  return (
+    <span className={`dbp-doctor-status ${isLive ? 'live' : 'booking'}`}>
+      • {isLive ? 'Live' : 'Booking open'}
+    </span>
+  )
+}
 
 const AptTooltip = ({ active, payload }: { active?: boolean; payload?: { name: string; value: number; fill: string }[] }) => {
   if (!active || !payload?.length) return null
@@ -78,8 +67,45 @@ const AptTooltip = ({ active, payload }: { active?: boolean; payload?: { name: s
 
 const months = ['Jan 25', 'Feb 25', 'Mar 25', 'Apr 25', 'May 25', 'Jun 25', 'Jul 25', 'Aug 25', 'Sep 25', 'Oct 25', 'Nov 25', 'Dec 25']
 
-const DashboardPage: FC = () => {
+const DashboardPage: FC<{ onViewDoctor?: (d: DoctorDetail) => void }> = ({ onViewDoctor }) => {
+  const { activeContext } = useAppContext()
+  const [data, setData] = useState<DashboardData | null>(null)
   const [revenueMonth, setRevenueMonth] = useState('Jan 25')
+
+  useEffect(() => {
+    const id = activeContext?.medicalCenter.id
+    if (!id) return
+    getDashboard(id).then(res => setData(res.data)).catch(() => {})
+  }, [activeContext?.medicalCenter.id])
+
+  const aptToday = data?.appointmentsTodayCount ?? 0
+  const activePatients = data?.patients.currentCount ?? 0
+  const totalPatients = data?.patients.currentCount ?? 0
+  const patientGrowth = data?.patients.growthPercentage ?? 0
+  const monthlyGrowth = data?.monthlyAppointments.growthPercentage ?? 0
+
+  const stats = [
+    { label: "Today's Appointments", value: String(aptToday), icon: appointmentBlueIcon, sub: '3 confirmed, 2 pending' },
+    { label: 'Active Patients', value: formatNum(activePatients), icon: patientsBlueIcon, badge: `${monthlyGrowth > 0 ? '+' : ''}${monthlyGrowth.toFixed(0)}%`, arrow: monthlyGrowth >= 0 ? upArrowGreen : downArrowRed, sub: 'this month', negative: monthlyGrowth < 0 },
+    { label: 'Total Patients', value: formatNum(totalPatients), icon: patientsBlueIcon, badge: `${patientGrowth > 0 ? '+' : ''}${patientGrowth.toFixed(0)}%`, arrow: patientGrowth >= 0 ? upArrowGreen : downArrowRed, sub: 'From the last month', negative: patientGrowth < 0 },
+    { label: 'Revenue', value: '₹52,000', icon: growIcon, badge: '+3%', arrow: upArrowGreen, sub: 'From the last month', negative: false },
+  ]
+
+  const appointmentData = (data?.yearlyAppointments ?? []).map(a => ({
+    month: MONTH_SHORT[a.month] ?? a.month,
+    active: a.confirmedCount,
+    cancelled: a.cancelledCount,
+  }))
+
+  const revenueData = appointmentData.map(a => ({ month: a.month, value: a.active * 500 }))
+
+  const activeDoctors = (data?.activeDoctors ?? []).map(d => ({
+    raw: d,
+    name: d.name,
+    avatar: d.profilePicture || doctorProfileImg,
+    specialty: d.specialties[0]?.name ?? '—',
+    session: d.schedules[0] ? `${to12h(d.schedules[0].startTime)} – ${to12h(d.schedules[0].stopTime)}` : '—',
+  }))
 
   return (
     <div className="dbp-container">
@@ -163,17 +189,28 @@ const DashboardPage: FC = () => {
               </ResponsiveContainer>
             </div>
           </div>
+
           {/* Today's Active Doctors */}
           <div className="dbp-chart-card" style={{ marginTop: 16 }}>
             <h3 className="dbp-chart-title">Today's Active Doctors</h3>
             <div className="dbp-doctors-grid">
               {activeDoctors.map((d, i) => (
-                <div key={i} className="dbp-doctor-card">
-                  <img src={doctorProfileImg} alt={d.name} className="dbp-doctor-avatar" />
-                  <div className="dbp-doctor-info">
-                    <span className="dbp-doctor-name">{d.name}</span>
-                    <span className="dbp-doctor-specialty">{d.specialty}</span>
-                    <span className="dbp-doctor-session">{d.session}</span>
+                <div key={i} className="dbp-doctor-card" onClick={() => onViewDoctor?.(d.raw as unknown as DoctorDetail)} style={{ cursor: onViewDoctor ? 'pointer' : 'default' }}>
+                  <div className="dbp-doctor-top">
+                    <img src={d.avatar} alt={d.name} className="dbp-doctor-avatar" onError={e => { (e.target as HTMLImageElement).src = doctorProfileImg }} />
+                    <div className="dbp-doctor-info">
+                      <span className="dbp-doctor-name">{d.name}</span>
+                      <span className="dbp-doctor-specialty">{d.specialty}</span>
+                    </div>
+                  </div>
+                  <div className="dbp-doctor-bottom">
+                    <div className="dbp-doctor-session-row">
+                      <div>
+                        <span className="dbp-doctor-session-label">Session time:</span>
+                        <span className="dbp-doctor-session">{d.session}</span>
+                      </div>
+                      <DoctorStatus session={d.session} />
+                    </div>
                   </div>
                 </div>
               ))}
@@ -185,16 +222,7 @@ const DashboardPage: FC = () => {
         <div className="dbp-right">
           <h3 className="dbp-chart-title">Today's Appointments</h3>
           <div className="dbp-apt-list">
-            {todayPatients.map((p, i) => (
-              <div key={i} className="dbp-apt-item">
-                <img src={userProfileImg} alt={p.name} className="dbp-apt-avatar" />
-                <div className="dbp-apt-info">
-                  <span className="dbp-apt-name">{p.name}</span>
-                  <span className="dbp-apt-time">{p.time}</span>
-                </div>
-                <span className={`dbp-apt-status ${p.status === 'Confirmed' ? 'confirmed' : 'pending'}`}>{p.status}</span>
-              </div>
-            ))}
+            <p className="dbp-apt-empty" style={{ fontSize: 13, color: '#494F5A' }}>No appointments today.</p>
           </div>
         </div>
       </div>
