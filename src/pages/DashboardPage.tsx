@@ -7,6 +7,7 @@ import patientsBlueIcon from '../assets/icons/patients-blue-icon.svg'
 import upArrowGreen from '../assets/icons/up-arrow-green.svg'
 import downArrowRed from '../assets/icons/down-arrow-red.svg'
 import userProfileImg from '../assets/images/user-profile.png'
+import doctorProfileImg from '../assets/images/doctor-profile.png'
 import './DashboardPage.css'
 
 const formatPatients = (n: number) => n >= 1000 ? `${(n / 1000).toFixed(1).replace(/\.0$/, '')}K` : `${n}`
@@ -40,6 +41,14 @@ const appointmentData = [
   { month: 'Oct', active: 130, cancelled: 28 },
   { month: 'Nov', active: 95, cancelled: 22 },
   { month: 'Dec', active: 60, cancelled: 12 },
+]
+
+const activeDoctors = [
+  { name: 'Dr. Daniel Hamilton', specialty: 'Cardiology', session: '09:00 AM – 01:00 PM' },
+  { name: 'Dr. Sarah Johnson', specialty: 'Neurology', session: '10:00 AM – 02:00 PM' },
+  { name: 'Dr. Priya Menon', specialty: 'Dermatology', session: '08:30 AM – 12:30 PM' },
+  { name: 'Dr. Arjun Nair', specialty: 'Orthopedics', session: '11:00 AM – 03:00 PM' },
+  { name: 'Dr. Fatima Sheikh', specialty: 'Pediatrics', session: '09:30 AM – 01:30 PM' },
 ]
 
 const todayPatients = [
@@ -152,6 +161,22 @@ const DashboardPage: FC = () => {
                   <Bar dataKey="cancelled" name="Cancelled" fill="#C1DAFF" radius={[8, 8, 0, 0]} stackId="a" barSize={30} />
                 </BarChart>
               </ResponsiveContainer>
+            </div>
+          </div>
+          {/* Today's Active Doctors */}
+          <div className="dbp-chart-card" style={{ marginTop: 16 }}>
+            <h3 className="dbp-chart-title">Today's Active Doctors</h3>
+            <div className="dbp-doctors-grid">
+              {activeDoctors.map((d, i) => (
+                <div key={i} className="dbp-doctor-card">
+                  <img src={doctorProfileImg} alt={d.name} className="dbp-doctor-avatar" />
+                  <div className="dbp-doctor-info">
+                    <span className="dbp-doctor-name">{d.name}</span>
+                    <span className="dbp-doctor-specialty">{d.specialty}</span>
+                    <span className="dbp-doctor-session">{d.session}</span>
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
         </div>

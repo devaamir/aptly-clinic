@@ -269,3 +269,54 @@
   border-radius: 2px;
   flex-shrink: 0;
 }
+
+/* Today's Active Doctors */
+.dbp-doctors-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+
+.dbp-doctor-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: #F8FAFC;
+  border-radius: 10px;
+  padding: 12px;
+}
+
+.dbp-doctor-avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.dbp-doctor-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.dbp-doctor-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: #00001D;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.dbp-doctor-specialty {
+  font-size: 12px;
+  color: #494F5A;
+}
+
+.dbp-doctor-session {
+  font-size: 11px;
+  color: #3B82F6;
+  font-weight: 500;
+}
