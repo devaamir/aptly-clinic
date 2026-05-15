@@ -155,18 +155,28 @@ export const createClinic = (body: FormData) =>
   }).then(r => r.data)
 
 export interface DashboardData {
-  appointmentsTodayCount: number
+  todayAppointmentCounts: { confirmedCount: number; cancelledCount: number }
   monthlyAppointments: { currentCount: number; previousCount: number; growthPercentage: number }
   patients: { currentCount: number; previousCount: number; growthPercentage: number }
   yearlyAppointments: { month: string; confirmedCount: number; cancelledCount: number }[]
-  activeDoctors: {
+  todayDoctors: {
     id: string
     name: string
     profilePicture: string | null
     specialties: { id: string; name: string }[]
     schedules: { id: string; dayOfWeek: string; startTime: string; stopTime: string }[]
   }[]
+  todayAppointments: {
+    id: string
+    patient: { id: string; name: string }
+    doctor: { id: string; name: string }
+  }[]
 }
 
 export const getDashboard = (medicalCenterId: string) =>
   api.get<{ success: boolean; data: DashboardData }>(`/ui/dashboard?medicalCenterId=${medicalCenterId}`)
+
+export const updateClinic = (body: FormData) =>
+  client.patch<{ success: boolean; data: import('./types').ClinicData }>('/clinics/me', body, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  }).then(r => r.data)

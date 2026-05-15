@@ -32,7 +32,7 @@ const CreateClinic: FC<CreateClinicProps> = ({ onCreated }) => {
   const [form, setForm] = useState({
     name: '', medicalSystemId: '', phoneNumber: '', emailAddress: '',
     websiteUrl: '', description: '',
-    address: '', city: '', pinCode: '', district: '', state: '', mapLink: '',
+    address: '', city: '', pinCode: '', district: '', state: '', country: '', latitude: '', longitude: '',
     ownerName: '', ownerPhone: '', ownerEmail: '',
   })
 
@@ -104,8 +104,8 @@ const CreateClinic: FC<CreateClinicProps> = ({ onCreated }) => {
       if (form.ownerPhone) fd.append('managerPhoneNumber', form.ownerPhone)
       if (avatarFile) fd.append('profilePicture', avatarFile)
       selectedSpecialtyIds.forEach(id => fd.append('specialtyIds', id))
-      fd.append('latitude', '0')
-      fd.append('longitude', '0')
+      fd.append('latitude', form.latitude || '0')
+      fd.append('longitude', form.longitude || '0')
       await createClinic(fd)
       onCreated()
     } catch (err: any) {
@@ -203,7 +203,11 @@ const CreateClinic: FC<CreateClinicProps> = ({ onCreated }) => {
             <FormField label="State" placeholder="Enter state" value={form.state} onChange={set('state')} />
             <F name="state" />
           </div>
-          <FormField label="Map Link" placeholder="Drop your map link here" value={form.mapLink} onChange={set('mapLink')} showRequired={false} />
+          <FormField label="Country" placeholder="Enter country" value={form.country} onChange={set('country')} showRequired={false} />
+        </div>
+        <div className="cc-row">
+          <FormField label="Latitude" type="number" placeholder="e.g. 12.9716" value={form.latitude} onChange={set('latitude')} showRequired={false} />
+          <FormField label="Longitude" type="number" placeholder="e.g. 77.5946" value={form.longitude} onChange={set('longitude')} showRequired={false} />
         </div>
       </div>
     )

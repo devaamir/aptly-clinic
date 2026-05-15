@@ -1,7 +1,9 @@
 import type { FC, ChangeEvent } from 'react'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import avatarIcon from '../assets/icons/avatar-icon.svg'
 import cameraIcon from '../assets/icons/camera-icon.svg'
+import { updateClinic } from '../services/api'
+import { useAppContext } from '../context/AppContext'
 import './Settings.css'
 
 type SettingsTab = 'Clinic Profile' | 'Consulting Rooms' | 'Notifications' | 'Security' | 'Billing' | 'Integrations'
@@ -20,26 +22,78 @@ const InfoRow: FC<{ label: string; value: string; editing?: boolean; onChange?: 
 )
 
 const Settings: FC = () => {
+  const { activeContext, specialties: contextSpecialties } = useAppContext()
+  const mc = activeContext?.medicalCenter
+
   const [activeTab, setActiveTab] = useState<SettingsTab>('Clinic Profile')
   const [editing, setEditing] = useState(false)
-  const [profile, setProfile] = useState({
-    name: 'Aptly Clinic', practice: 'Multi-Specialty', phone: '+91 90487 8200',
-    email: 'contact@aptlyclinic.com', website: 'www.aptlyclinic.com',
-    specialties: ['Cardiology', 'Orthopedics', 'Neurology'],
-    about: 'Aptly Clinic is a leading multi-specialty healthcare provider committed to delivering quality care.',
-    address: '123, MG Road, Bengaluru, Karnataka - 560001',
-    lat: '12.9716° N', lng: '77.5946° E',
-    ownerName: 'Dr. Rajesh Kumar', ownerPhone: '+91 98765 43210', ownerEmail: 'owner@aptlyclinic.com',
-  })
-  const [draft, setDraft] = useState(profile)
 
-  const allSpecialties = ['Cardiology', 'Orthopedics', 'Neurology', 'Pediatrics', 'Dermatology', 'Gynecology', 'ENT', 'Ophthalmology']
+  const emptyProfile = {
+    name: '', practice: '', phone: '', email: '', website: '',
+    specialties: [] as string[], about: '', address: '',
+    lat: '', lng: '', ownerName: '', ownerPhone: '', ownerEmail: '', avatar: '',
+  }
+  const [profile, setProfile] = useState(emptyProfile)
+  const [draft, setDraft] = useState(emptyProfile)
+
+  useEffect(() => {
+    if (!mc) return
+    const p = {
+      name: mc.name ?? '',
+      practice: '',
+      phone: mc.phoneNumber ?? '',
+      email: mc.emailAddress ?? '',
+      website: mc.websiteUrl ?? '',
+      specialties: mc.specialties?.map(s => s.name) ?? [],
+      about: mc.about ?? '',
+      address: mc.address ?? '',
+      lat: mc.latitude != null ? String(mc.latitude) : '',
+      lng: mc.longitude != null ? String(mc.longitude) : '',
+      ownerName: mc.creatorManager?.name ?? '',
+      ownerPhone: mc.creatorManager?.phoneNumber ?? '',
+      ownerEmail: mc.creatorManager?.emailAddress ?? '',
+      avatar: mc.profilePicture ?? '',
+    }
+    setProfile(p)
+    setDraft(p)
+  }, [mc])
+
+  const allSpecialties = contextSpecialties.map(s => s.name)
 
   const set = (key: keyof typeof profile) => (v: string) => setDraft(p => ({ ...p, [key]: v }))
 
+  const [saving, setSaving] = useState(false)
+  const [saveError, setSaveError] = useState('')
+
   const handleEdit = () => { setDraft(profile); setEditing(true) }
-  const handleSave = () => { setProfile(draft); setEditing(false) }
-  const handleCancel = () => setEditing(false)
+  const handleCancel = () => { setEditing(false); setSaveError('') }
+  const handleSave = async () => {
+    setSaving(true)
+    setSaveError('')
+    try {
+      const fd = new FormData()
+      if (draft.name) fd.append('name', draft.name)
+      if (draft.phone) fd.append('phoneNumber', draft.phone)
+      if (draft.email) fd.append('emailAddress', draft.email)
+      if (draft.about) fd.append('about', draft.about)
+      if (draft.website) fd.append('websiteUrl', draft.website)
+      if (draft.address) fd.append('address', draft.address)
+      if (draft.lat) fd.append('latitude', draft.lat)
+      if (draft.lng) fd.append('longitude', draft.lng)
+      // map specialty names back to IDs
+      draft.specialties.forEach(name => {
+        const found = contextSpecialties.find(s => s.name === name)
+        if (found) fd.append('specialtyIds', found.id)
+      })
+      await updateClinic(fd)
+      setProfile(draft)
+      setEditing(false)
+    } catch (err: any) {
+      setSaveError(err.response?.data?.message || 'Failed to save changes.')
+    } finally {
+      setSaving(false)
+    }
+  }
 
   return (
     <div className="st-container">
@@ -62,9 +116,12 @@ const Settings: FC = () => {
             <div className="st-card-header">
               <span className="st-card-title">Clinic Profile</span>
               {editing ? (
-                <div style={{ display: 'flex', gap: 8 }}>
+                <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                  {saveError && <span style={{ fontSize: 13, color: '#E53E3E' }}>{saveError}</span>}
                   <button className="st-cancel-btn" onClick={handleCancel}>Cancel</button>
-                  <button className="st-edit-btn" onClick={handleSave}>Save Changes</button>
+                  <button className="st-edit-btn" onClick={handleSave} disabled={saving}>
+                    {saving ? 'Saving...' : 'Save Changes'}
+                  </button>
                 </div>
               ) : (
                 <button className="st-edit-btn" onClick={handleEdit}>Edit Profile</button>
@@ -76,7 +133,7 @@ const Settings: FC = () => {
               <div className="st-section-title">Basic Information</div>
               <div className="st-profile-row">
                 <div className="st-avatar-wrap">
-                  <img src={avatarIcon} alt="clinic" className="st-avatar" />
+                  <img src={draft.avatar || avatarIcon} alt="clinic" className="st-avatar" />
                   <div className="st-camera-btn">
                     <img src={cameraIcon} alt="" style={{ width: 16, height: 16 }} />
                   </div>

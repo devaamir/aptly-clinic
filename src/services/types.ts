@@ -57,13 +57,17 @@ export interface AppointmentsResponse { success: boolean; data: Appointment[]; p
 
 // Auth Contexts
 export interface MedicalCenterCreator { id: string; name: string; phoneNumber: string; emailAddress: string; createdAt: string; updatedAt: string }
+export interface MedicalCenterCreatorManager { id: string; name: string; referenceId: string; emailAddress: string; phoneNumber: string; createdAt: string; updatedAt: string; deletedAt: string | null }
+
 export interface UserMedicalCenter {
   id: string; name: string; type: string; phoneNumber: string; emailAddress: string
   latitude: number; longitude: number; address: string; district: string; state: string
   country: string; about: string; alternatePhoneNumber: string; websiteUrl: string
   profilePicture: string; createdAt: string; updatedAt: string
   creator: MedicalCenterCreator
+  creatorManager: MedicalCenterCreatorManager | null
   specialties: Speciality[]
+  medicalSystem?: MedicalSystem
 }
 export interface UserContext { role: string; medicalCenter: UserMedicalCenter }
 export interface ContextsResponse { success: boolean; data: UserContext[] }
@@ -75,8 +79,8 @@ export interface SwitchContextResponse {
   data: {
     accessToken: string
     refreshToken: string
-    medicalCenter: UserMedicalCenter & { isVerified: boolean; deletedAt: string | null; specialties: Speciality[]; medicalSystem: MedicalSystem }
-    doctor: AppointmentDoctor & { isVerified: boolean; deletedAt: string | null } | null
+    medicalCenter: UserMedicalCenter & { isVerified: boolean; deletedAt: string | null }
+    doctor: { id: string; name: string; referenceId: string; phoneNumber: string; emailAddress: string; profilePicture: string; isVerified: boolean; deletedAt: string | null } | null
   }
 }
 

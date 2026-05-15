@@ -10,6 +10,7 @@ import patientsBlueIcon from '../assets/icons/patients-blue-icon.svg'
 import upArrowGreen from '../assets/icons/up-arrow-green.svg'
 import downArrowRed from '../assets/icons/down-arrow-red.svg'
 import doctorProfileImg from '../assets/images/doctor-profile.png'
+import userProfileImg from '../assets/images/user-profile.png'
 import './DashboardPage.css'
 
 import type { DoctorDetail } from '../services/types'
@@ -80,14 +81,14 @@ const DashboardPage: FC<{ onViewDoctor?: (d: DoctorDetail) => void }> = ({ onVie
     getDashboard(id).then(res => setData(res.data)).catch(() => { }).finally(() => setLoading(false))
   }, [activeContext?.medicalCenter.id])
 
-  const aptToday = data?.appointmentsTodayCount ?? 0
+  const aptToday = (data?.todayAppointmentCounts.confirmedCount ?? 0) + (data?.todayAppointmentCounts.cancelledCount ?? 0)
   const activePatients = data?.patients.currentCount ?? 0
   const totalPatients = data?.patients.currentCount ?? 0
   const patientGrowth = data?.patients.growthPercentage ?? 0
   const monthlyGrowth = data?.monthlyAppointments.growthPercentage ?? 0
 
   const stats = [
-    { label: "Today's Appointments", value: String(aptToday), icon: appointmentBlueIcon, sub: '0 confirmed, 0 cancelled' },
+    { label: "Today's Appointments", value: String(aptToday), icon: appointmentBlueIcon, sub: `${data?.todayAppointmentCounts.confirmedCount ?? 0} confirmed, ${data?.todayAppointmentCounts.cancelledCount ?? 0} cancelled` },
     { label: 'Active Patients', value: formatNum(activePatients), icon: patientsBlueIcon, badge: `${monthlyGrowth > 0 ? '+' : ''}${monthlyGrowth.toFixed(0)}%`, arrow: monthlyGrowth >= 0 ? upArrowGreen : downArrowRed, sub: 'this month', negative: monthlyGrowth < 0 },
     { label: 'Total Patients', value: formatNum(totalPatients), icon: patientsBlueIcon, badge: `${patientGrowth > 0 ? '+' : ''}${patientGrowth.toFixed(0)}%`, arrow: patientGrowth >= 0 ? upArrowGreen : downArrowRed, sub: 'From the last month', negative: patientGrowth < 0 },
     { label: 'Revenue', value: '₹0', icon: growIcon, badge: '+0%', arrow: upArrowGreen, sub: 'From the last month', negative: false },
@@ -101,7 +102,7 @@ const DashboardPage: FC<{ onViewDoctor?: (d: DoctorDetail) => void }> = ({ onVie
 
   const revenueData = appointmentData.map(a => ({ month: a.month, value: 0 }))
 
-  const activeDoctors = (data?.activeDoctors ?? []).map(d => ({
+  const activeDoctors = (data?.todayDoctors ?? []).map(d => ({
     raw: d,
     name: d.name,
     avatar: d.profilePicture || doctorProfileImg,
@@ -294,7 +295,18 @@ const DashboardPage: FC<{ onViewDoctor?: (d: DoctorDetail) => void }> = ({ onVie
         <div className="dbp-right">
           <h3 className="dbp-chart-title">Today's Appointments</h3>
           <div className="dbp-apt-list">
-            <p className="dbp-apt-empty" style={{ fontSize: 13, color: '#494F5A' }}>No appointments today.</p>
+            {(data?.todayAppointments ?? []).length === 0
+              ? <p style={{ fontSize: 13, color: '#494F5A' }}>No appointments today.</p>
+              : (data?.todayAppointments ?? []).map(a => (
+                <div key={a.id} className="dbp-apt-item">
+                  <img src={userProfileImg} alt={a.patient.name} className="dbp-apt-avatar" />
+                  <div className="dbp-apt-info">
+                    <span className="dbp-apt-name">{a.patient.name}</span>
+                    <span className="dbp-apt-time">{a.doctor.name}</span>
+                  </div>
+                </div>
+              ))
+            }
           </div>
         </div>
       </div>
