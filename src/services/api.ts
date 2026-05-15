@@ -31,6 +31,7 @@ client.interceptors.response.use(
       } catch {
         localStorage.removeItem('accessToken')
         localStorage.removeItem('refreshToken')
+        localStorage.removeItem('pendingClinicSetup')
         window.location.href = '/'
       }
     }
