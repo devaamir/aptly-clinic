@@ -123,16 +123,16 @@ const CreateClinic: FC<CreateClinicProps> = ({ onCreated }) => {
       <div className="cc-form">
         <h3 className="cc-form-title">Basic Information</h3>
         <div className="cc-profile-pic" onClick={() => fileInputRef.current?.click()}>
-          {avatarPreview
-            ? <img src={avatarPreview} alt="clinic" className="cc-profile-img" />
-            : <div className="cc-profile-placeholder">
-                <img src={cameraIcon} alt="" style={{ width: 24, height: 24 }} />
-                <div className="cc-profile-placeholder-text">
-                  <span className="cc-profile-desc">Upload a clinic picture. Max size 5MB</span>
-                </div>
-                <span className="cc-profile-browse">Browse</span>
-              </div>
-          }
+          <div className="cc-profile-square">
+            {avatarPreview
+              ? <img src={avatarPreview} alt="clinic" className="cc-profile-img" />
+              : <img src={cameraIcon} alt="" style={{ width: 24, height: 24 }} />
+            }
+          </div>
+          <div className="cc-profile-placeholder-text">
+            <span className="cc-profile-desc">Upload a clinic picture. Max size 5MB</span>
+          </div>
+          <span className="cc-profile-browse">{avatarPreview ? 'Replace' : 'Browse'}</span>
           <input ref={fileInputRef} type="file" accept="image/*" hidden onChange={handleFile} />
         </div>
         <div className="cc-row">
