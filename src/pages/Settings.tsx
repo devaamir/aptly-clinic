@@ -22,7 +22,7 @@ const InfoRow: FC<{ label: string; value: string; editing?: boolean; onChange?: 
 )
 
 const Settings: FC = () => {
-  const { activeContext, specialties: contextSpecialties } = useAppContext()
+  const { activeContext, specialties: contextSpecialties, setActiveContext } = useAppContext()
   const mc = activeContext?.medicalCenter
 
   const [activeTab, setActiveTab] = useState<SettingsTab>('Clinic Profile')
@@ -40,7 +40,7 @@ const Settings: FC = () => {
     if (!mc) return
     const p = {
       name: mc.name ?? '',
-      practice: '',
+      practice: mc.medicalSystem?.name ?? '',
       phone: mc.phoneNumber ?? '',
       email: mc.emailAddress ?? '',
       website: mc.websiteUrl ?? '',
@@ -88,6 +88,24 @@ const Settings: FC = () => {
       await updateClinic(fd)
       setProfile(draft)
       setEditing(false)
+      // update context immediately
+      if (activeContext) {
+        setActiveContext({
+          ...activeContext,
+          medicalCenter: {
+            ...activeContext.medicalCenter,
+            name: draft.name,
+            phoneNumber: draft.phone,
+            emailAddress: draft.email,
+            about: draft.about,
+            websiteUrl: draft.website,
+            address: draft.address,
+            latitude: parseFloat(draft.lat) || 0,
+            longitude: parseFloat(draft.lng) || 0,
+            specialties: contextSpecialties.filter(s => draft.specialties.includes(s.name)),
+          }
+        })
+      }
     } catch (err: any) {
       setSaveError(err.response?.data?.message || 'Failed to save changes.')
     } finally {
@@ -140,7 +158,7 @@ const Settings: FC = () => {
                 </div>
                 <div className="st-info-grid">
                   <InfoRow label="Clinic Name" value={draft.name} editing={editing} onChange={set('name')} />
-                  <InfoRow label="Practice Type" value={draft.practice} editing={editing} onChange={set('practice')} />
+                  <InfoRow label="Medical System" value={draft.practice} editing={editing} onChange={set('practice')} />
                   <InfoRow label="Phone Number" value={draft.phone} editing={editing} onChange={set('phone')} />
                   <InfoRow label="Email" value={draft.email} editing={editing} onChange={set('email')} />
                   <InfoRow label="Website" value={draft.website} editing={editing} onChange={set('website')} />
