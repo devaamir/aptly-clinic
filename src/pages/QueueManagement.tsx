@@ -305,10 +305,22 @@ const QueueManagement: FC = () => {
     if (patient.status !== 'skipped') return
 
     try {
+      // First set current ongoing patient to done
+      const ongoingPatient = patients.find(p => p.status === 'ongoing')
+      if (ongoingPatient) {
+        const doneResponse = await updateAppointmentStatus(ongoingPatient.appointmentId, 'done')
+        if (!doneResponse.success) return
+      }
+
+      // Then set skipped patient to ongoing
       const response = await updateAppointmentStatus(patient.appointmentId, 'ongoing')
       if (response.success) {
-        console.log('Setting patient to ongoing with isSilentConsult=true')
-        updatePatients(patients.map(p => p.token === patient.token ? { ...p, status: 'ongoing', isSilentConsult: true } : p))
+        updatePatients(patients.map(p => {
+          if (p.token === ongoingPatient?.token) return { ...p, status: 'done' as Status, isSilentConsult: false }
+          if (p.token === patient.token) return { ...p, status: 'ongoing' as Status, isSilentConsult: true }
+          return p
+        }))
+        if (ongoingPatient) updateStats({ completedPatient: stats.completedPatient + 1 })
       }
     } catch { /* silent */ }
   }
