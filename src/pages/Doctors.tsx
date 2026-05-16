@@ -349,20 +349,47 @@ const Doctors: FC<{ onViewProfile: (d: DoctorDetail) => void }> = ({ onViewProfi
                         disabled={!!selectedDoctor} />
                     </div>
                     <div style={{ marginBottom: 18 }}>
-                      <FormField as="select" label="Specialty" value={selectedSpecialtyIds[0] ?? ''}
-                        onChange={e => !selectedDoctor && setSelectedSpecialtyIds([(e.target as HTMLSelectElement).value])}
-                        options={specialties.map(s => ({ label: s.name, value: s.id }))}
-                        disabled={!!selectedDoctor} />
+                      <div className="form-field">
+                        <label className="form-field-label">Specialty <span className="form-field-required"> *</span></label>
+                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 6 }}>
+                          {specialties.map(s => (
+                            <button key={s.id} type="button"
+                              disabled={!!selectedDoctor}
+                              onClick={() => !selectedDoctor && setSelectedSpecialtyIds(prev =>
+                                prev.includes(s.id) ? prev.filter(id => id !== s.id) : [...prev, s.id]
+                              )}
+                              style={{
+                                padding: '4px 12px', borderRadius: 20, fontSize: 13, cursor: selectedDoctor ? 'default' : 'pointer',
+                                border: `1px solid ${selectedSpecialtyIds.includes(s.id) ? '#418EFD' : '#E0E2E6'}`,
+                                background: selectedSpecialtyIds.includes(s.id) ? '#418EFD' : '#fff',
+                                color: selectedSpecialtyIds.includes(s.id) ? '#fff' : '#1C1E22',
+                              }}>
+                              {s.name}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
                     </div>
                     <div style={{ marginBottom: 18 }}>
                       <div className="form-field">
                         <label className="form-field-label">Qualification <span className="form-field-required"> *</span></label>
-                        <select multiple className="form-field-input" style={{ height: 96 }}
-                          value={selectedQualificationIds}
-                          disabled={!!selectedDoctor}
-                          onChange={e => !selectedDoctor && setSelectedQualificationIds(Array.from(e.target.selectedOptions, o => o.value))}>
-                          {qualifications.map(q => <option key={q.id} value={q.id}>{q.name}</option>)}
-                        </select>
+                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 6 }}>
+                          {qualifications.map(q => (
+                            <button key={q.id} type="button"
+                              disabled={!!selectedDoctor}
+                              onClick={() => !selectedDoctor && setSelectedQualificationIds(prev =>
+                                prev.includes(q.id) ? prev.filter(id => id !== q.id) : [...prev, q.id]
+                              )}
+                              style={{
+                                padding: '4px 12px', borderRadius: 20, fontSize: 13, cursor: selectedDoctor ? 'default' : 'pointer',
+                                border: `1px solid ${selectedQualificationIds.includes(q.id) ? '#418EFD' : '#E0E2E6'}`,
+                                background: selectedQualificationIds.includes(q.id) ? '#418EFD' : '#fff',
+                                color: selectedQualificationIds.includes(q.id) ? '#fff' : '#1C1E22',
+                              }}>
+                              {q.name}
+                            </button>
+                          ))}
+                        </div>
                       </div>
                     </div>
                     <div className="sch-form-row">
@@ -374,18 +401,18 @@ const Doctors: FC<{ onViewProfile: (d: DoctorDetail) => void }> = ({ onViewProfi
                         onChange={e => !selectedDoctor && setForm(p => ({ ...p, emailAddress: (e.target as HTMLInputElement).value }))} />
                     </div>
                     <div className="sch-form-row">
-                      <FormField label="Experience (years)" placeholder="e.g. 5" type="number" min={0} value={form.yearsOfExperience}
+                      <FormField label="Experience (years)" placeholder="e.g. 5" type="number" min={0} value={form.yearsOfExperience} showRequired={false}
                         readOnly={!!selectedDoctor}
                         onChange={e => !selectedDoctor && setForm(p => ({ ...p, yearsOfExperience: (e.target as HTMLInputElement).value }))} />
-                      <FormField label="Avg Time / Patient (min)" placeholder="e.g. 15" type="number" min={0} value={form.estimateConsultationTime}
+                      <FormField label="Avg Time / Patient (min)" placeholder="e.g. 15" type="number" min={0} value={form.estimateConsultationTime} showRequired={false}
                         readOnly={!!selectedDoctor}
                         onChange={e => !selectedDoctor && setForm(p => ({ ...p, estimateConsultationTime: (e.target as HTMLInputElement).value }))} />
                     </div>
                     <div className="sch-form-row">
-                      <FormField label="Consultation Fee" placeholder="e.g. 500" type="number" min={0} value={form.consultationFee}
+                      <FormField label="Consultation Fee" placeholder="e.g. 500" type="number" min={0} value={form.consultationFee} showRequired={false}
                         readOnly={!!selectedDoctor}
                         onChange={e => !selectedDoctor && setForm(p => ({ ...p, consultationFee: (e.target as HTMLInputElement).value }))} />
-                      <FormField label="Advance Booking Limit (days)" placeholder="e.g. 7" type="number" min={0} value={form.advanceBookingLimit}
+                      <FormField label="Advance Booking Limit (days)" placeholder="e.g. 7" type="number" min={0} value={form.advanceBookingLimit} showRequired={false}
                         readOnly={!!selectedDoctor}
                         onChange={e => !selectedDoctor && setForm(p => ({ ...p, advanceBookingLimit: (e.target as HTMLInputElement).value }))} />
                     </div>
