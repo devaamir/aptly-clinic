@@ -32,19 +32,21 @@ type ActivePage = 'Dashboard' | 'Queue Management' | 'Appointments' | 'Patients'
 
 interface Doctor { id: string; doctorUuid: string; name: string; avatar: string; specialty: string; phone: string; email: string; experience: string; status: 'Active' | 'Inactive' }
 
-const navItems: { label: ActivePage; icon: string }[] = [
-  { label: 'Dashboard', icon: dashboardIcon },
+const allNavItems: { label: ActivePage; icon: string; excludeRoles?: string[] }[] = [
+  { label: 'Dashboard', icon: dashboardIcon, excludeRoles: ['doctor'] },
   { label: 'Queue Management', icon: queueIcon },
   { label: 'Appointments', icon: appointmentIcon },
   { label: 'Patients', icon: patientsIcon },
-  { label: 'Doctors', icon: doctorsIcon },
+  { label: 'Doctors', icon: doctorsIcon, excludeRoles: ['doctor'] },
   { label: 'Leave Management', icon: leaveIcon },
   { label: 'Settings', icon: settingsIcon },
 ]
 
 const Dashboard: FC = () => {
-  const { activeContext, contexts, setTokens, setActiveContext, setContexts, logout } = useAppContext()
-  const [activePage, setActivePage] = useState<ActivePage>('Dashboard')
+  const { activeContext, contexts, setTokens, setActiveContext, setContexts, logout, setActiveDoctor } = useAppContext()
+  const role = activeContext?.role?.toLowerCase() ?? ''
+  const navItems = allNavItems.filter(item => !item.excludeRoles || !item.excludeRoles.includes(role))
+  const [activePage, setActivePage] = useState<ActivePage>(role === 'doctor' ? 'Queue Management' : 'Dashboard')
   const [viewDoctor, setViewDoctor] = useState<DoctorDetail | null>(null)
   const [showProfileMenu, setShowProfileMenu] = useState(false)
   const [switchTarget, setSwitchTarget] = useState<{ name: string; role: string; avatar: string; id: string } | null>(null)
@@ -153,6 +155,7 @@ const Dashboard: FC = () => {
                   if (res.success) {
                     setTokens(res.data.accessToken, res.data.refreshToken)
                     setActiveContext({ role: ctx.role, medicalCenter: res.data.medicalCenter })
+                    setActiveDoctor(res.data.doctor)
                   }
                 } catch { setActiveContext(ctx) }
               }

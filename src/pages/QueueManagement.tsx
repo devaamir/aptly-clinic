@@ -150,7 +150,8 @@ const formatTo12h = (time: string) => {
 }
 
 const QueueManagement: FC = () => {
-  const { activeContext } = useAppContext()
+  const { activeContext, activeDoctor } = useAppContext()
+  const isDoctor = activeContext?.role?.toLowerCase() === 'doctor'
   const [doctors, setDoctors] = useState<Doctor[]>([])
   const [selectedId, setSelectedId] = useState(1)
   const [sessionIdx, setSessionIdx] = useState(0)
@@ -159,7 +160,13 @@ const QueueManagement: FC = () => {
   const [statsMap, setStatsMap] = useState<Record<string, { completedPatient: number; totalPatient: number }>>({})
 
   useEffect(() => {
-    getDoctors().then(res => {
+    if (isDoctor && activeDoctor) {
+      const doc: Doctor = { id: 1, apiId: activeDoctor.id, name: activeDoctor.name, specialty: '', room: 'Room 101', avatar: activeDoctor.profilePicture || doctorProfileImg, sessions: [] }
+      setDoctors([doc])
+      setSelectedId(doc.id)
+      return
+    }
+    getDoctors(activeContext?.medicalCenter.id).then(res => {
       if (res.success && res.data.length > 0) {
         const mapped = res.data.map(mapApiDoctor)
         setDoctors(mapped)

@@ -11,6 +11,7 @@ export interface Appointment {
   dob: string
   age: number
   date: string
+  rawDate: string  // YYYY-MM-DD in IST
   session: string
   token: string
   doctor: string

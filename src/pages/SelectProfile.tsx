@@ -11,7 +11,7 @@ interface SelectProfileProps {
 }
 
 const SelectProfile: FC<SelectProfileProps> = ({ onSelect }) => {
-  const { setTokens, setContexts: storeContexts, setActiveContext } = useAppContext()
+  const { setTokens, setContexts: storeContexts, setActiveContext, setActiveDoctor } = useAppContext()
   const [contexts, setContexts] = useState<UserContext[]>([])
   const [loading, setLoading] = useState(true)
   const [switching, setSwitching] = useState<string | null>(null)
@@ -23,6 +23,7 @@ const SelectProfile: FC<SelectProfileProps> = ({ onSelect }) => {
       if (res.success) {
         setTokens(res.data.accessToken, res.data.refreshToken)
         setActiveContext({ role: ctx.role, medicalCenter: res.data.medicalCenter })
+        setActiveDoctor(res.data.doctor)
         onSelect(ctx)
       }
     } catch {

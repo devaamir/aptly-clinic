@@ -30,18 +30,19 @@ const to12h = (t: string) => {
 const mapApiAppointment = (a: ApiAppointment): Appointment => ({
   id: a.referenceId,
   uuid: a.id,
-  patient: a.patient.name,
+  patient: a.patient?.name ?? '',
   avatar: userProfileImg,
-  phone: a.patient.phoneNumber,
-  gender: a.patient.gender,
-  dob: a.patient.dateOfBirth,
-  age: new Date().getFullYear() - new Date(a.patient.dateOfBirth).getFullYear(),
-  date: new Date(a.appointmentDate).toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' }),
-  session: `${to12h(a.schedule.startTime)} – ${to12h(a.schedule.stopTime)}`,
+  phone: a.patient?.phoneNumber ?? '',
+  gender: a.patient?.gender ?? '',
+  dob: a.patient?.dateOfBirth ?? '',
+  age: a.patient?.dateOfBirth ? new Date().getFullYear() - new Date(a.patient.dateOfBirth).getFullYear() : 0,
+  date: new Date(a.appointmentDate + 'T00:00:00+05:30').toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' }),
+  rawDate: new Date(a.appointmentDate).toLocaleDateString('en-CA', { timeZone: 'Asia/Kolkata' }),
+  session: a.schedule ? `${to12h(a.schedule.startTime)} – ${to12h(a.schedule.stopTime)}` : '',
   token: String(a.tokenNumber).padStart(2, '0'),
-  doctor: a.doctor.name,
-  doctorAvatar: a.doctor.profilePicture || doctorProfileImg,
-  specialty: a.doctor.specialties[0]?.name ?? '',
+  doctor: a.doctor?.name ?? '',
+  doctorAvatar: a.doctor?.profilePicture || doctorProfileImg,
+  specialty: a.doctor?.specialties?.[0]?.name ?? '',
   bookingMethod: a.creatorRole === 'patient' ? 'Online' : 'Offline' as BookingMethod,
   bookedDate: new Date(a.createdAt).toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' }),
   status: (a.tokenStatus === 'cancelled' ? 'Cancelled' : 'Confirmed') as AptStatus,
@@ -51,7 +52,8 @@ type Filter = 'Today' | 'Tomorrow' | 'This Week' | 'Date' | 'Date Range'
 
 const Appointments: FC = () => {
   const [searchQuery, setSearchQuery] = useState('')
-  const { activeContext, specialties: contextSpecialties } = useAppContext()
+  const { activeContext, activeDoctor, specialties: contextSpecialties } = useAppContext()
+  const isDoctor = activeContext?.role?.toLowerCase() === 'doctor'
   const specialties = activeContext?.medicalCenter?.specialties?.length
     ? activeContext.medicalCenter.specialties
     : contextSpecialties
@@ -87,9 +89,32 @@ const Appointments: FC = () => {
   useEffect(() => {
     setLoading(true)
     getAppointments().then(res => {
+      console.log('getAppointments res', res)
       if (res.success) setAppointments(res.data.map(mapApiAppointment))
-    }).catch(() => { }).finally(() => setLoading(false))
-    getDoctors().then(res => { if (res.success) setClinicDoctors(res.data) }).catch(() => { })
+    }).catch(e => console.log('getAppointments error', e)).finally(() => setLoading(false))
+
+    if (isDoctor && activeDoctor) {
+      setClinicDoctors([{
+        id: activeDoctor.id,
+        name: activeDoctor.name,
+        referenceId: '',
+        phoneNumber: activeDoctor.phoneNumber,
+        emailAddress: activeDoctor.emailAddress,
+        profilePicture: activeDoctor.profilePicture,
+        specialties: [],
+        yearsOfExperience: 0,
+        advanceBookingLimit: 0,
+        estimateConsultationTime: 0,
+        latitude: 0, longitude: 0,
+        address: '', district: '', state: '', country: '', about: '',
+        consultationFee: 0,
+        createdAt: '', updatedAt: '',
+        medicalSystem: null as any,
+        qualifications: [],
+      }])
+    } else {
+      getDoctors(activeContext?.medicalCenter.id).then(res => { if (res.success) setClinicDoctors(res.data) }).catch(() => { })
+    }
   }, [activeContext?.medicalCenter.id])
 
   useEffect(() => {
@@ -183,7 +208,7 @@ const Appointments: FC = () => {
     setSelectedPatient(null)
     setPhoneResults([])
     setSelectedSpecialty('')
-    setSelectedDoctor('')
+    setSelectedDoctor(isDoctor && activeDoctor ? activeDoctor.id : '')
     setSelectedDate(new Date().toDateString())
     setSelectedSession(null)
     setDoctorSchedules([])
@@ -196,19 +221,15 @@ const Appointments: FC = () => {
   const selectedDoctorLabel = clinicDoctors.find(d => d.id === selectedDoctor)?.name ?? ''
 
   const filterByDate = (a: Appointment) => {
-    const aptDate = new Date(a.date); aptDate.setHours(0, 0, 0, 0)
-    const today = new Date(); today.setHours(0, 0, 0, 0)
-    const tomorrow = new Date(today); tomorrow.setDate(today.getDate() + 1)
-    const weekEnd = new Date(today); weekEnd.setDate(today.getDate() + 6)
-    if (filter === 'Today') return aptDate.toDateString() === today.toDateString()
-    if (filter === 'Tomorrow') return aptDate.toDateString() === tomorrow.toDateString()
+    const aptDate = a.rawDate  // YYYY-MM-DD in IST
+    const today = new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Kolkata' })
+    const tomorrow = new Date(Date.now() + 86400000).toLocaleDateString('en-CA', { timeZone: 'Asia/Kolkata' })
+    const weekEnd = new Date(Date.now() + 6 * 86400000).toLocaleDateString('en-CA', { timeZone: 'Asia/Kolkata' })
+    if (filter === 'Today') return aptDate === today
+    if (filter === 'Tomorrow') return aptDate === tomorrow
     if (filter === 'This Week') return aptDate >= today && aptDate <= weekEnd
-    if (filter === 'Date' && filterDate) return aptDate.toDateString() === new Date(filterDate).toDateString()
-    if (filter === 'Date Range' && filterRangeStart && filterRangeEnd) {
-      const s = new Date(filterRangeStart); s.setHours(0, 0, 0, 0)
-      const e = new Date(filterRangeEnd); e.setHours(0, 0, 0, 0)
-      return aptDate >= s && aptDate <= e
-    }
+    if (filter === 'Date' && filterDate) return aptDate === filterDate
+    if (filter === 'Date Range' && filterRangeStart && filterRangeEnd) return aptDate >= filterRangeStart && aptDate <= filterRangeEnd
     return true
   }
 
@@ -218,6 +239,11 @@ const Appointments: FC = () => {
       a.patient.toLowerCase().includes(searchQuery.toLowerCase()) ||
       a.doctor.toLowerCase().includes(searchQuery.toLowerCase()))
   )
+
+  console.log('appointments raw', appointments.map(a => ({ rawDate: a.rawDate, date: a.date })))
+  console.log('today IST', new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Kolkata' }))
+  console.log('filteredAppointments', filteredAppointments);
+
 
   const sessionRanges: Record<string, [number, number]> = {
     '9am-1pm': [9, 13],
@@ -235,7 +261,12 @@ const Appointments: FC = () => {
       <PageHeader
         title="Appointments"
         actions={
-          <button className="apt-schedule-btn" onClick={() => setShowSchedule(true)}>
+          <button className="apt-schedule-btn" onClick={() => {
+            if (isDoctor && activeDoctor) {
+              setSelectedDoctor(activeDoctor.id)
+            }
+            setShowSchedule(true)
+          }}>
             <img src={addIcon} alt="" style={{ width: 16, height: 16 }} />
             Schedule Appointment
           </button>
@@ -560,22 +591,32 @@ const Appointments: FC = () => {
                     </div>
                     <h3 className="sch-section-title">Doctor Assign</h3>
                     <div className="sch-form-row">
-                      <FormField
-                        as="select"
-                        label="Specialty"
-                        value={selectedSpecialty}
-                        onChange={e => { setSelectedSpecialty((e.target as HTMLSelectElement).value); setSelectedDoctor(''); setSelectedSession(null) }}
-                        options={specialties.map(s => ({ label: s.name, value: s.id }))}
-                      />
-                      <FormField
-                        as="select"
-                        label="Doctor"
-                        value={selectedDoctor}
-                        onChange={e => { setSelectedDoctor((e.target as HTMLSelectElement).value); setSelectedSession(null) }}
-                        options={filteredDoctors.map(d => ({ label: d.name, value: d.id }))}
-                        selectPlaceholder={!selectedSpecialty ? 'Select a specialty first' : filteredDoctors.length === 0 ? 'No doctors found for this specialty' : 'Select'}
-                        disabled={!selectedSpecialty || filteredDoctors.length === 0}
-                      />
+                      {!isDoctor && (
+                        <FormField
+                          as="select"
+                          label="Specialty"
+                          value={selectedSpecialty}
+                          onChange={e => { setSelectedSpecialty((e.target as HTMLSelectElement).value); setSelectedDoctor(''); setSelectedSession(null) }}
+                          options={specialties.map(s => ({ label: s.name, value: s.id }))}
+                        />
+                      )}
+                      {!isDoctor && (
+                        <FormField
+                          as="select"
+                          label="Doctor"
+                          value={selectedDoctor}
+                          onChange={e => { setSelectedDoctor((e.target as HTMLSelectElement).value); setSelectedSession(null) }}
+                          options={filteredDoctors.map(d => ({ label: d.name, value: d.id }))}
+                          selectPlaceholder={!selectedSpecialty ? 'Select a specialty first' : filteredDoctors.length === 0 ? 'No doctors found for this specialty' : 'Select'}
+                          disabled={!selectedSpecialty || filteredDoctors.length === 0}
+                        />
+                      )}
+                      {isDoctor && activeDoctor && (
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 0' }}>
+                          <img src={activeDoctor.profilePicture || doctorProfileImg} alt={activeDoctor.name} style={{ width: 32, height: 32, borderRadius: '50%', objectFit: 'cover' }} />
+                          <span style={{ fontFamily: 'Manrope', fontSize: 14, fontWeight: 600, color: '#1A1D1F' }}>{activeDoctor.name}</span>
+                        </div>
+                      )}
                     </div>
                     <h3 className="sch-section-title" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                       Select a date

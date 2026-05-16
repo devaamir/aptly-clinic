@@ -73,7 +73,8 @@ export const searchPatients = (phoneNumber: string) =>
 export const createPatient = (body: import('./types').CreatePatientRequest) =>
   api.post<import('./types').CreatePatientResponse>('/patients', body)
 
-export const getDoctors = () => api.get<DoctorsResponse>('/doctors/medical-center')
+export const getDoctors = (medicalCenterId?: string) =>
+  api.get<DoctorsResponse>(`/doctors/medical-center${medicalCenterId ? `?medicalCenterId=${medicalCenterId}` : ''}`)
 
 export const getDoctorsList = (params: { search?: string; page?: number; limit?: number } = {}) => {
   const query = new URLSearchParams()

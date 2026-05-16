@@ -1,6 +1,6 @@
 import type { FC, ReactNode } from 'react'
 import { createContext, useContext, useState, useEffect } from 'react'
-import type { UserContext, UserMedicalCenter, Speciality, MedicalSystem, Qualification } from '../services/types'
+import type { UserContext, UserMedicalCenter, Speciality, MedicalSystem, Qualification, SwitchContextResponse } from '../services/types'
 import { getSpecialties, getMedicalSystems, getQualifications } from '../services/api'
 
 interface AuthUser {
@@ -12,6 +12,8 @@ interface AuthUser {
   medicalCenterId: string
 }
 
+type ActiveDoctor = SwitchContextResponse['data']['doctor']
+
 interface AppContextValue {
   user: AuthUser | null
   setUser: (u: AuthUser | null) => void
@@ -22,6 +24,8 @@ interface AppContextValue {
   setContexts: (c: UserContext[]) => void
   activeContext: UserContext | null
   setActiveContext: (c: UserContext) => void
+  activeDoctor: ActiveDoctor
+  setActiveDoctor: (d: ActiveDoctor) => void
   logout: () => void
   specialties: Speciality[]
   medicalSystems: MedicalSystem[]
@@ -38,6 +42,10 @@ export const AppProvider: FC<{ children: ReactNode }> = ({ children }) => {
   const [specialties, setSpecialties] = useState<Speciality[]>([])
   const [medicalSystems, setMedicalSystems] = useState<MedicalSystem[]>([])
   const [qualifications, setQualifications] = useState<Qualification[]>([])
+  const [activeDoctor, setActiveDoctor] = useState<ActiveDoctor>(() => {
+    const stored = localStorage.getItem('activeDoctor')
+    try { return stored ? JSON.parse(stored) : null } catch { return null }
+  })
   const [activeContext, setActiveContextState] = useState<UserContext | null>(() => {
     const stored = localStorage.getItem('selectedClinic')
     const role = localStorage.getItem('selectedRole')
@@ -67,6 +75,12 @@ export const AppProvider: FC<{ children: ReactNode }> = ({ children }) => {
     localStorage.setItem('selectedClinic', JSON.stringify(ctx.medicalCenter))
   }
 
+  const setActiveDoctorAndStore = (d: ActiveDoctor) => {
+    setActiveDoctor(d)
+    if (d) localStorage.setItem('activeDoctor', JSON.stringify(d))
+    else localStorage.removeItem('activeDoctor')
+  }
+
   const logout = () => {
     setUser(null)
     setAccessToken(null)
@@ -76,14 +90,16 @@ export const AppProvider: FC<{ children: ReactNode }> = ({ children }) => {
     setMedicalSystems([])
     setQualifications([])
     setActiveContextState(null)
+    setActiveDoctor(null)
     localStorage.removeItem('accessToken')
     localStorage.removeItem('refreshToken')
     localStorage.removeItem('selectedRole')
     localStorage.removeItem('selectedClinic')
+    localStorage.removeItem('activeDoctor')
   }
 
   return (
-    <AppContext.Provider value={{ user, setUser, accessToken, refreshToken, setTokens, contexts, setContexts, activeContext, setActiveContext, logout, specialties, medicalSystems, qualifications }}>
+    <AppContext.Provider value={{ user, setUser, accessToken, refreshToken, setTokens, contexts, setContexts, activeContext, setActiveContext, activeDoctor, setActiveDoctor: setActiveDoctorAndStore, logout, specialties, medicalSystems, qualifications }}>
       {children}
     </AppContext.Provider>
   )

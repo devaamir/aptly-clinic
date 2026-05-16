@@ -140,7 +140,7 @@ const Doctors: FC<{ onViewProfile: (d: DoctorDetail) => void }> = ({ onViewProfi
 
   useEffect(() => {
     setLoading(true)
-    getDoctors().then(res => {
+    getDoctors(activeContext?.medicalCenter.id).then(res => {
       if (res.success) setDoctors(res.data.map(mapDoctor))
     }).catch(() => {}).finally(() => setLoading(false))
   }, [activeContext?.medicalCenter.id])
