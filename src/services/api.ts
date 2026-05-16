@@ -4,8 +4,12 @@ import type { LoginResponse, AppointmentsResponse, ContextsResponse, SwitchConte
 export type { LoginResponse, AppointmentsResponse, ContextsResponse, SwitchContextResponse, DoctorScheduleResponse, DoctorsResponse, GetDoctorResponse, SpecialtiesResponse, MedicalSystemsResponse, QualificationsResponse, CreateDoctorResponse, PatientsResponse, QueueSSEData, DoctorsListResponse, PatientSearchResponse, CreateAppointmentRequest, CreateAppointmentResponse }
 export * from './types'
 
+const baseURL = import.meta.env.VITE_USE_LIVE === 'true'
+  ? import.meta.env.VITE_LIVE_BASE_URL
+  : import.meta.env.VITE_API_BASE_URL
+
 const client = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL ?? '',
+  baseURL: baseURL ?? '',
   headers: { 'Content-Type': 'application/json' },
 })
 
@@ -23,7 +27,7 @@ client.interceptors.response.use(
       original._retry = true
       try {
         const refreshToken = localStorage.getItem('refreshToken')
-        const { data } = await axios.post(`${import.meta.env.VITE_API_BASE_URL}/auth/refresh-token`, { refreshToken })
+        const { data } = await axios.post(`${baseURL}/auth/refresh-token`, { refreshToken })
         localStorage.setItem('accessToken', data.data.accessToken)
         localStorage.setItem('refreshToken', data.data.refreshToken)
         original.headers.Authorization = `Bearer ${data.data.accessToken}`
@@ -114,7 +118,7 @@ import { EventSourcePolyfill } from 'event-source-polyfill'
 
 export const createSSE = (endpoint: string, onMessage: (data: unknown) => void, onError?: (e: Event) => void): EventSource => {
   const token = localStorage.getItem('accessToken')
-  const base = (import.meta.env.VITE_API_BASE_URL ?? '').replace(/\/$/, '')
+  const base = (baseURL ?? '').replace(/\/$/, '')
   const path = endpoint.startsWith('/') ? endpoint : `/${endpoint}`
   const url = `${base}${path}`
   const es = new EventSourcePolyfill(url, {
