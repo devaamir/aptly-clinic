@@ -2,8 +2,9 @@ import type { FC, ChangeEvent } from 'react'
 import { useState, useEffect } from 'react'
 import avatarIcon from '../assets/icons/avatar-icon.svg'
 import cameraIcon from '../assets/icons/camera-icon.svg'
-import { updateClinic } from '../services/api'
+import { updateClinic, createSubscriptionCheckout, getSubscriptionStatus } from '../services/api'
 import { useAppContext } from '../context/AppContext'
+import Modal from '../components/Modal'
 import './Settings.css'
 
 type SettingsTab = 'Clinic Profile' | 'Consulting Rooms' | 'Notifications' | 'Security' | 'Billing' | 'Integrations'
@@ -20,6 +21,127 @@ const InfoRow: FC<{ label: string; value: string; editing?: boolean; onChange?: 
     }
   </div>
 )
+
+// null = not purchased, otherwise expiry date string
+type PlanStatus = 'none' | 'active' | 'expiring' | 'expired'
+type BillingModal = 'purchase' | 'renew' | 'cancel' | null
+
+const getPlanStatus = (expiresAt: string | null): PlanStatus => {
+  if (!expiresAt) return 'none'
+  const diff = (new Date(expiresAt).getTime() - Date.now()) / (1000 * 60 * 60 * 24)
+  if (diff < 0) return 'expired'
+  if (diff <= 7) return 'expiring'
+  return 'active'
+}
+
+const BillingTab: FC = () => {
+  const [expiresAt, setExpiresAt] = useState<string | null>(null)
+  const [subStatus, setSubStatus] = useState<string | null>(null)
+  const [modal, setModal] = useState<BillingModal>(null)
+  const [subscribing, setSubscribing] = useState(false)
+
+  useEffect(() => {
+    getSubscriptionStatus()
+      .then(r => { setExpiresAt(r.data.trialExpiresAt); setSubStatus(r.data.subscriptionStatus) })
+      .catch(() => {})
+  }, [])
+
+  const status = subStatus === 'active' ? getPlanStatus(expiresAt) : 'none'
+
+  const handleSubscribe = async () => {
+    setSubscribing(true)
+    try {
+      const res = await createSubscriptionCheckout('monthly')
+      window.location.href = res.data.checkoutUrl
+    } catch {
+      setSubscribing(false)
+    }
+  }
+
+  const badge = {
+    none:     { bg: '#F2F4F7', color: '#636A79', label: 'Not Active' },
+    active:   { bg: '#E6F9F0', color: '#12B76A', label: 'Active' },
+    expiring: { bg: '#FFF4E5', color: '#F59E0B', label: 'Expiring Soon' },
+    expired:  { bg: '#FEE4E2', color: '#E53E3E', label: 'Expired' },
+  }[status]
+
+  return (
+    <>
+      <div className="st-card">
+        <div className="st-card-header">
+          <div>
+            <span className="st-card-title">Billing & Subscription</span>
+            <p className="st-subtitle" style={{ margin: '2px 0 0' }}>Manage your subscription and payment methods</p>
+          </div>
+        </div>
+        <div className="st-card-divider" />
+        <div className="st-section">
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+            <div>
+              <div style={{ fontSize: 15, fontWeight: 600, color: '#0A0A0A', fontFamily: 'Manrope' }}>Professional Plan</div>
+              <div style={{ fontSize: 13, color: '#636A79', fontFamily: 'Manrope', marginTop: 2 }}>Billed annually</div>
+            </div>
+            <span style={{ background: badge.bg, color: badge.color, borderRadius: 20, padding: '4px 12px', fontSize: 12, fontWeight: 600, fontFamily: 'Manrope' }}>{badge.label}</span>
+          </div>
+          <div style={{ fontSize: 22, fontWeight: 700, color: '#0A0A0A', fontFamily: 'Manrope' }}>
+            ₹999<span style={{ fontSize: 14, fontWeight: 400, color: '#636A79' }}>/month</span>
+          </div>
+          {expiresAt && status !== 'none' && (
+            <div style={{ fontSize: 13, color: status === 'expiring' ? '#F59E0B' : '#636A79', fontFamily: 'Manrope' }}>
+              {status === 'expired' ? 'Expired on ' : 'Renews on '}{new Date(expiresAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
+            </div>
+          )}
+          <div style={{ display: 'flex', gap: 10 }}>
+            {(status === 'none' || status === 'expired') && <button className="st-edit-btn" onClick={() => setModal('purchase')}>Subscribe</button>}
+            {(status === 'expiring') && <button className="st-edit-btn" onClick={() => setModal('renew')}>Renew</button>}
+            {(status === 'active' || status === 'expiring') && (
+              <button onClick={() => setModal('cancel')} style={{ padding: '8px 16px', background: '#FEE4E2', color: '#E53E3E', border: 'none', borderRadius: 8, fontSize: 13, fontWeight: 600, fontFamily: 'Manrope', cursor: 'pointer' }}>Cancel</button>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {modal === 'purchase' && (
+        <Modal onClose={() => setModal(null)}>
+          <div style={{ padding: '24px', fontFamily: 'Manrope' }}>
+            <div style={{ fontSize: 16, fontWeight: 700, color: '#0A0A0A', marginBottom: 8 }}>Subscribe to Professional Plan</div>
+            <div style={{ fontSize: 14, color: '#636A79', marginBottom: 20 }}>You're about to subscribe to the <strong>Professional Plan</strong> at <strong>₹999/month</strong>, billed annually.</div>
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 10 }}>
+              <button className="st-cancel-btn" onClick={() => setModal(null)}>Cancel</button>
+              <button className="st-edit-btn" onClick={handleSubscribe} disabled={subscribing}>{subscribing ? 'Redirecting...' : 'Confirm Subscribe'}</button>
+            </div>
+          </div>
+        </Modal>
+      )}
+
+      {modal === 'renew' && (
+        <Modal onClose={() => setModal(null)}>
+          <div style={{ padding: '24px', fontFamily: 'Manrope' }}>
+            <div style={{ fontSize: 16, fontWeight: 700, color: '#0A0A0A', marginBottom: 8 }}>Renew Professional Plan</div>
+            <div style={{ fontSize: 14, color: '#636A79', marginBottom: 20 }}>Your plan is expiring soon. Renew now to avoid any interruption in service. <strong>₹999/month</strong>, billed annually.</div>
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 10 }}>
+              <button className="st-cancel-btn" onClick={() => setModal(null)}>Cancel</button>
+              <button className="st-edit-btn">Confirm Renewal</button>
+            </div>
+          </div>
+        </Modal>
+      )}
+
+      {modal === 'cancel' && (
+        <Modal onClose={() => setModal(null)}>
+          <div style={{ padding: '24px', fontFamily: 'Manrope' }}>
+            <div style={{ fontSize: 16, fontWeight: 700, color: '#E53E3E', marginBottom: 8 }}>Cancel Subscription</div>
+            <div style={{ fontSize: 14, color: '#636A79', marginBottom: 20 }}>Are you sure you want to cancel your subscription? You'll lose access at the end of the current billing period.</div>
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 10 }}>
+              <button className="st-cancel-btn" onClick={() => setModal(null)}>Keep Plan</button>
+              <button onClick={() => setModal(null)} style={{ padding: '8px 16px', background: '#FEE4E2', color: '#E53E3E', border: 'none', borderRadius: 8, fontSize: 13, fontWeight: 600, fontFamily: 'Manrope', cursor: 'pointer' }}>Yes, Cancel</button>
+            </div>
+          </div>
+        </Modal>
+      )}
+    </>
+  )
+}
 
 const Settings: FC = () => {
   const { activeContext, specialties: contextSpecialties, setActiveContext } = useAppContext()
@@ -205,7 +327,10 @@ const Settings: FC = () => {
             </div>
           </div>
         )}
-        {activeTab !== 'Clinic Profile' && (
+        {activeTab === 'Billing' && (
+          <BillingTab />
+        )}
+        {activeTab !== 'Clinic Profile' && activeTab !== 'Billing' && (
           <div className="st-placeholder">{activeTab} settings coming soon.</div>
         )}
       </div>
