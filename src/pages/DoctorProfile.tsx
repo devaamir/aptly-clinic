@@ -132,12 +132,16 @@ const DoctorProfile: FC<DoctorProfileProps> = ({ doctor, onBack, onEdit }) => {
   )
   const [dayShifts, setDayShifts] = useState<Record<string, ShiftRow[]>>(initShifts)
   const [saveLoading, setSaveLoading] = useState(false)
+  const [scheduleError, setScheduleError] = useState('')
 
   const addShift = (day: string) =>
     setDayShifts(p => ({ ...p, [day]: [...p[day], { startTime: '09:00', stopTime: '17:00', tokenLimit: 20 }] }))
 
-  const removeShift = (day: string, idx: number) =>
-    setDayShifts(p => ({ ...p, [day]: p[day].filter((_, i) => i !== idx) }))
+  const removeShift = (day: string, idx: number) => {
+    const remaining = dayShifts[day].filter((_, i) => i !== idx)
+    setDayShifts(p => ({ ...p, [day]: remaining }))
+    if (remaining.length === 0) setDayToggles(p => ({ ...p, [day]: false }))
+  }
 
   const updateShift = (day: string, idx: number, field: keyof ShiftRow, value: string | number) =>
     setDayShifts(p => ({ ...p, [day]: p[day].map((s, i) => i === idx ? { ...s, [field]: value } : s) }))
@@ -165,6 +169,7 @@ const DoctorProfile: FC<DoctorProfileProps> = ({ doctor, onBack, onEdit }) => {
     const toRemove = [...originalIds].filter(id => !keptIds.has(id))
 
     setSaveLoading(true)
+    setScheduleError('')
     try {
       const response = await updateDoctorSchedule(doctor.id, { toAdd, toUpdate, toRemove, force: false })
       if (response.success) {
@@ -172,7 +177,11 @@ const DoctorProfile: FC<DoctorProfileProps> = ({ doctor, onBack, onEdit }) => {
         setDayShifts(initShifts())
         setShowModify(false)
       }
-    } catch { /* silent */ } finally { setSaveLoading(false) }
+    } catch (err: any) {
+      const raw: string = err.response?.data?.message || 'Failed to save schedule. Please try again.'
+      const formatted = raw.replace(/\b(\d{2}:\d{2}):\d{2}\b/g, (_, hm) => to12Hour(hm))
+      setScheduleError(formatted)
+    } finally { setSaveLoading(false) }
   }
 
   return (
@@ -270,7 +279,12 @@ const DoctorProfile: FC<DoctorProfileProps> = ({ doctor, onBack, onEdit }) => {
           <div className="dp-schedule-tab">
             <div className="dp-schedule-tab-header">
               <span className="dp-schedule-tab-title">This Week's Schedule</span>
-              <button className="dp-modify-btn" onClick={() => setShowModify(true)}>Modify Schedule</button>
+              <button className="dp-modify-btn" onClick={() => {
+                  setDayShifts(initShifts())
+                  setDayToggles(Object.fromEntries(weekSchedule.map(d => [d.day, d.sessions.length > 0])))
+                  setScheduleError('')
+                  setShowModify(true)
+                }}>Modify Schedule</button>
             </div>
             <div className="dp-week-grid">
               {weekSchedule.map(item => (
@@ -415,21 +429,32 @@ const DoctorProfile: FC<DoctorProfileProps> = ({ doctor, onBack, onEdit }) => {
       )}
 
       {showModify && (
-        <Modal onClose={() => setShowModify(false)}>
+        <Modal onClose={() => { setShowModify(false); setScheduleError('') }}>
           <div style={{ width: 520 }}>
             <div className="sch-header">
               <h2 className="sch-title">Modify Schedule</h2>
-              <button className="sch-close" onClick={() => setShowModify(false)}>✕</button>
+              <button className="sch-close" onClick={() => { setShowModify(false); setScheduleError('') }}>✕</button>
             </div>
             <div className="sch-divider" />
             <div className="modal-body-scroll">
               <div className="sch-body">
+                {scheduleError && (
+                  <div style={{ color: '#F04438', background: '#FEF3F2', padding: '10px 14px', borderRadius: 8, marginBottom: 16, fontSize: 13 }}>
+                    {scheduleError}
+                  </div>
+                )}
                 {weekSchedule.map(item => (
                   <div key={item.day} className="dp-modify-day-row">
                     <div className="dp-modify-day-left">
                       <button
                         className={`dp-toggle ${dayToggles[item.day] ? 'on' : ''}`}
-                        onClick={() => setDayToggles(p => ({ ...p, [item.day]: !p[item.day] }))}
+                        onClick={() => {
+                          const turningOn = !dayToggles[item.day]
+                          setDayToggles(p => ({ ...p, [item.day]: turningOn }))
+                          if (turningOn && dayShifts[item.day].length === 0) {
+                            addShift(item.day)
+                          }
+                        }}
                       ><span className="dp-toggle-thumb" /></button>
                       <div className="dp-modify-day-name">{item.day}</div>
                       {dayToggles[item.day] && (
@@ -465,7 +490,7 @@ const DoctorProfile: FC<DoctorProfileProps> = ({ doctor, onBack, onEdit }) => {
             </div>
             <div className="sch-divider" />
             <div className="ip-actions" style={{ padding: '16px 24px' }}>
-              <button className="ip-btn ip-cancel" onClick={() => setShowModify(false)}>Cancel</button>
+              <button className="ip-btn ip-cancel" onClick={() => { setShowModify(false); setScheduleError('') }}>Cancel</button>
               <button className="ip-btn ip-submit" onClick={handleSaveSchedule} disabled={saveLoading}>{saveLoading ? 'Saving...' : 'Save Changes'}</button>
             </div>
           </div>
