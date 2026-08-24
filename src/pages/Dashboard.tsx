@@ -39,18 +39,43 @@ const allNavItems: { label: ActivePage; icon: string; excludeRoles?: string[] }[
   { label: 'Patients', icon: patientsIcon },
   { label: 'Doctors', icon: doctorsIcon, excludeRoles: ['doctor'] },
   { label: 'Leave Management', icon: leaveIcon },
-  { label: 'Settings', icon: settingsIcon },
 ]
 
 const Dashboard: FC = () => {
   const { activeContext, contexts, setTokens, setActiveContext, setContexts, logout, setActiveDoctor } = useAppContext()
   const role = activeContext?.role?.toLowerCase() ?? ''
   const navItems = allNavItems.filter(item => !item.excludeRoles || !item.excludeRoles.includes(role))
-  const [activePage, setActivePage] = useState<ActivePage>(role === 'doctor' ? 'Queue Management' : 'Dashboard')
+  const defaultPage: ActivePage = role === 'doctor' ? 'Queue Management' : 'Dashboard'
+  const [activePage, setActivePage] = useState<ActivePage>(defaultPage)
   const [viewDoctor, setViewDoctor] = useState<DoctorDetail | null>(null)
   const [showProfileMenu, setShowProfileMenu] = useState(false)
   const [switchTarget, setSwitchTarget] = useState<{ name: string; role: string; avatar: string; id: string } | null>(null)
   const [showLogout, setShowLogout] = useState(false)
+
+  const navigate = (page: ActivePage, doctor: DoctorDetail | null = null) => {
+    const state = { page, viewDoctor: doctor ? doctor.id : null }
+    window.history.pushState(state, '', `#${page.toLowerCase().replace(/ /g, '-')}`)
+    setActivePage(page)
+    setViewDoctor(doctor)
+  }
+
+  useEffect(() => {
+    // Set initial history entry
+    const state = { page: activePage, viewDoctor: null }
+    window.history.replaceState(state, '', `#${activePage.toLowerCase().replace(/ /g, '-')}`)
+
+    const handlePopState = (e: PopStateEvent) => {
+      if (e.state?.page) {
+        setActivePage(e.state.page as ActivePage)
+        setViewDoctor(null)
+      } else {
+        setActivePage(defaultPage)
+        setViewDoctor(null)
+      }
+    }
+    window.addEventListener('popstate', handlePopState)
+    return () => window.removeEventListener('popstate', handlePopState)
+  }, [])
 
   useEffect(() => {
     if (contexts.length === 0) {
@@ -70,7 +95,7 @@ const Dashboard: FC = () => {
             <div
               key={item.label}
               className={`nav-item ${activePage === item.label ? 'nav-item-active' : ''}`}
-              onClick={() => { setActivePage(item.label); setViewDoctor(null) }}
+              onClick={() => navigate(item.label)}
             >
               <img src={item.icon} alt="" className="nav-icon" />
               <span className="nav-label">{item.label}</span>
@@ -83,16 +108,17 @@ const Dashboard: FC = () => {
           <div className="topbar-title" style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
             {viewDoctor ? (
               <>
-                <button className="dp-back-btn" onClick={() => setViewDoctor(null)}>
+                <button className="dp-back-btn" onClick={() => navigate('Doctors')}>
                   <img src={arrowLeftIcon} alt="back" style={{ width: 16, height: 16 }} />
                 </button>
-                <span style={{ color: '#A0A5B1', fontWeight: 500, cursor: 'pointer' }} onClick={() => setViewDoctor(null)}>Doctors</span>
+                <span style={{ color: '#A0A5B1', fontWeight: 500, cursor: 'pointer' }} onClick={() => navigate('Doctors')}>Doctors</span>
                 <span style={{ color: '#A0A5B1', margin: '0 2px' }}>/</span>
                 <span>View Doctor</span>
               </>
             ) : activePage}
           </div>
           <div className="topbar-right">
+            <button className={`topbar-icon-btn${activePage === 'Settings' ? ' topbar-icon-btn-active' : ''}`} onClick={() => { navigate('Settings') }}><img src={settingsIcon} alt="settings" style={{ width: 20, height: 20 }} /></button>
             <button className="topbar-icon-btn"><img src={notificationIcon} alt="notifications" style={{ width: 20, height: 20 }} /></button>
             <div style={{ position: 'relative' }}>
               <div className="topbar-profile" style={{ cursor: 'pointer' }} onClick={() => setShowProfileMenu(p => !p)}>
@@ -125,12 +151,12 @@ const Dashboard: FC = () => {
           </div>
         </div>
         <div className="topbar-divider" />
-        {activePage === 'Dashboard' && <DashboardPage onViewDoctor={d => { setViewDoctor(d); setActivePage('Doctors') }} />}
+        {activePage === 'Dashboard' && <DashboardPage onViewDoctor={d => navigate('Doctors', d)} />}
         {activePage === 'Queue Management' && <QueueManagement />}
         {activePage === 'Appointments' && <Appointments />}
         {activePage === 'Patients' && <Patients />}
-        {activePage === 'Doctors' && !viewDoctor && <Doctors onViewProfile={setViewDoctor} />}
-        {activePage === 'Doctors' && viewDoctor && <DoctorProfile doctor={viewDoctor} onBack={() => setViewDoctor(null)} onEdit={updated => setViewDoctor(updated)} />}
+        {activePage === 'Doctors' && !viewDoctor && <Doctors onViewProfile={d => navigate('Doctors', d)} />}
+        {activePage === 'Doctors' && viewDoctor && <DoctorProfile doctor={viewDoctor} onBack={() => navigate('Doctors')} onEdit={updated => setViewDoctor(updated)} />}
         {activePage === 'Leave Management' && <LeaveManagement />}
         {activePage === 'Settings' && <Settings />}
       </main>

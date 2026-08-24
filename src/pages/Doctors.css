@@ -1,6 +1,6 @@
 .doc-container {
   padding: 24px;
-  font-family: 'Manrope', sans-serif;
+  font-family: "Manrope", sans-serif;
   flex: 1;
   overflow: hidden;
   box-sizing: border-box;
@@ -21,13 +21,24 @@
 }
 
 .doc-search {
-  width: 380px;
+  width: 260px;
   flex-shrink: 0;
 }
 
 .doc-search .input-box {
-  border: none;
+  background: #fff;
+  border: 0.5px solid transparent;
+  height: 32px;
+  padding-top: 0;
+  padding-bottom: 0;
+  box-sizing: border-box;
 }
+
+.doc-search .input-box:focus {
+  border: 0.5px solid #E0E2E6;
+  background: #F8F9FB;
+}
+
 
 .doc-actions {
   display: flex;
@@ -39,10 +50,12 @@
   background: #fff;
   border: 1px solid var(--color-border);
   border-radius: 6px;
-  padding: 7px;
+  padding: 0 7px;
+  height: 32px;
   cursor: pointer;
   display: flex;
   align-items: center;
+  box-sizing: border-box;
 }
 
 .doc-icon-btn img {
@@ -54,15 +67,17 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 9px 16px;
+  padding: 0 16px;
+  height: 32px;
   background: var(--color-accent);
   color: #fff;
   border: none;
   border-radius: 8px;
   font-size: 14px;
   font-weight: 600;
-  font-family: 'Manrope', sans-serif;
+  font-family: "Manrope", sans-serif;
   cursor: pointer;
+  box-sizing: border-box;
 }
 
 .doc-add-btn:hover {
@@ -89,7 +104,7 @@
   width: 100%;
   border-collapse: collapse;
   font-size: 14px;
-  font-family: 'Manrope', sans-serif;
+  font-family: "Manrope", sans-serif;
 }
 
 .doc-table thead tr {
@@ -148,7 +163,7 @@
 .doc-name {
   font-size: 14px;
   font-weight: 500;
-  color: #00001D;
+  color: #00001d;
 }
 
 .doc-text {
@@ -165,7 +180,7 @@
   border-radius: 20px;
   font-size: 12px;
   font-weight: 500;
-  font-family: 'Manrope', sans-serif;
+  font-family: "Manrope", sans-serif;
 }
 
 .doc-status-dot {
@@ -176,41 +191,41 @@
 }
 
 .doc-view-btn {
-  background: #F1F2F4;
+  background: #f1f2f4;
   border: none;
   border-radius: 6px;
   padding: 6px 12px;
   font-size: 12px;
   font-weight: 600;
-  font-family: 'Manrope', sans-serif;
-  color: #32363E;
+  font-family: "Manrope", sans-serif;
+  color: #32363e;
   cursor: pointer;
   white-space: nowrap;
 }
 
 .doc-view-btn:hover {
-  background: #E4E6EA;
+  background: #e4e6ea;
 }
 
 .doc-no-results {
   text-align: center;
   padding: 48px 16px;
-  color: #A0A5B1;
+  color: #a0a5b1;
   font-size: 14px;
   font-weight: 500;
-  font-family: 'Manrope', sans-serif;
+  font-family: "Manrope", sans-serif;
 }
 
 .doc-search-clear {
   cursor: pointer;
   font-size: 13px;
-  color: #A0A5B1;
+  color: #a0a5b1;
   padding: 2px 4px;
   border-radius: 4px;
 }
 
 .doc-search-clear:hover {
-  color: #636A79;
+  color: #636a79;
 }
 
 .doc-avatar-upload {
@@ -244,7 +259,7 @@
   padding: 8px 9px;
   background: #fff;
   border-radius: 50%;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.15);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -255,8 +270,8 @@
 .doc-avatar-hint {
   font-size: 12px;
   font-weight: 500;
-  color: #A0A5B1;
-  font-family: 'Manrope', sans-serif;
+  color: #a0a5b1;
+  font-family: "Manrope", sans-serif;
 }
 
 .doc-textarea {
@@ -266,7 +281,7 @@
   border: 1px solid var(--color-border);
   border-radius: 8px;
   font-size: 13px;
-  font-family: 'Manrope', sans-serif;
+  font-family: "Manrope", sans-serif;
   color: var(--color-textPrimary);
   background: var(--color-inputBg);
   resize: none;
@@ -295,7 +310,7 @@
 .doc-success-icon-wrap {
   width: calc(34px + 15px * 2);
   height: calc(34px + 15px * 2);
-  background: #F8F9FB;
+  background: #f8f9fb;
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -306,36 +321,35 @@
 .doc-success-title {
   font-size: 18px;
   font-weight: 600;
-  color: #0A0A0A;
-  font-family: 'Manrope', sans-serif;
+  color: #0a0a0a;
+  font-family: "Manrope", sans-serif;
   margin: 16px 0 4px 0;
 }
 
 .doc-success-desc {
   font-size: 14px;
   font-weight: 400;
-  color: #636A79;
-  font-family: 'Manrope', sans-serif;
+  color: #636a79;
+  font-family: "Manrope", sans-serif;
   margin: 0;
   max-width: 380px;
 }
 
-
 .doc-delete-btn {
-  background: #FEF3F2;
+  background: #fef3f2;
   border: none;
   border-radius: 6px;
   padding: 6px 12px;
   font-size: 12px;
   font-weight: 600;
-  font-family: 'Manrope', sans-serif;
-  color: #F04438;
+  font-family: "Manrope", sans-serif;
+  color: #f04438;
   cursor: pointer;
   white-space: nowrap;
 }
 
 .doc-delete-btn:hover {
-  background: #FECDCA;
+  background: #fecdca;
 }
 
 /* Doctor name search dropdown */
@@ -347,7 +361,7 @@
   width: 14px;
   height: 14px;
   border: 2px solid #e0e0e0;
-  border-top-color: #4A90E2;
+  border-top-color: #4a90e2;
   border-radius: 50%;
   animation: doc-spin 0.6s linear infinite;
   flex-shrink: 0;
@@ -358,24 +372,28 @@
   background: none;
   border: none;
   cursor: pointer;
-  color: #9AA0AC;
+  color: #9aa0ac;
   font-size: 13px;
   padding: 0 10px 0 4px;
   line-height: 1;
   flex-shrink: 0;
 }
-.doc-name-clear-btn:hover { color: #F04438; }
+.doc-name-clear-btn:hover {
+  color: #f04438;
+}
 
 @keyframes doc-spin {
-  to { transform: translateY(-50%) rotate(360deg); }
+  to {
+    transform: translateY(-50%) rotate(360deg);
+  }
 }
 
 .doc-name-dropdown {
   position: fixed;
   background: #fff;
-  border: 1px solid #E4E7EC;
+  border: 1px solid #e4e7ec;
   border-radius: 8px;
-  box-shadow: 0 4px 16px rgba(0,0,0,0.10);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
   list-style: none;
   margin: 0;
   padding: 4px 0;
@@ -394,7 +412,7 @@
 }
 
 .doc-name-dropdown-item:hover {
-  background: #F5F7FA;
+  background: #f5f7fa;
 }
 
 .doc-name-dropdown-avatar {
@@ -415,7 +433,7 @@
 .doc-name-dropdown-name {
   font-size: 13px;
   font-weight: 600;
-  color: #0A0A0A;
+  color: #0a0a0a;
   font-family: Manrope, sans-serif;
   white-space: nowrap;
   overflow: hidden;
@@ -424,9 +442,184 @@
 
 .doc-name-dropdown-specialties {
   font-size: 11px;
-  color: #636A79;
+  color: #636a79;
   font-family: Manrope, sans-serif;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+/* 3-dot action menu */
+.doc-menu-wrap {
+  position: relative;
+  display: inline-block;
+}
+
+.doc-dropdown {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 4px);
+  background: #fff;
+  border: 1px solid #e4e7ec;
+  border-radius: 8px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+  min-width: 148px;
+  z-index: 100;
+  padding: 4px 0;
+  overflow: hidden;
+}
+
+.doc-dropdown-item {
+  display: block;
+  width: 100%;
+  padding: 9px 14px;
+  text-align: left;
+  background: none;
+  border: none;
+  font-size: 13px;
+  font-weight: 500;
+  font-family: "Manrope", sans-serif;
+  color: #1c1e22;
+  cursor: pointer;
+  transition: background 0.13s;
+}
+
+.doc-dropdown-item:hover {
+  background: #f5f7fa;
+}
+
+.doc-dropdown-item--danger {
+  color: #f04438;
+}
+
+.doc-dropdown-item--danger:hover {
+  background: #fef3f2;
+}
+
+/* Specialty chip input */
+.doc-spec-input {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  min-height: 38px;
+  padding: 5px 10px;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  background: var(--color-inputBg);
+  cursor: text;
+  margin-top: 6px;
+  box-sizing: border-box;
+}
+
+.doc-spec-input:focus-within {
+  border-color: var(--color-accent);
+}
+
+.doc-spec-input--disabled {
+  opacity: 0.7;
+  pointer-events: none;
+}
+
+.doc-spec-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 2px 8px;
+  background: #F2F4F7;
+  color: #000;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 500;
+  font-family: "Manrope", sans-serif;
+  white-space: nowrap;
+}
+
+.doc-spec-chip-remove {
+  background: none;
+  border: none;
+  color: rgba(0,0,0,0.4);
+  cursor: pointer;
+  font-size: 10px;
+  padding: 0 0 0 2px;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+}
+
+.doc-spec-chip-remove:hover {
+  color: #000;
+}
+
+.doc-spec-chip-remove:hover {
+  color: #fff;
+}
+
+.doc-spec-search {
+  flex: 1;
+  min-width: 120px;
+  border: none;
+  outline: none;
+  background: transparent;
+  font-size: 13px;
+  font-family: "Manrope", sans-serif;
+  color: var(--color-textPrimary);
+  padding: 2px 0;
+}
+
+.doc-spec-search::placeholder {
+  color: var(--color-placeholder);
+}
+
+.doc-spec-dropdown {
+  list-style: none;
+  margin: 4px 0 0;
+  padding: 4px 0;
+  border: 1px solid #e4e7ec;
+  border-radius: 8px;
+  background: #fff;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+  max-height: 200px;
+  overflow-y: auto;
+  z-index: 10;
+  position: relative;
+}
+
+.doc-spec-dropdown-item {
+  padding: 8px 14px;
+  font-size: 13px;
+  font-family: "Manrope", sans-serif;
+  color: #1c1e22;
+  cursor: pointer;
+}
+
+.doc-spec-dropdown-item:hover {
+  background: #f5f7fa;
+}
+
+.doc-spec-dropdown-empty {
+  padding: 8px 14px;
+  font-size: 13px;
+  font-family: "Manrope", sans-serif;
+  color: #9aa0ab;
+}
+
+.doc-spec-input--error {
+  border-color: #F04438 !important;
+}
+
+.doc-field-error {
+  font-size: 11px;
+  color: #F04438;
+  font-family: "Manrope", sans-serif;
+  margin-top: 4px;
+  display: block;
+}
+
+.doc-submit-error {
+  font-size: 11px;
+  color: #F04438;
+  font-family: "Manrope", sans-serif;
+  margin: 0 24px;
+  padding: 0;
 }

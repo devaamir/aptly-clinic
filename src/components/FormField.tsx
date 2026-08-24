@@ -6,6 +6,7 @@ import './FormField.css'
 interface BaseProps {
   label: string
   showRequired?: boolean
+  error?: string
 }
 
 interface InputProps extends BaseProps, InputHTMLAttributes<HTMLInputElement> {
@@ -28,6 +29,7 @@ const FormField: FC<FormFieldProps> = ({ label, showRequired = true, as, ...prop
   const inputRef = useRef<HTMLInputElement>(null)
   const inputProps = props as InputProps
   const selectPlaceholder = (props as SelectProps).selectPlaceholder ?? 'Select'
+  const error = (props as BaseProps).error
 
   return (
     <div className="form-field">
@@ -35,8 +37,8 @@ const FormField: FC<FormFieldProps> = ({ label, showRequired = true, as, ...prop
         {label}{showRequired && <span className="form-field-required"> *</span>}
       </label>
       {as === 'select' ? (
-        <div className="form-field-select-wrap">
-          <select className="form-field-input form-field-select" {...(props as SelectHTMLAttributes<HTMLSelectElement>)}>
+        <div className={`form-field-select-wrap${error ? ' form-field-wrap--error' : ''}`}>
+          <select className={`form-field-input form-field-select${error ? ' form-field-input--error' : ''}`} {...(props as SelectHTMLAttributes<HTMLSelectElement>)}>
             <option value="">{selectPlaceholder}</option>
             {(props as SelectProps).options?.map(o => (
               <option key={o.value} value={o.value}>{o.label}</option>
@@ -45,11 +47,11 @@ const FormField: FC<FormFieldProps> = ({ label, showRequired = true, as, ...prop
           <img src={arrowDown} alt="" className="form-field-arrow" />
         </div>
       ) : (
-        <div className={`form-field-input-wrap ${inputProps.prefix ? 'has-prefix' : ''}`}>
+        <div className={`form-field-input-wrap ${inputProps.prefix ? 'has-prefix' : ''}${error ? ' form-field-wrap--error' : ''}`}>
           {inputProps.prefix && <span className="form-field-prefix">{inputProps.prefix}</span>}
           <input
             ref={inputRef}
-            className="form-field-input"
+            className={`form-field-input${error ? ' form-field-input--error' : ''}`}
             {...(props as InputHTMLAttributes<HTMLInputElement>)}
           />
           {inputProps.rightIcon && (
@@ -65,6 +67,7 @@ const FormField: FC<FormFieldProps> = ({ label, showRequired = true, as, ...prop
           )}
         </div>
       )}
+      {error && <span className="form-field-error-msg">{error}</span>}
     </div>
   )
 }

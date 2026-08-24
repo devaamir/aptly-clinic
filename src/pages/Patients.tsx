@@ -70,29 +70,28 @@ const Patients: FC = () => {
 
   return (
     <div className="pat-container">
-      <PageHeader title="Patients" />
-
-      <div className="pat-main-card" style={{ marginBottom: 16 }}>
-        <div className="pat-toolbar">
-          <div className="pat-search">
-            <InputBox
-              type="text"
-              placeholder="Search patient..."
-              leftIcon={<img src={searchIcon} alt="" />}
-              value={searchQuery}
-              onChange={e => setSearchQuery(e.target.value)}
-              rightIcon={searchQuery ? <span className="pat-search-clear" onClick={() => setSearchQuery('')}>✕</span> : undefined}
-            />
-          </div>
+      <PageHeader
+        title="Patients"
+        actions={
           <div className="pat-icon-group">
+            <div className="pat-search">
+              <InputBox
+                type="text"
+                placeholder="Search patient..."
+                leftIcon={<img src={searchIcon} alt="" />}
+                value={searchQuery}
+                onChange={e => setSearchQuery(e.target.value)}
+                rightIcon={searchQuery ? <span className="pat-search-clear" onClick={() => setSearchQuery('')}>✕</span> : undefined}
+              />
+            </div>
             <button className="pat-icon-btn"><img src={sortIcon} alt="sort" /></button>
             <button className="pat-icon-btn"><img src={upDownArrow} alt="sort order" /></button>
             <button className="pat-icon-btn"><img src={exportIcon} alt="export" /></button>
             <button className="pat-icon-btn"><img src={importIcon} alt="import" /></button>
             <button className="pat-icon-btn"><img src={reloadIcon} alt="reload" /></button>
           </div>
-        </div>
-      </div>
+        }
+      />
 
       <div className="pat-main-card pat-table-card">
         {loading ? (

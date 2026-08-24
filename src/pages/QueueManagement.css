@@ -1,6 +1,6 @@
 .qm-container {
   padding: 24px;
-  font-family: 'Manrope', sans-serif;
+  font-family: "Manrope", sans-serif;
   flex: 1;
   overflow: hidden;
   box-sizing: border-box;
@@ -61,7 +61,7 @@
   border-radius: 0;
 }
 
-.view-btn+.view-btn {
+.view-btn + .view-btn {
   border-left: 1px solid var(--color-border);
 }
 
@@ -73,28 +73,34 @@
   display: flex;
   gap: 8px;
   margin-bottom: 16px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.qm-doctor-tabs::-webkit-scrollbar {
+  display: none;
 }
 
 .qm-doctor-tab {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 8px 6px;
+  padding: 4px 8px;
   border-radius: 8px;
   border: 1px solid var(--color-border);
   cursor: pointer;
   font-size: 14px;
   font-weight: 500;
-  color: var(--color-tabText);
+  color: #000;
   background: #fff;
+  flex-shrink: 0;
 }
 
 .qm-doctor-tab.active {
   border-color: var(--color-accent);
   color: var(--color-accent);
-  background: #EEF4FF;
+  background: #eef4ff;
 }
-
 
 .tab-avatar {
   width: 24px;
@@ -132,7 +138,7 @@
   padding: 10px 16px;
   font-size: 13px;
   font-weight: 500;
-  font-family: 'Manrope', sans-serif;
+  font-family: "Manrope", sans-serif;
   background: transparent;
   border: none;
   border-bottom: 2px solid transparent;
@@ -148,11 +154,11 @@
 
 .session-banner {
   width: 100%;
-  background: #5CB85C1A;
-  color: #377E37;
+  background: #5cb85c1a;
+  color: #377e37;
   font-size: 13px;
   font-weight: 500;
-  font-family: 'Manrope', sans-serif;
+  font-family: "Manrope", sans-serif;
   padding: 10px 20px;
   box-sizing: border-box;
   display: flex;
@@ -161,14 +167,14 @@
 }
 
 .pause-banner {
-  background: #FFF7EC;
-  color: #B54708;
+  background: #fff7ec;
+  color: #b54708;
   justify-content: space-between;
 }
 
 .pause-banner {
-  background: #FFF7EC;
-  color: #B54708;
+  background: #fff7ec;
+  color: #b54708;
   justify-content: space-between;
 }
 
@@ -179,48 +185,48 @@
 }
 
 .resume-btn {
-  background: #F79009;
+  background: #f79009;
   color: #fff;
   border: none;
   border-radius: 6px;
   padding: 5px 14px;
   font-size: 12px;
   font-weight: 600;
-  font-family: 'Manrope', sans-serif;
+  font-family: "Manrope", sans-serif;
   cursor: pointer;
   white-space: nowrap;
   flex-shrink: 0;
 }
 
 .scheduled-banner {
-  background: #ECF4FFB2;
-  color: #2D74DB;
+  background: #ecf4ffb2;
+  color: #2d74db;
   justify-content: space-between;
 }
 
 .cancel-schedule-btn {
   background: #fff;
-  color: #FF5A4F;
-  border: 1px solid #E8EAED;
+  color: #ff5a4f;
+  border: 1px solid #e8eaed;
   border-radius: 6px;
   padding: 5px 14px;
   font-size: 12px;
   font-weight: 600;
-  font-family: 'Manrope', sans-serif;
+  font-family: "Manrope", sans-serif;
   cursor: pointer;
   white-space: nowrap;
   flex-shrink: 0;
 }
 
 .resume-btn {
-  background: #F79009;
+  background: #f79009;
   color: #fff;
   border: none;
   border-radius: 6px;
   padding: 5px 14px;
   font-size: 12px;
   font-weight: 600;
-  font-family: 'Manrope', sans-serif;
+  font-family: "Manrope", sans-serif;
   cursor: pointer;
   white-space: nowrap;
   flex-shrink: 0;
@@ -280,7 +286,7 @@
   font-weight: 600;
   color: #22c55e;
   margin-left: 12px;
-  background: #ECFDF3;
+  background: #ecfdf3;
   padding: 4px 10px;
   border-radius: 999px;
 }
@@ -298,7 +304,7 @@
   background: #fff;
   font-size: 13px;
   font-weight: 500;
-  font-family: 'Manrope', sans-serif;
+  font-family: "Manrope", sans-serif;
   cursor: pointer;
   color: var(--color-textPrimary);
   display: flex;
@@ -337,7 +343,7 @@
   background: var(--color-border);
   margin-bottom: 10px;
   width: 50%;
-  background: #F5F9FF;
+  background: #f5f9ff;
   border-radius: 10px;
   border: 1px solid var(--color-border);
 }
@@ -416,7 +422,7 @@
 }
 
 .row-current {
-  background: #F0F5FF;
+  background: #f0f5ff;
 }
 
 .token-badge {
@@ -469,7 +475,7 @@
 }
 
 .status-current {
-  color: #418EFD;
+  color: #418efd;
 }
 
 .status-waiting {
@@ -521,19 +527,19 @@
 }
 
 .grid-token-completed {
-  border-color: #12B76A66;
+  border-color: #12b76a66;
 }
 
 .grid-token-skipped {
-  border-color: #F7900966;
+  border-color: #f7900966;
 }
 
 .grid-token-cancelled {
-  border-color: #F0443866;
+  border-color: #f0443866;
 }
 
 .grid-token-waiting {
-  background: #F1F2F4;
+  background: #f1f2f4;
 }
 
 .grid-token .badge {
@@ -565,8 +571,8 @@
 .grid-token-number {
   font-size: 20px;
   font-weight: 600;
-  color: #32363E;
-  font-family: 'Manrope', sans-serif;
+  color: #32363e;
+  font-family: "Manrope", sans-serif;
 }
 
 .grid-token-current .grid-token-number {

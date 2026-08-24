@@ -98,3 +98,15 @@
 input[type="date"]::-webkit-calendar-picker-indicator {
   display: none;
 }
+
+.form-field-input--error,
+.form-field-input-wrap:has(.form-field-input--error) {
+  border-color: #F04438 !important;
+}
+
+.form-field-error-msg {
+  font-size: 11px;
+  color: #F04438;
+  font-family: 'Manrope', sans-serif;
+  margin-top: 2px;
+}

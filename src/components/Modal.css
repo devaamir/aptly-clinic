@@ -11,7 +11,7 @@
 .modal-card {
   background: #fff;
   border-radius: 12px;
-  min-width: 400px;
+  min-width: 540px;
   padding: 0;
   box-sizing: border-box;
   display: flex;
@@ -19,12 +19,12 @@
 }
 
 .modal-card:has(.modal-body-scroll) {
-  max-height: 90vh;
+  max-height: 98vh;
 }
 
 .modal-body-scroll {
   overflow-y: auto;
   flex: 1;
   min-height: 0;
-  max-height: 60vh;
+  max-height: 80vh;
 }

@@ -262,7 +262,7 @@ const DashboardPage: FC<{ onViewDoctor?: (d: DoctorDetail) => void }> = ({ onVie
             <h3 className="dbp-chart-title">Today's Active Doctors</h3>
             <div className="dbp-doctors-grid">
               {activeDoctors.map((d, i) => (
-                <div key={i} className="dbp-doctor-card" onClick={() => onViewDoctor?.(d.raw as unknown as DoctorDetail)} style={{ cursor: onViewDoctor ? 'pointer' : 'default' }}>
+                <div key={i} className="dbp-doctor-card">
                   <div className="dbp-doctor-top">
                     <img src={d.avatar} alt={d.name} className="dbp-doctor-avatar" onError={e => { (e.target as HTMLImageElement).src = doctorProfileImg }} />
                     <div className="dbp-doctor-info">
