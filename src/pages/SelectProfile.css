@@ -49,3 +49,40 @@
   font-size: 20px;
   color: #A0A5B1;
 }
+
+/* ── Tablet (≤1024px) ─────────────────────────────────────── */
+@media (max-width: 1024px) {
+  .sp-avatar {
+    width: 38px;
+    height: 38px;
+  }
+
+  .sp-name {
+    font-size: 13px;
+  }
+}
+
+/* ── Mobile (≤768px) ──────────────────────────────────────── */
+@media (max-width: 768px) {
+  .sp-card {
+    padding: 12px 14px;
+    gap: 12px;
+  }
+
+  .sp-avatar {
+    width: 36px;
+    height: 36px;
+  }
+
+  .sp-name {
+    font-size: 14px;
+  }
+
+  .sp-role {
+    font-size: 11px;
+  }
+
+  .sp-arrow {
+    font-size: 18px;
+  }
+}

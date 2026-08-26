@@ -98,3 +98,41 @@
   justify-content: center;
   margin: 0 auto 24px;
 }
+
+/* ── Tablet (≤1024px) ─────────────────────────────────────── */
+@media (max-width: 1024px) {
+  .delete-account-title {
+    font-size: 26px;
+  }
+
+  .delete-account-content {
+    max-width: 380px;
+  }
+}
+
+/* ── Mobile (≤768px) ──────────────────────────────────────── */
+@media (max-width: 768px) {
+  .delete-account-content {
+    max-width: 100%;
+    width: 100%;
+  }
+
+  .delete-account-title {
+    font-size: 24px;
+  }
+
+  .delete-account-subtitle {
+    font-size: 13px;
+    margin-bottom: 24px;
+  }
+
+  .delete-account-form {
+    gap: 16px;
+  }
+
+  .delete-account-btn,
+  .delete-account-btn-secondary {
+    width: 100%;
+    padding: 12px;
+  }
+}

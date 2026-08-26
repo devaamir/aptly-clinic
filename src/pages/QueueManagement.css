@@ -578,3 +578,203 @@
 .grid-token-current .grid-token-number {
   color: #fff;
 }
+
+/* ── 1366x768 desktop (scale down, no layout changes) ───── */
+@media (max-width: 1366px) {
+  .qm-container {
+    padding: 14px 16px;
+  }
+
+  .qm-title {
+    font-size: 20px;
+  }
+
+  .qm-header {
+    margin-bottom: 16px;
+  }
+
+  .qm-doctor-card {
+    padding: 12px 16px;
+  }
+
+  .doctor-avatar {
+    width: 46px;
+    height: 46px;
+  }
+
+  .doctor-name {
+    font-size: 14px;
+  }
+
+  .doctor-meta {
+    font-size: 12px;
+  }
+
+  .action-btn {
+    padding: 6px 12px;
+    font-size: 12px;
+  }
+
+  .qm-stats {
+    width: 45%;
+  }
+
+  .stat-label {
+    font-size: 9px;
+  }
+
+  .stat-value {
+    font-size: 11px;
+  }
+
+  .qm-table th {
+    padding: 10px 12px;
+    font-size: 11px;
+  }
+
+  .qm-table td {
+    padding: 12px 12px;
+    font-size: 13px;
+  }
+
+  .sch-confirm {
+    width: 480px;
+  }
+
+  .sch-confirm-token-number {
+    font-size: 60px;
+  }
+
+  .sch-confirm-token-half {
+    min-height: 180px;
+  }
+
+  .sch-confirm-details {
+    padding: 16px;
+    gap: 14px;
+  }
+}
+
+/* ── Tablet (≤1024px) ────────────────────────────────────── */
+@media (max-width: 1024px) {
+  .qm-container {
+    padding: 12px;
+  }
+
+  .qm-title {
+    font-size: 18px;
+  }
+
+  .qm-header {
+    margin-bottom: 16px;
+  }
+
+  .doctor-avatar {
+    width: 42px;
+    height: 42px;
+  }
+
+  .doctor-name {
+    font-size: 13px;
+  }
+
+  .doctor-meta {
+    font-size: 11px;
+  }
+
+  .action-btn {
+    padding: 6px 10px;
+    font-size: 12px;
+  }
+
+  .qm-stats {
+    width: 60%;
+  }
+
+  .qm-table th {
+    padding: 10px 10px;
+    font-size: 11px;
+  }
+
+  .qm-table td {
+    padding: 10px 10px;
+    font-size: 13px;
+  }
+
+  .sch-confirm {
+    width: 440px;
+  }
+
+  .sch-confirm-token-number {
+    font-size: 52px;
+  }
+}
+
+/* ── Mobile (≤768px) ──────────────────────────────────────── */
+@media (max-width: 768px) {
+  .qm-container {
+    padding: 12px;
+  }
+
+  .qm-header {
+    margin-bottom: 16px;
+  }
+
+  .qm-title {
+    font-size: 16px;
+  }
+
+  /* Wrap header actions */
+  .qm-header-actions {
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  /* Doctor card stacks */
+  .qm-doctor-card {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 12px;
+  }
+
+  .doctor-actions {
+    width: 100%;
+    flex-wrap: wrap;
+  }
+
+  .action-btn {
+    flex: 1;
+    justify-content: center;
+    font-size: 12px;
+    padding: 7px 8px;
+  }
+
+  /* Stats: full width */
+  .qm-stats {
+    width: 100%;
+  }
+
+  /* Table: allow horizontal scroll */
+  .qm-table-wrapper {
+    overflow-x: auto;
+  }
+
+  .qm-table {
+    min-width: 560px;
+  }
+
+  /* Confirm modal: full screen */
+  .sch-confirm {
+    width: 100%;
+    max-width: 100%;
+    border-radius: 0;
+  }
+
+  .sch-confirm-token-number {
+    font-size: 48px;
+  }
+
+  .sch-confirm-token-half {
+    min-height: 160px;
+  }
+}

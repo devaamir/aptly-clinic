@@ -431,3 +431,299 @@
   display: flex;
   gap: 12px;
 }
+
+/* ── 1366x768 desktop (scale down, no layout changes) ───── */
+@media (max-width: 1366px) {
+  .dbp-container {
+    padding: 10px 14px;
+  }
+
+  .dbp-stats {
+    gap: 10px;
+  }
+
+  .dbp-card {
+    padding: 12px;
+    gap: 8px;
+  }
+
+  .dbp-card-value {
+    font-size: 24px;
+  }
+
+  .dbp-card-label {
+    font-size: 13px;
+  }
+
+  .dbp-card-icon {
+    width: 40px;
+    height: 40px;
+  }
+
+  .dbp-card-sub {
+    font-size: 12px;
+  }
+
+  .dbp-chart-card {
+    padding: 12px;
+  }
+
+  .dbp-chart-title {
+    font-size: 14px;
+    margin-bottom: 10px;
+  }
+
+  .dbp-revenue-amount {
+    font-size: 22px;
+  }
+
+  .dbp-main {
+    gap: 12px;
+    margin-top: 12px;
+  }
+
+  .dbp-doctor-card {
+    padding: 10px;
+    gap: 8px;
+  }
+
+  .dbp-doctor-avatar {
+    width: 48px;
+    height: 48px;
+  }
+
+  .dbp-doctor-name {
+    font-size: 13px;
+  }
+
+  .dbp-doctor-specialty,
+  .dbp-doctor-session,
+  .dbp-doctor-session-label {
+    font-size: 11px;
+  }
+
+  .dbp-apt-avatar {
+    width: 30px;
+    height: 30px;
+  }
+
+  .dbp-apt-name {
+    font-size: 12px;
+  }
+
+  .dbp-apt-time {
+    font-size: 11px;
+  }
+
+  .dbp-right {
+    padding: 12px;
+  }
+}
+
+/* ── Tablet (≤1024px) ────────────────────────────────────── */
+@media (max-width: 1024px) {
+  .dbp-container {
+    padding: 12px 16px;
+  }
+
+  /* Stats: 2x2 grid */
+  .dbp-stats {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+  }
+
+  .dbp-card-value {
+    font-size: 22px;
+  }
+
+  .dbp-card-label {
+    font-size: 13px;
+  }
+
+  .dbp-card-icon {
+    width: 38px;
+    height: 38px;
+  }
+
+  /* Main: stack left + right vertically */
+  .dbp-main {
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 12px;
+  }
+
+  .dbp-left,
+  .dbp-right {
+    flex: none;
+    width: 100%;
+    min-width: 0;
+  }
+
+  /* Right panel: don't scroll vertically, just show list */
+  .dbp-right {
+    max-height: none;
+    overflow-y: visible;
+  }
+
+  /* Charts row: stack vertically */
+  .dbp-charts-row {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .dbp-chart-revenue,
+  .dbp-chart-appointments {
+    flex: none;
+    width: 100%;
+    min-width: 0;
+  }
+
+  .dbp-chart-card {
+    padding: 12px;
+  }
+
+  .dbp-chart-title {
+    font-size: 14px;
+  }
+
+  .dbp-revenue-amount {
+    font-size: 22px;
+  }
+
+  /* Doctor grid: 2-col */
+  .dbp-doctors-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .dbp-doctor-avatar {
+    width: 44px;
+    height: 44px;
+  }
+
+  .dbp-doctor-name {
+    font-size: 13px;
+  }
+
+  /* Today's appointments list: horizontal scroll row */
+  .dbp-apt-list {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+  }
+}
+
+/* ── Mobile (≤768px) ──────────────────────────────────────── */
+@media (max-width: 768px) {
+  .dbp-container {
+    padding: 10px 12px;
+  }
+
+  /* Stats: 2x2 on mobile too (single col is too tall) */
+  .dbp-stats {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+  }
+
+  .dbp-card {
+    padding: 10px;
+    gap: 6px;
+  }
+
+  .dbp-card-value {
+    font-size: 20px;
+  }
+
+  .dbp-card-label {
+    font-size: 12px;
+  }
+
+  .dbp-card-sub {
+    font-size: 11px;
+  }
+
+  .dbp-card-icon {
+    width: 32px;
+    height: 32px;
+  }
+
+  .dbp-main {
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 10px;
+  }
+
+  .dbp-left,
+  .dbp-right {
+    flex: none;
+    width: 100%;
+    min-width: 0;
+  }
+
+  /* Charts row: stacked */
+  .dbp-charts-row {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .dbp-chart-revenue,
+  .dbp-chart-appointments {
+    flex: none;
+    width: 100%;
+  }
+
+  .dbp-chart-card {
+    padding: 10px;
+  }
+
+  .dbp-chart-title {
+    font-size: 13px;
+    margin-bottom: 8px;
+  }
+
+  .dbp-chart-header {
+    margin-bottom: 10px;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .dbp-revenue-amount {
+    font-size: 20px;
+  }
+
+  /* Doctor grid: single column */
+  .dbp-doctors-grid {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  .dbp-doctor-card {
+    padding: 10px;
+  }
+
+  .dbp-doctor-avatar {
+    width: 40px;
+    height: 40px;
+  }
+
+  .dbp-doctor-name {
+    font-size: 13px;
+  }
+
+  .dbp-doctor-specialty,
+  .dbp-doctor-session,
+  .dbp-doctor-session-label {
+    font-size: 11px;
+  }
+
+  /* Apt list: single column */
+  .dbp-apt-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .dbp-apt-charts {
+    flex-direction: column;
+    gap: 10px;
+  }
+}

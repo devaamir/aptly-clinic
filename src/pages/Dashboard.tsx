@@ -51,12 +51,14 @@ const Dashboard: FC = () => {
   const [showProfileMenu, setShowProfileMenu] = useState(false)
   const [switchTarget, setSwitchTarget] = useState<{ name: string; role: string; avatar: string; id: string } | null>(null)
   const [showLogout, setShowLogout] = useState(false)
+  const [sidebarOpen, setSidebarOpen] = useState(false)
 
   const navigate = (page: ActivePage, doctor: DoctorDetail | null = null) => {
     const state = { page, viewDoctor: doctor ? doctor.id : null }
     window.history.pushState(state, '', `#${page.toLowerCase().replace(/ /g, '-')}`)
     setActivePage(page)
     setViewDoctor(doctor)
+    setSidebarOpen(false) // close drawer on mobile when navigating
   }
 
   useEffect(() => {
@@ -86,7 +88,10 @@ const Dashboard: FC = () => {
   return (
     <>
     <div className="dashboard">
-      <aside className="sidebar">
+      {/* Overlay backdrop for mobile drawer */}
+      {sidebarOpen && <div className="sidebar-overlay" onClick={() => setSidebarOpen(false)} />}
+
+      <aside className={`sidebar${sidebarOpen ? ' sidebar-open' : ''}`}>
         <div className="sidebar-logo">
           <img src={logo} alt="Aptly" />
         </div>
@@ -105,6 +110,11 @@ const Dashboard: FC = () => {
       </aside>
       <main className="dashboard-main">
         <div className="topbar">
+          {/* Hamburger — only visible on mobile */}
+          <button className="topbar-hamburger" onClick={() => setSidebarOpen(o => !o)} aria-label="Toggle menu">
+            <span /><span /><span />
+          </button>
+
           <div className="topbar-title" style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
             {viewDoctor ? (
               <>

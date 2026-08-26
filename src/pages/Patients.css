@@ -221,3 +221,108 @@
 @keyframes pat-spin {
   to { transform: rotate(360deg); }
 }
+
+/* ── 1366x768 desktop (scale down, no layout changes) ───── */
+@media (max-width: 1366px) {
+  .pat-container {
+    padding: 14px 16px;
+  }
+
+  .pat-toolbar {
+    padding: 12px 14px;
+  }
+
+  .pat-search {
+    width: 220px;
+  }
+
+  .pat-table th {
+    padding: 4px 12px;
+    font-size: 11px;
+  }
+
+  .pat-table td {
+    padding: 7px 12px;
+    font-size: 13px;
+  }
+
+  .pat-name {
+    font-size: 13px;
+  }
+
+  .pat-phone {
+    font-size: 11px;
+  }
+
+  .pat-avatar {
+    width: 26px;
+    height: 26px;
+  }
+}
+
+/* ── Tablet (≤1024px) ────────────────────────────────────── */
+@media (max-width: 1024px) {
+  .pat-container {
+    padding: 12px;
+  }
+
+  .pat-toolbar {
+    padding: 10px 12px;
+    gap: 10px;
+  }
+
+  .pat-search {
+    width: 200px;
+  }
+
+  .pat-table th {
+    padding: 4px 10px;
+    font-size: 11px;
+  }
+
+  .pat-table td {
+    padding: 6px 10px;
+    font-size: 13px;
+  }
+
+  .pat-name {
+    font-size: 13px;
+  }
+
+  .pat-phone {
+    font-size: 11px;
+  }
+
+  .pat-avatar {
+    width: 26px;
+    height: 26px;
+  }
+}
+
+/* ── Mobile (≤768px) ──────────────────────────────────────── */
+@media (max-width: 768px) {
+  .pat-container {
+    padding: 12px;
+  }
+
+  .pat-toolbar {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 12px;
+    gap: 10px;
+  }
+
+  .pat-search {
+    width: 100%;
+  }
+
+  /* Table: horizontal scroll */
+  .pat-table-card {
+    overflow-x: auto;
+  }
+
+  .pat-table {
+    min-width: 520px;
+    font-size: 13px;
+  }
+}

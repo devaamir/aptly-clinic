@@ -226,3 +226,153 @@
 .profile-menu-logout:hover {
   background: #fef3f2;
 }
+
+/* ═══════════════════════════════════════════════════════════
+   HAMBURGER BUTTON  (hidden on desktop, shown on mobile)
+   ═══════════════════════════════════════════════════════════ */
+.topbar-hamburger {
+  display: none;
+  flex-direction: column;
+  justify-content: center;
+  gap: 5px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  flex-shrink: 0;
+}
+
+.topbar-hamburger span {
+  display: block;
+  width: 20px;
+  height: 2px;
+  background: #1C1E22;
+  border-radius: 2px;
+  transition: all 0.2s;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   OVERLAY BACKDROP  (only shown when sidebar drawer is open)
+   ═══════════════════════════════════════════════════════════ */
+.sidebar-overlay {
+  display: none;
+}
+
+/* ── 1366x768 desktop (scale down, no layout changes) ───── */
+@media (max-width: 1366px) {
+  .sidebar {
+    width: 210px;
+  }
+
+  .nav-item {
+    font-size: 13px;
+    padding: 7px 8px;
+    gap: 10px;
+  }
+
+  .nav-icon {
+    width: 18px;
+    height: 18px;
+  }
+
+  .topbar-hospital-name {
+    font-size: 12px;
+  }
+
+  .topbar-role {
+    font-size: 10px;
+  }
+
+  .topbar-avatar {
+    width: 28px;
+    height: 28px;
+  }
+}
+
+/* ── Tablet (≤1024px) ─────────────────────────────────────── */
+@media (max-width: 1024px) {
+  .sidebar {
+    width: 200px;
+  }
+
+  .nav-item {
+    font-size: 13px;
+    padding: 8px 8px;
+    gap: 10px;
+  }
+
+  .topbar-profile-info {
+    display: none;
+  }
+
+  /* hide the down-arrow next to profile on tablet too */
+  .topbar-profile > img:last-child {
+    display: none;
+  }
+}
+
+/* ── Mobile (≤768px) ──────────────────────────────────────── */
+@media (max-width: 768px) {
+  /* Sidebar becomes an off-canvas drawer */
+  .sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: 240px;
+    z-index: 200;
+    transform: translateX(-100%);
+    transition: transform 0.25s ease;
+    box-shadow: none;
+  }
+
+  .sidebar.sidebar-open {
+    transform: translateX(0);
+    box-shadow: 4px 0 24px rgba(0, 0, 0, 0.12);
+  }
+
+  /* Dim overlay behind the drawer */
+  .sidebar-overlay {
+    display: block;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.35);
+    z-index: 199;
+  }
+
+  /* Main content takes full width since sidebar is off-canvas */
+  .dashboard-main {
+    width: 100%;
+  }
+
+  /* Show the hamburger button */
+  .topbar-hamburger {
+    display: flex;
+  }
+
+  /* Tighten topbar padding on mobile */
+  .topbar {
+    padding: 0 14px;
+    gap: 10px;
+  }
+
+  /* Hide clinic name / role text — avatar only */
+  .topbar-profile-info {
+    display: none;
+  }
+
+  .topbar-profile > img:last-child {
+    display: none;
+  }
+
+  /* Smaller icon buttons */
+  .topbar-icon-btn img {
+    width: 18px !important;
+    height: 18px !important;
+  }
+
+  /* Tighten gap between right-side icons */
+  .topbar-right {
+    gap: 8px;
+  }
+}

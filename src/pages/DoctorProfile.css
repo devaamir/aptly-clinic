@@ -720,3 +720,227 @@
   background: var(--color-accent);
   color: white;
 }
+
+/* ── 1366x768 desktop (scale down, no layout changes) ───── */
+@media (max-width: 1366px) {
+  .dp-container {
+    padding: 14px 16px;
+    gap: 14px;
+  }
+
+  .dp-profile-card {
+    padding: 16px;
+    gap: 14px;
+  }
+
+  .dp-avatar {
+    width: 80px;
+    height: 80px;
+  }
+
+  .dp-name {
+    font-size: 20px;
+  }
+
+  .dp-meta-item {
+    padding: 0 12px;
+  }
+
+  .dp-meta-label {
+    font-size: 10px;
+  }
+
+  .dp-meta-value {
+    font-size: 12px;
+  }
+
+  .dp-info-row {
+    gap: 32px;
+  }
+
+  .dp-info-value {
+    font-size: 13px;
+  }
+
+  .dp-stat-value {
+    font-size: 18px;
+  }
+
+  .dp-stat-label {
+    font-size: 11px;
+  }
+
+  .dp-stat-card {
+    padding: 12px;
+  }
+
+  .dp-table th,
+  .dp-table td {
+    padding: 8px 10px;
+    font-size: 13px;
+  }
+
+  .dp-overview {
+    gap: 12px;
+  }
+
+  .dp-overview-left {
+    flex: 0 0 65%;
+  }
+
+  .dp-overview-right {
+    flex: 0 0 calc(35% - 12px);
+  }
+
+  .dp-schedule-card {
+    padding: 12px;
+  }
+
+  .dp-schedule-title {
+    font-size: 13px;
+  }
+}
+
+/* ── Tablet (≤1024px) ────────────────────────────────────── */
+@media (max-width: 1024px) {
+  .dp-container {
+    padding: 12px;
+    gap: 12px;
+  }
+
+  .dp-profile-card {
+    padding: 14px;
+    gap: 12px;
+  }
+
+  .dp-avatar {
+    width: 72px;
+    height: 72px;
+  }
+
+  .dp-name {
+    font-size: 18px;
+  }
+
+  .dp-meta-label {
+    font-size: 10px;
+  }
+
+  .dp-meta-value {
+    font-size: 12px;
+  }
+
+  .dp-meta-item {
+    padding: 0 10px;
+  }
+
+  .dp-info-row {
+    gap: 20px;
+  }
+
+  .dp-info-value {
+    font-size: 13px;
+  }
+
+  .dp-stat-value {
+    font-size: 17px;
+  }
+
+  .dp-stat-card {
+    padding: 12px;
+  }
+
+  /* Overview: tighten split */
+  .dp-overview {
+    gap: 10px;
+  }
+
+  .dp-overview-left {
+    flex: 0 0 62%;
+  }
+
+  .dp-overview-right {
+    flex: 0 0 calc(38% - 10px);
+  }
+
+  .dp-table th,
+  .dp-table td {
+    padding: 8px 10px;
+    font-size: 12px;
+  }
+}
+
+/* ── Mobile (≤768px) ──────────────────────────────────────── */
+@media (max-width: 768px) {
+  .dp-container {
+    padding: 12px;
+    gap: 12px;
+  }
+
+  /* Profile card: stack everything */
+  .dp-profile-card {
+    flex-direction: column;
+    gap: 16px;
+    padding: 16px;
+  }
+
+  .dp-profile-meta {
+    flex-direction: column;
+    gap: 8px;
+    padding: 10px;
+  }
+
+  .dp-meta-item {
+    flex: none;
+    padding: 0;
+  }
+
+  .dp-meta-divider {
+    display: none;
+  }
+
+  .dp-info-row {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .dp-info-item {
+    flex: none;
+  }
+
+  /* Tabs: scroll horizontally */
+  .dp-tabs {
+    overflow-x: auto;
+    width: 100%;
+    white-space: nowrap;
+  }
+
+  /* Overview: stack */
+  .dp-overview {
+    flex-direction: column;
+  }
+
+  .dp-overview-left,
+  .dp-overview-right {
+    flex: none;
+    width: 100%;
+  }
+
+  /* Stats row: 2-col grid */
+  .dp-stats-row {
+    flex-wrap: wrap;
+  }
+
+  .dp-stat-card {
+    flex: 0 0 calc(50% - 6px);
+  }
+
+  /* Table: horizontal scroll */
+  .dp-apt-card {
+    overflow-x: auto;
+  }
+
+  .dp-table {
+    min-width: 500px;
+  }
+}

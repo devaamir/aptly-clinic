@@ -292,3 +292,151 @@
 .lm-confirm-actions .ip-btn {
   flex: 1;
 }
+
+/* ── 1366x768 desktop (scale down, no layout changes) ───── */
+@media (max-width: 1366px) {
+  .lm-container {
+    padding: 14px 16px;
+    gap: 12px;
+  }
+
+  .lm-toolbar-card {
+    padding: 12px 14px;
+  }
+
+  .lm-search {
+    width: 280px;
+  }
+
+  .lm-table th {
+    padding: 10px 12px;
+    font-size: 11px;
+  }
+
+  .lm-table td {
+    padding: 12px 12px;
+    font-size: 13px;
+  }
+
+  .lm-doctor-name {
+    font-size: 13px;
+  }
+
+  .lm-doctor-spec {
+    font-size: 11px;
+  }
+
+  .lm-avatar {
+    width: 26px;
+    height: 26px;
+  }
+
+  .lm-apply-btn {
+    padding: 8px 14px;
+    font-size: 13px;
+  }
+
+  .lm-confirm-modal {
+    width: 360px;
+    padding: 24px 20px;
+  }
+}
+
+/* ── Tablet (≤1024px) ────────────────────────────────────── */
+@media (max-width: 1024px) {
+  .lm-container {
+    padding: 12px;
+    gap: 12px;
+  }
+
+  .lm-toolbar-card {
+    flex-wrap: wrap;
+    gap: 10px;
+    padding: 12px;
+  }
+
+  .lm-search {
+    width: 100%;
+    flex: none;
+  }
+
+  .lm-toolbar-right {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .lm-table th,
+  .lm-table td {
+    padding: 10px 10px;
+    font-size: 13px;
+  }
+
+  .lm-confirm-modal {
+    width: 100%;
+    max-width: 380px;
+  }
+}
+
+/* ── Mobile (≤768px) ──────────────────────────────────────── */
+@media (max-width: 768px) {
+  .lm-container {
+    padding: 12px;
+    gap: 10px;
+  }
+
+  .lm-toolbar-card {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 12px;
+  }
+
+  .lm-search {
+    width: 100%;
+  }
+
+  .lm-toolbar-right {
+    width: 100%;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .lm-filter-group {
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .lm-apply-btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  /* Table: horizontal scroll */
+  .lm-main-card {
+    overflow-x: auto;
+    padding: 8px;
+  }
+
+  .lm-table {
+    min-width: 560px;
+    font-size: 13px;
+  }
+
+  /* Confirm modal: full width */
+  .lm-confirm-modal {
+    width: 100%;
+    padding: 24px 16px;
+  }
+
+  .lm-confirm-title {
+    font-size: 16px;
+  }
+
+  .lm-confirm-desc {
+    font-size: 13px;
+  }
+
+  .lm-confirm-actions {
+    width: 100%;
+  }
+}
