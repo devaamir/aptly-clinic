@@ -35,6 +35,20 @@
 }
 
 :root {
+  --color-primary: #ffffff;
+  --color-background: #ffffff;
+  --color-textPrimary: #1C1E22;
+  --color-textSecondary: #636A79;
+  --color-text: #1C1E22;
+  --color-patientName: #00001D;
+  --color-border: #E0E2E6;
+  --color-borderHover: #94a3b8;
+  --color-accent: #418EFD;
+  --color-accentHover: #2d7ef0;
+  --color-inputBg: #F8F9FB;
+  --color-placeholder: #7E8695;
+  --color-checkboxBorder: #A0A5B1;
+
   --text: #6b6375;
   --text-h: #08060d;
   --bg: #fff;

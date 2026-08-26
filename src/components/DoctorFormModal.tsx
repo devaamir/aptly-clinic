@@ -38,7 +38,7 @@ const DoctorFormModal: FC<DoctorFormModalProps> = ({ doctor, onClose, onCreated,
   // Form state
   const [form, setForm] = useState({
     name: doctor?.name ?? '',
-    phoneNumber: '',
+    phoneNumber: doctor?.phoneNumber ?? '',
     emailAddress: doctor?.emailAddress ?? '',
     about: doctor?.about ?? '',
     consultationFee: doctor?.consultationFee?.toString() ?? '',
@@ -243,7 +243,7 @@ const DoctorFormModal: FC<DoctorFormModalProps> = ({ doctor, onClose, onCreated,
 
   return (
     <Modal onClose={onClose}>
-      <div style={{ width: 520 }}>
+      <div>
         {!isEdit && created ? (
           <div className="doc-success">
             <div className="doc-success-icon-wrap">

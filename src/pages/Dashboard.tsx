@@ -193,13 +193,16 @@ const Dashboard: FC = () => {
     )}
     {showLogout && (
       <Modal onClose={() => setShowLogout(false)}>
-        <div style={{ width: 380, padding: 24, textAlign: 'center' }}>
-          <h3 style={{ margin: '0 0 8px', fontSize: 16, fontWeight: 700, color: '#0A0A0A', fontFamily: 'Manrope' }}>Logout</h3>
-          <p style={{ margin: '0 0 20px', fontSize: 13, color: '#636A79', fontFamily: 'Manrope' }}>Are you sure you want to logout?</p>
-          <div style={{ display: 'flex', gap: 10 }}>
-            <button className="ip-btn ip-cancel" style={{ flex: 1 }} onClick={() => setShowLogout(false)}>Cancel</button>
-            <button className="ip-btn ip-submit" style={{ flex: 1, background: '#FF5A4F' }} onClick={() => { logout(); window.location.href = '/' }}>Logout</button>
-          </div>
+        <div className="sch-header">
+          <h2 className="sch-title">Logout</h2>
+          <button className="sch-close" onClick={() => setShowLogout(false)}>✕</button>
+        </div>
+        <div className="sch-divider" />
+        <p style={{ margin: '24px 24px 8px', fontSize: 14, color: '#636A79', fontFamily: 'Manrope' }}>Are you sure you want to logout?</p>
+        <div className="sch-divider" style={{ marginTop: 24 }} />
+        <div className="ip-actions" style={{ padding: '16px 24px' }}>
+          <button className="ip-btn ip-cancel" onClick={() => setShowLogout(false)}>Cancel</button>
+          <button className="ip-btn ip-submit" style={{ background: '#FF5A4F' }} onClick={() => { logout(); window.location.href = '/' }}>Logout</button>
         </div>
       </Modal>
     )}

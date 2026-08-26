@@ -8,9 +8,7 @@ import { login } from '../services/api'
 import smsIcon from '../assets/icons/sms.svg'
 import lockIcon from '../assets/icons/lock.svg'
 import eyeIcon from '../assets/icons/security-eye.svg'
-import recaptchaImg from '../assets/images/re-captcha.png'
 import tickBlue from '../assets/icons/tick-blue.svg'
-import tickIcon from '../assets/icons/tick-icon.svg'
 import warningRed from '../assets/icons/warning-red.svg'
 import './Auth.css'
 
@@ -25,7 +23,6 @@ const Auth: FC<AuthProps> = ({ onLogin }) => {
   const [screen, setScreen] = useState<Screen>('login')
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirm, setShowConfirm] = useState(false)
-  const [notRobot, setNotRobot] = useState(false)
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
@@ -43,10 +40,10 @@ const Auth: FC<AuthProps> = ({ onLogin }) => {
       setTokens(res.data.accessToken, res.data.refreshToken)
       setUser({ ...res.data.user })
       onLogin(res.data.context?.medicalCenterId === null)
+      // intentionally keep loading=true — screen will unmount this component anyway
     } catch (err: unknown) {
       const msg = (err as { response?: { data?: { message?: string } } })?.response?.data?.message
       setError(msg || 'Invalid email or password.')
-    } finally {
       setLoading(false)
     }
   }
@@ -81,14 +78,6 @@ const Auth: FC<AuthProps> = ({ onLogin }) => {
 
           <div className="form-row">
             <a href="#" className="forgot-link" onClick={e => { e.preventDefault(); setScreen('set-password') }}>Forgot Password?</a>
-          </div>
-
-          <div className="captcha-btn" onClick={() => setNotRobot(p => !p)} style={{ cursor: 'pointer' }}>
-            <span className={`captcha-check-custom ${notRobot ? 'checked' : ''}`}>
-              {notRobot && <img src={tickIcon} alt="" style={{ width: 12, height: 12 }} />}
-            </span>
-            <span className="captcha-label">I'm not a robot</span>
-            <img src={recaptchaImg} alt="reCAPTCHA" className="captcha-logo" />
           </div>
 
           {error && <p style={{ color: '#F04438', fontSize: 13, marginBottom: 8, fontFamily: 'Manrope' }}>{error}</p>}
