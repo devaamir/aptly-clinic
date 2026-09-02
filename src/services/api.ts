@@ -1,6 +1,7 @@
 import axios from "axios";
 import type {
   LoginResponse,
+  RegisterResponse,
   AppointmentsResponse,
   ContextsResponse,
   SwitchContextResponse,
@@ -21,6 +22,7 @@ import type {
 
 export type {
   LoginResponse,
+  RegisterResponse,
   AppointmentsResponse,
   ContextsResponse,
   SwitchContextResponse,
@@ -96,6 +98,9 @@ export const api = {
 
 export const login = (emailAddress: string, password: string) =>
   api.post<LoginResponse>("/auth/login", { emailAddress, password });
+
+export const register = (emailAddress: string, role: 'doctor' | 'medical-center-manager') =>
+  api.post<RegisterResponse>("/auth/register", { emailAddress, role });
 
 export const getAppointments = (page = 1, limit = 20) =>
   api.get<AppointmentsResponse>(

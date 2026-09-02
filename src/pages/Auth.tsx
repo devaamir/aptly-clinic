@@ -4,7 +4,7 @@ import InputBox from '../components/InputBox'
 import Button from '../components/Button'
 import AuthLayout from '../components/AuthLayout'
 import { useAppContext } from '../context/AppContext'
-import { login } from '../services/api'
+import { login, register } from '../services/api'
 import smsIcon from '../assets/icons/sms.svg'
 import lockIcon from '../assets/icons/lock.svg'
 import eyeIcon from '../assets/icons/security-eye.svg'
@@ -12,7 +12,8 @@ import tickBlue from '../assets/icons/tick-blue.svg'
 import warningRed from '../assets/icons/warning-red.svg'
 import './Auth.css'
 
-type Screen = 'login' | 'set-password' | 'success' | 'link-expired'
+type Screen = 'login' | 'register' | 'register-success' | 'set-password' | 'success' | 'link-expired'
+type Role = 'doctor' | 'medical-center-manager'
 
 interface AuthProps {
   onLogin: (isNewAccount: boolean) => void
@@ -29,6 +30,34 @@ const Auth: FC<AuthProps> = ({ onLogin }) => {
   const [emailError, setEmailError] = useState('')
   const [passwordError, setPasswordError] = useState('')
   const [loading, setLoading] = useState(false)
+
+  // Register state
+  const [regEmail, setRegEmail] = useState('')
+  const [regRole, setRegRole] = useState<Role>('medical-center-manager')
+  const [regEmailError, setRegEmailError] = useState('')
+  const [regError, setRegError] = useState('')
+  const [regLoading, setRegLoading] = useState(false)
+  const [regDevToken, setRegDevToken] = useState<string | null>(null)
+
+  const handleRegister = async () => {
+    setRegEmailError('')
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(regEmail)) { setRegEmailError('Please enter a valid email address.'); return }
+    setRegError(''); setRegLoading(true)
+    try {
+      const res = await register(regEmail, regRole)
+      if (res.success) {
+        setRegDevToken(res.data.token ?? null)
+        setScreen('register-success')
+      } else {
+        setRegError(res.message || 'Registration failed. Please try again.')
+      }
+    } catch (err: unknown) {
+      const msg = (err as { response?: { data?: { message?: string } } })?.response?.data?.message
+      setRegError(msg || 'Registration failed. Please try again.')
+    } finally {
+      setRegLoading(false)
+    }
+  }
 
   const handleLogin = async () => {
     setEmailError(''); setPasswordError('')
@@ -82,7 +111,55 @@ const Auth: FC<AuthProps> = ({ onLogin }) => {
 
           {error && <p style={{ color: '#F04438', fontSize: 13, marginBottom: 8, fontFamily: 'Manrope' }}>{error}</p>}
           <Button label={loading ? 'Logging in...' : 'Login'} style={{ marginBottom: '24px' }} onClick={handleLogin} />          <p className="trouble-text">Having trouble logging in? <a href="https://wa.me/919778798511" target="_blank" rel="noreferrer">Contact Us</a></p>
+          <p className="trouble-text" style={{ marginTop: 12 }}>Don't have an account? <a href="#" onClick={e => { e.preventDefault(); setScreen('register') }}>Register</a></p>
         </>
+      )}
+
+      {screen === 'register' && (
+        <>
+          <h2 className="form-title">Create an account</h2>
+          <p className="form-subtitle">Enter your email and select your role to get started</p>
+
+          <div className="form-group" style={{ marginBottom: '17.5px' }}>
+            <InputBox type="email" placeholder="Email Address" leftIcon={<img src={smsIcon} alt="" />} value={regEmail} onChange={e => { setRegEmail(e.target.value); setRegEmailError('') }} error={!!regEmailError} />
+            {regEmailError && <p style={{ color: '#F04438', fontSize: 12, marginTop: 4, fontFamily: 'Manrope' }}>{regEmailError}</p>}
+          </div>
+
+          <div className="form-group" style={{ marginBottom: '24px' }}>
+            <div className="input-wrapper">
+              <select
+                className="input-box register-role-select"
+                value={regRole}
+                onChange={e => setRegRole(e.target.value as Role)}
+                style={{ appearance: 'none', WebkitAppearance: 'none', paddingLeft: '14px', color: 'var(--color-textPrimary)', cursor: 'pointer' }}
+              >
+                <option value="medical-center-manager">Medical Center Manager</option>
+                <option value="doctor">Doctor</option>
+              </select>
+            </div>
+          </div>
+
+          {regError && <p style={{ color: '#F04438', fontSize: 13, marginBottom: 8, fontFamily: 'Manrope' }}>{regError}</p>}
+          <Button label={regLoading ? 'Registering...' : 'Register'} style={{ marginBottom: '24px' }} onClick={handleRegister} />
+          <p className="trouble-text">Already have an account? <a href="#" onClick={e => { e.preventDefault(); setScreen('login') }}>Login</a></p>
+        </>
+      )}
+
+      {screen === 'register-success' && (
+        <div className="success-view">
+          <div className="success-icon-wrapper">
+            <img src={tickBlue} alt="Email sent" className="success-icon" />
+          </div>
+          <h2 className="form-title">Check your email</h2>
+          <p className="form-subtitle">A verification link has been sent to <strong>{regEmail}</strong>. Please check your inbox and follow the link to complete registration.</p>
+          {regDevToken && (
+            <div style={{ width: '100%', marginBottom: 20, background: '#F5F7FA', border: '1px solid #E2E8F0', borderRadius: 8, padding: '10px 12px', boxSizing: 'border-box' }}>
+              <p style={{ fontSize: 11, fontWeight: 600, color: '#A0A5B1', fontFamily: 'Manrope', margin: '0 0 6px 0', textTransform: 'uppercase', letterSpacing: 0.5 }}>Dev Token</p>
+              <p style={{ fontSize: 11, color: '#4A5568', fontFamily: 'monospace', wordBreak: 'break-all', margin: 0 }}>{regDevToken}</p>
+            </div>
+          )}
+          <Button label="Back to Login" onClick={() => setScreen('login')} />
+        </div>
       )}
 
       {screen === 'set-password' && (

@@ -1,4 +1,14 @@
 // Auth
+export interface RegisterResponse {
+  success: boolean
+  message: string
+  data: {
+    expiresAt: string
+    resendWaitTime: number
+    token?: string
+  }
+}
+
 export interface LoginResponse {
   success: boolean
   message: string
