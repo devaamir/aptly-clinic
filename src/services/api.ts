@@ -62,7 +62,9 @@ client.interceptors.response.use(
   (res) => res,
   async (error) => {
     const original = error.config;
-    if (error.response?.status === 401 && !original._retry) {
+    // Don't try to refresh or redirect for auth endpoints themselves
+    const isAuthEndpoint = original?.url?.includes('/auth/login') || original?.url?.includes('/auth/refresh-token')
+    if (error.response?.status === 401 && !original._retry && !isAuthEndpoint) {
       original._retry = true;
       try {
         const refreshToken = localStorage.getItem("refreshToken");

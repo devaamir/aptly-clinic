@@ -749,7 +749,7 @@
 
 .apt-no-results {
   text-align: center;
-  padding: 80px 16px 48px;
+  padding: 48px 16px 32px;
   color: #a0a5b1;
   font-size: 14px;
   font-weight: 500;
@@ -760,7 +760,7 @@
 .apt-table td.apt-no-results {
   color: #a0a5b1;
   border-top: none;
-  padding: 80px 16px 48px;
+  padding: 48px 16px 32px;
 }
 
 .apt-loader-wrap {

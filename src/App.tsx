@@ -22,7 +22,7 @@ type AppScreen =
   | "create-clinic";
 
 const App: FC = () => {
-  const { setTokens, setContexts, setActiveContext, setActiveDoctor } =
+  const { setTokens, setContexts, setActiveContext, setActiveDoctor, logout } =
     useAppContext();
   const [screen, setScreen] = useState<AppScreen>(() => {
     if (window.location.pathname === "/delete-account") return "delete-account";
@@ -30,7 +30,9 @@ const App: FC = () => {
     if (window.location.pathname === "/register") return "register";
     if (localStorage.getItem("pendingClinicSetup") === "true")
       return "create-clinic";
-    return localStorage.getItem("accessToken") ? "dashboard" : "auth";
+    return localStorage.getItem("accessToken")
+      ? localStorage.getItem("selectedContextId") ? "dashboard" : "select-profile"
+      : "auth";
   });
   const [toast, setToast] = useState<string | null>(null)
 
@@ -77,6 +79,7 @@ const App: FC = () => {
           setActiveContext(ctx);
         }
         setToast(`Only one clinic profile found. Switched to "${ctx.medicalCenter.name}" automatically.`)
+        localStorage.setItem("selectedContextId", ctx.medicalCenter.id);
         setTimeout(() => setScreen("dashboard"), 2000);
       } else {
         setScreen("select-profile");
@@ -101,6 +104,7 @@ const App: FC = () => {
   };
 
   const handleSelectProfile = (_ctx: UserContext) => {
+    localStorage.setItem("selectedContextId", _ctx.medicalCenter.id);
     setScreen("dashboard");
   };
 
@@ -113,13 +117,14 @@ const App: FC = () => {
         onCreated={handleClinicCreated}
         onBack={() => {
           localStorage.removeItem("pendingClinicSetup");
+          localStorage.removeItem("selectedContextId");
           setScreen("auth");
         }}
       />
     );
   if (screen === "dashboard") return <Dashboard />;
   if (screen === "select-profile")
-    return <SelectProfile onSelect={handleSelectProfile} />;
+    return <SelectProfile onSelect={handleSelectProfile} onBack={() => { logout(); setScreen("auth"); }} />;
   return (
     <>
       <Auth onLogin={handleLogin} />

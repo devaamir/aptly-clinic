@@ -96,6 +96,7 @@ export const AppProvider: FC<{ children: ReactNode }> = ({ children }) => {
     localStorage.removeItem('selectedRole')
     localStorage.removeItem('selectedClinic')
     localStorage.removeItem('activeDoctor')
+    localStorage.removeItem('selectedContextId')
   }
 
   return (
