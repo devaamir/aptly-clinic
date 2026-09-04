@@ -1,23 +1,43 @@
 import type { FC, ChangeEvent } from 'react'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import avatarIcon from '../assets/icons/avatar-icon.svg'
 import cameraIcon from '../assets/icons/camera-icon.svg'
-import { updateClinic, createSubscriptionCheckout, getSubscriptionStatus } from '../services/api'
+import { updateClinic, createSubscriptionCheckout, getSubscriptionStatus, getMedicalSystems } from '../services/api'
+import type { MedicalSystem } from '../services/types'
 import { useAppContext } from '../context/AppContext'
 import Modal from '../components/Modal'
 import './Settings.css'
+import './Doctors.css'
 
 type SettingsTab = 'Clinic Profile' | 'Consulting Rooms' | 'Notifications' | 'Security' | 'Billing' | 'Integrations'
 const tabs: SettingsTab[] = ['Clinic Profile', 'Consulting Rooms', 'Notifications', 'Security', 'Billing', 'Integrations']
 
-const InfoRow: FC<{ label: string; value: string; editing?: boolean; onChange?: (v: string) => void; multiline?: boolean }> = ({ label, value, editing, onChange, multiline }) => (
+const InfoRow: FC<{ label: string; value: string; editing?: boolean; onChange?: (v: string) => void; multiline?: boolean; error?: string; digitsOnly?: boolean; prefix?: string; placeholder?: string }> = ({ label, value, editing, onChange, multiline, error, digitsOnly, prefix, placeholder }) => (
   <div className="st-info-row">
     <span className="st-info-label">{label}</span>
     {editing
       ? multiline
-        ? <textarea className="st-edit-input st-edit-textarea" value={value} onChange={e => onChange?.(e.target.value)} />
-        : <input className="st-edit-input" value={value} onChange={(e: ChangeEvent<HTMLInputElement>) => onChange?.(e.target.value)} />
-      : <span className="st-info-value">{value}</span>
+        ? <textarea className="st-edit-input st-edit-textarea" value={value} placeholder={placeholder} onChange={e => onChange?.(e.target.value)} />
+        : (
+          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 4 }}>
+            <div className={prefix ? 'st-phone-wrap' : undefined}>
+              {prefix && <span className="st-phone-prefix">{prefix}</span>}
+              <input
+                className={`st-edit-input${prefix ? ' st-phone-input' : ''}${error ? ' st-edit-input--error' : ''}`}
+                value={value}
+                placeholder={placeholder}
+                onChange={(e: ChangeEvent<HTMLInputElement>) => {
+                  const v = digitsOnly ? e.target.value.replace(/\D/g, '').slice(0, 10) : e.target.value
+                  onChange?.(v)
+                }}
+                inputMode={digitsOnly ? 'numeric' : undefined}
+                maxLength={digitsOnly ? 10 : undefined}
+              />
+            </div>
+            {error && <span style={{ fontSize: 12, color: '#E53E3E', fontFamily: 'Manrope' }}>{error}</span>}
+          </div>
+        )
+      : <span className="st-info-value">{value ? (prefix ? `${prefix} ${value}` : value) : '—'}</span>
     }
   </div>
 )
@@ -149,9 +169,12 @@ const Settings: FC = () => {
 
   const [activeTab, setActiveTab] = useState<SettingsTab>('Clinic Profile')
   const [editing, setEditing] = useState(false)
+  const fileInputRef = useRef<HTMLInputElement>(null)
+  const avatarFileRef = useRef<File | null>(null)
+  const [showAvatarModal, setShowAvatarModal] = useState(false)
 
   const emptyProfile = {
-    name: '', practice: '', phone: '', email: '', website: '',
+    name: '', practice: '', medicalSystemId: '', phone: '', email: '', website: '',
     specialties: [] as string[], about: '', address: '',
     lat: '', lng: '', ownerName: '', ownerPhone: '', ownerEmail: '', avatar: '',
   }
@@ -163,6 +186,7 @@ const Settings: FC = () => {
     const p = {
       name: mc.name ?? '',
       practice: mc.medicalSystem?.name ?? '',
+      medicalSystemId: mc.medicalSystem?.id ?? '',
       phone: mc.phoneNumber ?? '',
       email: mc.emailAddress ?? '',
       website: mc.websiteUrl ?? '',
@@ -180,21 +204,49 @@ const Settings: FC = () => {
     setDraft(p)
   }, [mc])
 
-  const allSpecialties = contextSpecialties.map(s => s.name)
+  const set = (key: keyof typeof profile) => (v: string) => {
+    setDraft(p => ({ ...p, [key]: v }))
+    setFieldErrors(p => ({ ...p, [key]: '' }))
+  }
 
-  const set = (key: keyof typeof profile) => (v: string) => setDraft(p => ({ ...p, [key]: v }))
+  const [medicalSystems, setMedicalSystems] = useState<MedicalSystem[]>([])
+  const [specialtySearch, setSpecialtySearch] = useState('')
+
+  useEffect(() => {
+    getMedicalSystems().then(r => { if (r.success) setMedicalSystems(r.data) }).catch(() => {})
+  }, [])
 
   const [saving, setSaving] = useState(false)
   const [saveError, setSaveError] = useState('')
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({})
 
-  const handleEdit = () => { setDraft(profile); setEditing(true) }
-  const handleCancel = () => { setEditing(false); setSaveError('') }
+  const isValidIndianPhone = (v: string) => /^[6-9]\d{9}$/.test(v.trim())
+  const isValidEmail = (v: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.trim())
+
+  const validateBeforeSave = () => {
+    const errs: Record<string, string> = {}
+    if (draft.phone && !isValidIndianPhone(draft.phone))
+      errs.phone = 'Enter a valid 10-digit Indian mobile number.'
+    if (draft.ownerPhone && !isValidIndianPhone(draft.ownerPhone))
+      errs.ownerPhone = 'Enter a valid 10-digit Indian mobile number.'
+    if (draft.email && !isValidEmail(draft.email))
+      errs.email = 'Enter a valid email address.'
+    if (draft.ownerEmail && !isValidEmail(draft.ownerEmail))
+      errs.ownerEmail = 'Enter a valid email address.'
+    setFieldErrors(errs)
+    return Object.keys(errs).length === 0
+  }
+
+  const handleEdit = () => { setDraft(profile); setEditing(true); setFieldErrors({}); avatarFileRef.current = null }
+  const handleCancel = () => { setDraft(profile); setEditing(false); setSaveError(''); setFieldErrors({}); avatarFileRef.current = null }
   const handleSave = async () => {
+    if (!validateBeforeSave()) return
     setSaving(true)
     setSaveError('')
     try {
       const fd = new FormData()
       if (draft.name) fd.append('name', draft.name)
+      if (draft.medicalSystemId) fd.append('medicalSystemId', draft.medicalSystemId)
       if (draft.phone) fd.append('phoneNumber', draft.phone)
       if (draft.email) fd.append('emailAddress', draft.email)
       if (draft.about) fd.append('about', draft.about)
@@ -202,14 +254,18 @@ const Settings: FC = () => {
       if (draft.address) fd.append('address', draft.address)
       if (draft.lat) fd.append('latitude', draft.lat)
       if (draft.lng) fd.append('longitude', draft.lng)
+      if (avatarFileRef.current) fd.append('profilePicture', avatarFileRef.current)
       // map specialty names back to IDs
       draft.specialties.forEach(name => {
         const found = contextSpecialties.find(s => s.name === name)
         if (found) fd.append('specialtyIds', found.id)
       })
-      await updateClinic(fd)
-      setProfile(draft)
+      const res = await updateClinic(fd)
+      const newAvatar = res.data?.profilePicture ?? draft.avatar
+      setProfile({ ...draft, avatar: newAvatar })
+      setDraft(p => ({ ...p, avatar: newAvatar }))
       setEditing(false)
+      avatarFileRef.current = null
       // update context immediately
       if (activeContext) {
         setActiveContext({
@@ -224,6 +280,7 @@ const Settings: FC = () => {
             address: draft.address,
             latitude: parseFloat(draft.lat) || 0,
             longitude: parseFloat(draft.lng) || 0,
+            profilePicture: newAvatar,
             specialties: contextSpecialties.filter(s => draft.specialties.includes(s.name)),
           }
         })
@@ -273,45 +330,141 @@ const Settings: FC = () => {
               <div className="st-section-title">Basic Information</div>
               <div className="st-profile-row">
                 <div className="st-avatar-wrap">
-                  <img src={draft.avatar || avatarIcon} alt="clinic" className="st-avatar" />
-                  <div className="st-camera-btn">
-                    <img src={cameraIcon} alt="" style={{ width: 16, height: 16 }} />
-                  </div>
+                  <img
+                    src={draft.avatar || avatarIcon}
+                    alt="clinic"
+                    className="st-avatar"
+                    style={{ cursor: 'pointer' }}
+                    onClick={() => editing ? fileInputRef.current?.click() : setShowAvatarModal(true)}
+                  />
+                  {editing && (
+                    <div className="st-camera-btn" onClick={() => fileInputRef.current?.click()}>
+                      <img src={cameraIcon} alt="" style={{ width: 16, height: 16 }} />
+                    </div>
+                  )}
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*"
+                    style={{ display: 'none' }}
+                    onChange={e => {
+                      const file = e.target.files?.[0]
+                      if (file) {
+                        avatarFileRef.current = file
+                        setDraft(p => ({ ...p, avatar: URL.createObjectURL(file) }))
+                      }
+                      e.target.value = ''
+                    }}
+                  />
                 </div>
+
+                {showAvatarModal && (
+                  <div
+                    style={{
+                      position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.75)',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      zIndex: 1000,
+                    }}
+                    onClick={() => setShowAvatarModal(false)}
+                  >
+                    <div
+                      style={{ position: 'relative', maxWidth: '90vw', maxHeight: '90vh' }}
+                      onClick={e => e.stopPropagation()}
+                    >
+                      <button
+                        onClick={() => setShowAvatarModal(false)}
+                        style={{
+                          position: 'absolute', top: -16, right: -16,
+                          width: 32, height: 32, borderRadius: '50%',
+                          background: '#fff', border: 'none', cursor: 'pointer',
+                          display: 'flex', alignItems: 'center', justifyContent: 'center',
+                          fontSize: 16, fontWeight: 700, color: '#0A0A0A',
+                          boxShadow: '0 2px 8px rgba(0,0,0,0.2)',
+                        }}
+                      >✕</button>
+                      <img
+                        src={draft.avatar || avatarIcon}
+                        alt="clinic"
+                        style={{
+                          maxWidth: '80vw', maxHeight: '80vh',
+                          borderRadius: 12, display: 'block',
+                          objectFit: 'contain',
+                        }}
+                      />
+                    </div>
+                  </div>
+                )}
                 <div className="st-info-grid">
-                  <InfoRow label="Clinic Name" value={draft.name} editing={editing} onChange={set('name')} />
-                  <InfoRow label="Medical System" value={draft.practice} editing={editing} onChange={set('practice')} />
-                  <InfoRow label="Phone Number" value={draft.phone} editing={editing} onChange={set('phone')} />
-                  <InfoRow label="Email" value={draft.email} editing={editing} onChange={set('email')} />
-                  <InfoRow label="Website" value={draft.website} editing={editing} onChange={set('website')} />
+                  <InfoRow label="Clinic Name" value={draft.name} editing={editing} onChange={set('name')} placeholder="Enter clinic name" />
+                  <div className="st-info-row">
+                    <span className="st-info-label">Medical System</span>
+                    {editing ? (
+                      <select
+                        className="st-edit-input"
+                        value={draft.medicalSystemId}
+                        onChange={e => {
+                          const selected = medicalSystems.find(m => m.id === e.target.value)
+                          setDraft(p => ({ ...p, medicalSystemId: e.target.value, practice: selected?.name ?? '' }))
+                        }}
+                      >
+                        <option value="">Select medical system</option>
+                        {medicalSystems.map(m => <option key={m.id} value={m.id}>{m.name}</option>)}
+                      </select>
+                    ) : (
+                      <span className="st-info-value">{draft.practice || '—'}</span>
+                    )}
+                  </div>
+                  <InfoRow label="Phone Number" value={draft.phone} editing={editing} onChange={set('phone')} digitsOnly prefix="+91" error={fieldErrors.phone} placeholder="98765 43210" />
+                  <InfoRow label="Email" value={draft.email} editing={editing} onChange={set('email')} error={fieldErrors.email} placeholder="clinic@example.com" />
+                  <InfoRow label="Website" value={draft.website} editing={editing} onChange={set('website')} placeholder="https://yourclinic.com" />
                   <div className="st-info-row">
                     <span className="st-info-label">Specialty</span>
                     {editing ? (
-                      <div className="st-specialty-wrap">
-                        <div className="st-specialty-tags">
+                      <div style={{ flex: 1 }}>
+                        <div className="doc-spec-input">
                           {draft.specialties.map(s => (
-                            <span key={s} className="st-specialty-tag">
+                            <span key={s} className="doc-spec-chip">
                               {s}
-                              <button className="st-tag-remove" onClick={() => setDraft(p => ({ ...p, specialties: p.specialties.filter(x => x !== s) }))}>✕</button>
+                              <button type="button" className="doc-spec-chip-remove"
+                                onMouseDown={e => { e.preventDefault(); setDraft(p => ({ ...p, specialties: p.specialties.filter(x => x !== s) })) }}>✕</button>
                             </span>
                           ))}
+                          <input
+                            className="doc-spec-search"
+                            placeholder={draft.specialties.length === 0 ? 'Search specialty...' : ''}
+                            value={specialtySearch}
+                            onChange={e => setSpecialtySearch(e.target.value)}
+                          />
                         </div>
-                        <select className="st-edit-input" value="" onChange={e => { const v = e.target.value; if (v && !draft.specialties.includes(v)) setDraft(p => ({ ...p, specialties: [...p.specialties, v] })) }}>
-                          <option value="">+ Add specialty</option>
-                          {allSpecialties.filter(s => !draft.specialties.includes(s)).map(s => <option key={s} value={s}>{s}</option>)}
-                        </select>
+                        {specialtySearch && (
+                          <ul className="doc-spec-dropdown">
+                            {contextSpecialties
+                              .filter(s => s.name.toLowerCase().includes(specialtySearch.toLowerCase()) && !draft.specialties.includes(s.name))
+                              .length > 0
+                              ? contextSpecialties
+                                  .filter(s => s.name.toLowerCase().includes(specialtySearch.toLowerCase()) && !draft.specialties.includes(s.name))
+                                  .map(s => (
+                                    <li key={s.id} className="doc-spec-dropdown-item"
+                                      onMouseDown={e => { e.preventDefault(); setDraft(p => ({ ...p, specialties: [...p.specialties, s.name] })); setSpecialtySearch('') }}>
+                                      {s.name}
+                                    </li>
+                                  ))
+                              : <li className="doc-spec-dropdown-empty">No results found</li>
+                            }
+                          </ul>
+                        )}
                       </div>
                     ) : (
-                      <span className="st-info-value">{draft.specialties.join(', ')}</span>
+                      <span className="st-info-value">{draft.specialties.join(', ') || '—'}</span>
                     )}
                   </div>
                 </div>
               </div>
-              <InfoRow label="About Clinic" value={draft.about} editing={editing} onChange={set('about')} multiline />
-              <InfoRow label="Address" value={draft.address} editing={editing} onChange={set('address')} />
+              <InfoRow label="About Clinic" value={draft.about} editing={editing} onChange={set('about')} multiline placeholder="Brief description about your clinic" />
+              <InfoRow label="Address" value={draft.address} editing={editing} onChange={set('address')} placeholder="Enter full clinic address" />
               <div className="st-info-grid">
-                <InfoRow label="Latitude" value={draft.lat} editing={editing} onChange={set('lat')} />
-                <InfoRow label="Longitude" value={draft.lng} editing={editing} onChange={set('lng')} />
+                <InfoRow label="Latitude" value={draft.lat} editing={editing} onChange={set('lat')} placeholder="e.g. 12.9716" />
+                <InfoRow label="Longitude" value={draft.lng} editing={editing} onChange={set('lng')} placeholder="e.g. 77.5946" />
               </div>
             </div>
 
@@ -320,9 +473,9 @@ const Settings: FC = () => {
             <div className="st-section">
               <div className="st-section-title">Owner Details</div>
               <div className="st-info-grid">
-                <InfoRow label="Owner Name" value={draft.ownerName} editing={editing} onChange={set('ownerName')} />
-                <InfoRow label="Phone Number" value={draft.ownerPhone} editing={editing} onChange={set('ownerPhone')} />
-                <InfoRow label="Email" value={draft.ownerEmail} editing={editing} onChange={set('ownerEmail')} />
+                <InfoRow label="Owner Name" value={draft.ownerName} editing={editing} onChange={set('ownerName')} placeholder="Enter owner name" />
+                <InfoRow label="Phone Number" value={draft.ownerPhone} editing={editing} onChange={set('ownerPhone')} digitsOnly prefix="+91" error={fieldErrors.ownerPhone} placeholder="98765 43210" />
+                <InfoRow label="Email" value={draft.ownerEmail} editing={editing} onChange={set('ownerEmail')} error={fieldErrors.ownerEmail} placeholder="owner@example.com" />
               </div>
             </div>
           </div>

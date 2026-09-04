@@ -35,23 +35,7 @@ const statusProps: Record<LeaveStatus, { bgColor: string; textColor: string; dot
   Rejected: { bgColor: '#FEF3F2', textColor: '#B42318', dotColor: '#F04438' },
 }
 
-const leaves: Leave[] = [
-  { id: 'LV001', doctor: 'Dr. Daniel Hamilton', avatar: 'https://i.pravatar.cc/32?img=2', specialty: 'Cardiology', appliedDate: 'Mar 10, 2026', reason: 'Medical', startDate: 'Mar 15, 2026', endDate: 'Mar 17, 2026', duration: '3 days', status: 'Approved' },
-  { id: 'LV002', doctor: 'Dr. Sarah Johnson', avatar: 'https://i.pravatar.cc/32?img=1', specialty: 'Cardiology', appliedDate: 'Mar 18, 2026', reason: 'Personal', startDate: 'Mar 22, 2026', endDate: 'Mar 22, 2026', duration: '1 day', status: 'Approved' },
-  { id: 'LV003', doctor: 'Dr. Michael Chen', avatar: 'https://i.pravatar.cc/32?img=4', specialty: 'Orthopedics', appliedDate: 'Mar 20, 2026', reason: 'Family Emergency', startDate: 'Mar 25, 2026', endDate: 'Mar 27, 2026', duration: '3 days', status: 'Rejected' },
-  { id: 'LV004', doctor: 'Dr. Mark Spencer', avatar: 'https://i.pravatar.cc/32?img=3', specialty: 'Neurology', appliedDate: 'Mar 25, 2026', reason: 'Conference', startDate: 'Apr 1, 2026', endDate: 'Apr 3, 2026', duration: '3 days', status: 'Approved' },
-  { id: 'LV005', doctor: 'Dr. Emily Carter', avatar: 'https://i.pravatar.cc/32?img=11', specialty: 'Pediatrics', appliedDate: 'Mar 28, 2026', reason: 'Vacation', startDate: 'Apr 5, 2026', endDate: 'Apr 8, 2026', duration: '4 days', status: 'Approved' },
-]
-
-const doctorsBySpecialty: Record<string, { label: string; value: string; sessions: string[] }[]> = {
-  cardiology: [
-    { label: 'Dr. Daniel Hamilton', value: 'daniel', sessions: ['9:00 AM – 1:00 PM', '2:00 PM – 4:00 PM'] },
-    { label: 'Dr. Sarah Johnson', value: 'sarah', sessions: ['9:00 AM – 1:00 PM'] },
-  ],
-  neurology: [{ label: 'Dr. Mark Spencer', value: 'mark', sessions: ['9:00 AM – 1:00 PM'] }],
-  orthopedics: [{ label: 'Dr. Michael Chen', value: 'michael', sessions: ['9:00 AM – 1:00 PM', '2:00 PM – 4:00 PM'] }],
-  pediatrics: [{ label: 'Dr. Emily Carter', value: 'emily', sessions: ['9:00 AM – 1:00 PM', '2:00 PM – 4:00 PM'] }],
-}
+const leaves: Leave[] = []
 
 const LeaveManagement: FC = () => {
   const [search, setSearch] = useState('')
@@ -67,7 +51,6 @@ const LeaveManagement: FC = () => {
   const [session, setSession] = useState('')
 
   const isHalfDayEligible = startDate && endDate && startDate === endDate
-  const selectedDoctorSessions = doctorsBySpecialty[specialty]?.find(d => d.value === doctor)?.sessions ?? []
 
   const resetForm = () => { setShowApply(false); setSpecialty(''); setDoctor(''); setStartDate(todayStr); setEndDate(todayStr); setHalfDay(false); setSession('') }
 
@@ -188,15 +171,10 @@ const LeaveManagement: FC = () => {
                 <div className="sch-form-row">
                   <FormField as="select" label="Specialty" value={specialty}
                     onChange={e => { setSpecialty((e.target as HTMLSelectElement).value); setDoctor(''); setSession('') }}
-                    options={[
-                      { label: 'Cardiology', value: 'cardiology' },
-                      { label: 'Neurology', value: 'neurology' },
-                      { label: 'Orthopedics', value: 'orthopedics' },
-                      { label: 'Pediatrics', value: 'pediatrics' },
-                    ]} />
+                    options={[]} />
                   <FormField as="select" label="Doctor" value={doctor}
                     onChange={e => { setDoctor((e.target as HTMLSelectElement).value); setSession('') }}
-                    options={specialty ? doctorsBySpecialty[specialty].map(d => ({ label: d.label, value: d.value })) : []} />
+                    options={[]} />
                 </div>
                 <div className="sch-form-row">
                   <FormField label="Start Date" type="date" value={startDate} rightIcon={calendarIcon}
@@ -212,13 +190,6 @@ const LeaveManagement: FC = () => {
                       </span>
                       Half Day
                     </label>
-                  </div>
-                )}
-                {halfDay && selectedDoctorSessions.length > 1 && (
-                  <div className="sch-form-row">
-                    <FormField as="select" label="Session" value={session}
-                      onChange={e => setSession((e.target as HTMLSelectElement).value)}
-                      options={selectedDoctorSessions.map(s => ({ label: s, value: s }))} />
                   </div>
                 )}
                 <div style={{ marginBottom: 18 }}>

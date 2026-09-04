@@ -132,9 +132,15 @@ const Dashboard: FC = () => {
             <button className="topbar-icon-btn"><img src={notificationIcon} alt="notifications" style={{ width: 20, height: 20 }} /></button>
             <div style={{ position: 'relative' }}>
               <div className="topbar-profile" style={{ cursor: 'pointer' }} onClick={() => setShowProfileMenu(p => !p)}>
-                <img src={activeContext?.medicalCenter.profilePicture || 'https://i.pravatar.cc/32?img=20'} alt="profile" className="topbar-avatar" />
+                <img
+                  src={role === 'doctor' && activeDoctor?.profilePicture ? activeDoctor.profilePicture : activeContext?.medicalCenter.profilePicture || 'https://i.pravatar.cc/32?img=20'}
+                  alt="profile"
+                  className="topbar-avatar"
+                />
                 <div className="topbar-profile-info">
-                  <span className="topbar-hospital-name">{activeContext?.medicalCenter.name ?? 'Clinic'}</span>
+                  <span className="topbar-hospital-name">
+                    {role === 'doctor' && activeDoctor?.name ? activeDoctor.name : activeContext?.medicalCenter.name ?? 'Clinic'}
+                  </span>
                   <span className="topbar-role">{activeContext?.role ?? ''}</span>
                 </div>
                 <img src={arrowDownIcon} alt="" style={{ width: 16, height: 16, opacity: 0.5 }} />
@@ -142,13 +148,13 @@ const Dashboard: FC = () => {
               {showProfileMenu && (
                 <div className="profile-menu">
                   {contexts.map(c => (
-                    <div key={c.medicalCenter.id} className={`profile-menu-item ${activeContext?.medicalCenter.id === c.medicalCenter.id ? 'active' : ''}`} onClick={() => { setShowProfileMenu(false); setSwitchTarget({ id: c.medicalCenter.id, name: c.medicalCenter.name, role: c.role, avatar: c.medicalCenter.profilePicture || `https://i.pravatar.cc/32?u=${c.medicalCenter.id}` }) }}>
+                    <div key={c.medicalCenter.id + c.role} className={`profile-menu-item ${activeContext?.medicalCenter.id === c.medicalCenter.id && activeContext?.role === c.role ? 'active' : ''}`} onClick={() => { setShowProfileMenu(false); setSwitchTarget({ id: c.medicalCenter.id, name: c.medicalCenter.name, role: c.role, avatar: c.medicalCenter.profilePicture || `https://i.pravatar.cc/32?u=${c.medicalCenter.id}` }) }}>
                       <img src={c.medicalCenter.profilePicture || `https://i.pravatar.cc/32?u=${c.medicalCenter.id}`} alt={c.medicalCenter.name} className="profile-menu-avatar" />
                       <div>
                         <div className="profile-menu-name">{c.medicalCenter.name}</div>
                         <div className="profile-menu-role">{c.role}</div>
                       </div>
-                      {activeContext?.medicalCenter.id === c.medicalCenter.id && <span style={{ marginLeft: 'auto', color: '#2879E4', fontSize: 12 }}>●</span>}
+                      {activeContext?.medicalCenter.id === c.medicalCenter.id && activeContext?.role === c.role && <span style={{ marginLeft: 'auto', color: '#2879E4', fontSize: 12 }}>●</span>}
                     </div>
                   ))}
                   <div className="profile-menu-divider" />

@@ -1,6 +1,7 @@
 import type { FC } from "react";
 import { useState, useEffect } from "react";
 import Auth from "./pages/Auth";
+import Register from "./pages/Register";
 import SelectProfile from "./pages/SelectProfile";
 import Dashboard from "./pages/Dashboard";
 import DeleteAccount from "./pages/DeleteAccount";
@@ -13,6 +14,7 @@ import type { UserContext } from "./services/types";
 
 type AppScreen =
   | "auth"
+  | "register"
   | "select-profile"
   | "dashboard"
   | "delete-account"
@@ -25,6 +27,7 @@ const App: FC = () => {
   const [screen, setScreen] = useState<AppScreen>(() => {
     if (window.location.pathname === "/delete-account") return "delete-account";
     if (window.location.pathname === "/set-password") return "set-password";
+    if (window.location.pathname === "/register") return "register";
     if (localStorage.getItem("pendingClinicSetup") === "true")
       return "create-clinic";
     return localStorage.getItem("accessToken") ? "dashboard" : "auth";
@@ -37,6 +40,8 @@ const App: FC = () => {
         setScreen("delete-account");
       } else if (window.location.pathname === "/set-password") {
         setScreen("set-password");
+      } else if (window.location.pathname === "/register") {
+        setScreen("register");
       }
     };
     window.addEventListener("popstate", handlePopState);
@@ -101,6 +106,7 @@ const App: FC = () => {
 
   if (screen === "delete-account") return <DeleteAccount />;
   if (screen === "set-password") return <SetPassword />;
+  if (screen === "register") return <Register />;
   if (screen === "create-clinic")
     return (
       <CreateClinic

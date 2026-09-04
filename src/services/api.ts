@@ -77,7 +77,10 @@ client.interceptors.response.use(
         localStorage.removeItem("accessToken");
         localStorage.removeItem("refreshToken");
         localStorage.removeItem("pendingClinicSetup");
-        window.location.href = "/";
+        const publicPaths = ['/set-password', '/register', '/delete-account']
+        if (!publicPaths.includes(window.location.pathname)) {
+          window.location.href = "/";
+        }
       }
     }
     return Promise.reject(error);

@@ -174,8 +174,8 @@ const DoctorProfile: FC<DoctorProfileProps> = ({ doctor, onBack, onEdit }) => {
             <div className="dp-overview-left">
               <div className="dp-stats-row">
                 {[
-                  { label: 'Monthly Patients', value: '124', icon: patientsGreenIcon },
-                  { label: 'Total Patients', value: '1,840', icon: patientsRedIcon },
+                  { label: 'Monthly Patients', value: '0', icon: patientsGreenIcon },
+                  { label: 'Total Patients', value: '0', icon: patientsRedIcon },
                   { label: 'Avg Time / Patient', value: `${doctor.estimateConsultationTime} min`, icon: clockBlueIcon },
                 ].map(s => (
                   <div key={s.label} className="dp-stat-card">
@@ -271,22 +271,13 @@ const DoctorProfile: FC<DoctorProfileProps> = ({ doctor, onBack, onEdit }) => {
                 </tr>
               </thead>
               <tbody>
-                {[
-                  { applied: 'Mar 10, 2026', reason: 'Medical', start: 'Mar 15, 2026', end: 'Mar 17, 2026', duration: '3 days', status: 'Approved' },
-                  { applied: 'Feb 20, 2026', reason: 'Personal', start: 'Feb 25, 2026', end: 'Feb 25, 2026', duration: '1 day', status: 'Approved' },
-                  { applied: 'Jan 5, 2026', reason: 'Family Emergency', start: 'Jan 8, 2026', end: 'Jan 10, 2026', duration: '3 days', status: 'Rejected' },
-                ].map((l, i) => (
-                  <tr key={i}>
-                    <td>{l.applied}</td>
-                    <td>{l.reason}</td>
-                    <td>{l.start}</td>
-                    <td>{l.end}</td>
-                    <td>{l.duration}</td>
-                    <td>
-                      <span className={`dp-leave-status ${l.status === 'Approved' ? 'approved' : 'rejected'}`}>{l.status}</span>
+                {[].length === 0 ? (
+                  <tr>
+                    <td colSpan={6} style={{ textAlign: 'center', color: '#A0A5B1', fontFamily: 'Manrope', padding: '32px 0', fontSize: 13 }}>
+                      No leave history found.
                     </td>
                   </tr>
-                ))}
+                ) : null}
               </tbody>
             </table>
           </div>
