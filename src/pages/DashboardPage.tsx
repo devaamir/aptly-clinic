@@ -296,7 +296,7 @@ const DashboardPage: FC<{ onViewDoctor?: (d: DoctorDetail) => void }> = ({ onVie
           <h3 className="dbp-chart-title">Today's Appointments</h3>
           <div className="dbp-apt-list">
             {(data?.todayAppointments ?? []).length === 0
-              ? <p style={{ fontSize: 13, color: '#494F5A' }}>No appointments today.</p>
+              ? <p className="dbp-no-results">No appointments today.</p>
               : (data?.todayAppointments ?? []).map(a => (
                 <div key={a.id} className="dbp-apt-item">
                   <img src={userProfileImg} alt={a.patient.name} className="dbp-apt-avatar" />

@@ -1,5 +1,5 @@
 import type { FC } from 'react'
-import { useState, useRef, useEffect } from 'react'
+import React, { useState, useRef, useEffect } from 'react'
 import Modal from './Modal'
 import FormField from './FormField'
 import { createDoctor, updateDoctor, getDoctorsList } from '../services/api'
@@ -10,6 +10,63 @@ import smsIcon from '../assets/icons/sms.svg'
 import avatarIcon from '../assets/icons/avatar-icon.svg'
 import doctorProfileImg from '../assets/images/doctor-profile.png'
 import '../pages/Doctors.css'
+
+interface ChipInputProps {
+  ids: string[]
+  onRemove: (id: string) => void
+  search: string
+  onSearchChange: (v: string) => void
+  onSelect: (id: string) => void
+  allItems: { id: string; name: string }[]
+  errorKey: string
+  placeholder: string
+  isReadOnly: boolean
+  error?: string
+  onClearError: (key: string) => void
+}
+
+const ChipInput: React.FC<ChipInputProps> = ({
+  ids, onRemove, search, onSearchChange, onSelect, allItems, errorKey, placeholder, isReadOnly, error, onClearError,
+}) => {
+  const filtered = allItems.filter(i => i.name.toLowerCase().includes(search.toLowerCase()) && !ids.includes(i.id))
+  return (
+    <>
+      <div className={`doc-spec-input${isReadOnly ? ' doc-spec-input--disabled' : ''}${error ? ' doc-spec-input--error' : ''}`}>
+        {ids.map(id => {
+          const item = allItems.find(x => x.id === id)
+          return item ? (
+            <span key={id} className="doc-spec-chip">
+              {item.name}
+              {!isReadOnly && (
+                <button type="button" className="doc-spec-chip-remove"
+                  onMouseDown={e => { e.preventDefault(); onRemove(id); onClearError(errorKey) }}>✕</button>
+              )}
+            </span>
+          ) : null
+        })}
+        {!isReadOnly && (
+          <input
+            className="doc-spec-search"
+            placeholder={ids.length === 0 ? placeholder : ''}
+            value={search}
+            onChange={e => { onSearchChange(e.target.value); if (error) onClearError(errorKey) }}
+          />
+        )}
+      </div>
+      {error && <span className="doc-field-error">{error}</span>}
+      {search && !isReadOnly && (
+        <ul className="doc-spec-dropdown">
+          {filtered.length > 0 ? filtered.map(i => (
+            <li key={i.id} className="doc-spec-dropdown-item"
+              onMouseDown={e => { e.preventDefault(); onSelect(i.id); onSearchChange(''); onClearError(errorKey) }}>
+              {i.name}
+            </li>
+          )) : <li className="doc-spec-dropdown-empty">No results found</li>}
+        </ul>
+      )}
+    </>
+  )
+}
 
 interface DoctorFormModalProps {
   /** Pass a doctor to open in edit mode, omit for create mode */
@@ -188,59 +245,6 @@ const DoctorFormModal: FC<DoctorFormModalProps> = ({ doctor, onClose, onCreated,
 
   const isReadOnly = !!selectedDoctor
 
-  // Chip input helper
-  const ChipInput = ({
-    ids, onRemove, search, onSearchChange, onSelect, allItems, errorKey, placeholder,
-  }: {
-    ids: string[]
-    onRemove: (id: string) => void
-    search: string
-    onSearchChange: (v: string) => void
-    onSelect: (id: string) => void
-    allItems: { id: string; name: string }[]
-    errorKey: string
-    placeholder: string
-  }) => {
-    const filtered = allItems.filter(i => i.name.toLowerCase().includes(search.toLowerCase()) && !ids.includes(i.id))
-    return (
-      <>
-        <div className={`doc-spec-input${isReadOnly ? ' doc-spec-input--disabled' : ''}${formErrors[errorKey] ? ' doc-spec-input--error' : ''}`}>
-          {ids.map(id => {
-            const item = allItems.find(x => x.id === id)
-            return item ? (
-              <span key={id} className="doc-spec-chip">
-                {item.name}
-                {!isReadOnly && (
-                  <button type="button" className="doc-spec-chip-remove"
-                    onMouseDown={e => { e.preventDefault(); onRemove(id); setFormErrors(p => ({ ...p, [errorKey]: '' })) }}>✕</button>
-                )}
-              </span>
-            ) : null
-          })}
-          {!isReadOnly && (
-            <input
-              className="doc-spec-search"
-              placeholder={ids.length === 0 ? placeholder : ''}
-              value={search}
-              onChange={e => { onSearchChange(e.target.value); if (formErrors[errorKey]) setFormErrors(p => ({ ...p, [errorKey]: '' })) }}
-            />
-          )}
-        </div>
-        {formErrors[errorKey] && <span className="doc-field-error">{formErrors[errorKey]}</span>}
-        {search && !isReadOnly && (
-          <ul className="doc-spec-dropdown">
-            {filtered.length > 0 ? filtered.map(i => (
-              <li key={i.id} className="doc-spec-dropdown-item"
-                onMouseDown={e => { e.preventDefault(); onSelect(i.id); onSearchChange(''); setFormErrors(p => ({ ...p, [errorKey]: '' })) }}>
-                {i.name}
-              </li>
-            )) : <li className="doc-spec-dropdown-empty">No results found</li>}
-          </ul>
-        )}
-      </>
-    )
-  }
-
   return (
     <Modal onClose={onClose}>
       <div>
@@ -376,6 +380,9 @@ const DoctorFormModal: FC<DoctorFormModalProps> = ({ doctor, onClose, onCreated,
                       allItems={specialties}
                       errorKey="specialty"
                       placeholder="Search specialty..."
+                      isReadOnly={isReadOnly}
+                      error={formErrors.specialty}
+                      onClearError={key => setFormErrors(p => ({ ...p, [key]: '' }))}
                     />
                   </div>
                 </div>
@@ -393,6 +400,9 @@ const DoctorFormModal: FC<DoctorFormModalProps> = ({ doctor, onClose, onCreated,
                       allItems={qualifications}
                       errorKey="qualification"
                       placeholder="Search qualification..."
+                      isReadOnly={isReadOnly}
+                      error={formErrors.qualification}
+                      onClearError={key => setFormErrors(p => ({ ...p, [key]: '' }))}
                     />
                   </div>
                 </div>

@@ -1,12 +1,15 @@
 import type { FC } from 'react'
 import { useState, useRef, useEffect } from 'react'
+import type { ChangeEvent } from 'react'
 import arrowDown from '../assets/icons/arrow-down.svg'
+import arrowLeft from '../assets/icons/arrow-left.svg'
 import cameraIcon from '../assets/icons/camera-icon.svg'
 import spotlightBg from '../assets/images/spotlight-bg.jpg'
 import FormField from '../components/FormField'
 import { getMedicalSystems, getSpecialties, createClinic } from '../services/api'
 import type { MedicalSystem, Speciality } from '../services/types'
 import './CreateClinic.css'
+import '../pages/Doctors.css'
 
 interface CreateClinicProps {
   onCreated: () => void
@@ -19,7 +22,7 @@ const tabs = [
   { step: '3', title: 'Owner Details', sub: 'Tell us about the owner' },
 ]
 
-const CreateClinic: FC<CreateClinicProps> = ({ onCreated }) => {
+const CreateClinic: FC<CreateClinicProps> = ({ onCreated, onBack }) => {
   const [active, setActive] = useState(0)
   const [medicalSystems, setMedicalSystems] = useState<MedicalSystem[]>([])
   const [specialties, setSpecialties] = useState<Speciality[]>([])
@@ -28,6 +31,7 @@ const CreateClinic: FC<CreateClinicProps> = ({ onCreated }) => {
   const [avatarFile, setAvatarFile] = useState<File | null>(null)
   const [loading, setLoading] = useState(false)
   const [errors, setErrors] = useState<Record<string, string>>({})
+  const [specialtySearch, setSpecialtySearch] = useState('')
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [form, setForm] = useState({
     name: '', medicalSystemId: '', phoneNumber: '', emailAddress: '',
@@ -56,13 +60,18 @@ const CreateClinic: FC<CreateClinicProps> = ({ onCreated }) => {
     if (file) { setAvatarFile(file); setAvatarPreview(URL.createObjectURL(file)) }
   }
 
+  const isValidIndianPhone = (v: string) => /^[6-9]\d{9}$/.test(v.trim())
+  const isValidEmail = (v: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.trim())
+
   const validate = (): boolean => {
     const e: Record<string, string> = {}
     if (active === 0) {
       if (!form.name) e.name = 'Clinic name is required.'
       if (!form.medicalSystemId) e.medicalSystemId = 'Type of practice is required.'
       if (!form.phoneNumber) e.phoneNumber = 'Phone number is required.'
+      else if (!isValidIndianPhone(form.phoneNumber)) e.phoneNumber = 'Enter a valid 10-digit Indian mobile number.'
       if (!form.emailAddress) e.emailAddress = 'Email address is required.'
+      else if (!isValidEmail(form.emailAddress)) e.emailAddress = 'Enter a valid email address.'
       if (selectedSpecialtyIds.length === 0) e.specialties = 'Select at least one specialty.'
     }
     if (active === 1) {
@@ -75,6 +84,8 @@ const CreateClinic: FC<CreateClinicProps> = ({ onCreated }) => {
     if (active === 2) {
       if (!form.ownerName) e.ownerName = 'Owner name is required.'
       if (!form.ownerPhone) e.ownerPhone = 'Phone number is required.'
+      else if (!isValidIndianPhone(form.ownerPhone)) e.ownerPhone = 'Enter a valid 10-digit Indian mobile number.'
+      if (form.ownerEmail && !isValidEmail(form.ownerEmail)) e.ownerEmail = 'Enter a valid email address.'
     }
     setErrors(e)
     return Object.keys(e).length === 0
@@ -148,7 +159,8 @@ const CreateClinic: FC<CreateClinicProps> = ({ onCreated }) => {
         </div>
         <div className="cc-row">
           <div className="cc-field-wrap">
-            <FormField label="Phone Number" type="tel" placeholder="Enter phone number" value={form.phoneNumber} onChange={set('phoneNumber')} />
+            <FormField label="Phone Number" type="tel" placeholder="98765 43210" prefix="+91" inputMode="numeric" maxLength={10} value={form.phoneNumber}
+              onChange={e => { const v = e.target.value.replace(/\D/g, '').slice(0, 10); setForm(f => ({ ...f, phoneNumber: v })); setErrors(p => ({ ...p, phoneNumber: '' })) }} />
             <F name="phoneNumber" />
           </div>
           <div className="cc-field-wrap">
@@ -159,13 +171,41 @@ const CreateClinic: FC<CreateClinicProps> = ({ onCreated }) => {
         <FormField label="Website" type="url" placeholder="https://..." value={form.websiteUrl} onChange={set('websiteUrl')} showRequired={false} />
         <div>
           <div className="cc-field-label">Type of Specialties <span className="cc-required">*</span></div>
-          <div className="cc-specialty-grid">
-            {specialties.map(s => (
-              <button key={s.id} type="button"
-                className={`cc-specialty-chip ${selectedSpecialtyIds.includes(s.id) ? 'selected' : ''}`}
-                onClick={() => toggleSpecialty(s.id)}>{s.name}</button>
-            ))}
+          <div className={`doc-spec-input${errors.specialties ? ' doc-spec-input--error' : ''}`}>
+            {selectedSpecialtyIds.map(id => {
+              const sp = specialties.find(x => x.id === id)
+              return sp ? (
+                <span key={id} className="doc-spec-chip">
+                  {sp.name}
+                  <button type="button" className="doc-spec-chip-remove"
+                    onMouseDown={(e: React.MouseEvent) => { e.preventDefault(); toggleSpecialty(id) }}>✕</button>
+                </span>
+              ) : null
+            })}
+            <input
+              className="doc-spec-search"
+              placeholder={selectedSpecialtyIds.length === 0 ? 'Search specialty...' : ''}
+              value={specialtySearch}
+              onChange={(e: ChangeEvent<HTMLInputElement>) => { setSpecialtySearch(e.target.value); setErrors(prev => ({ ...prev, specialties: '' })) }}
+            />
           </div>
+          {specialtySearch && (
+            <ul className="doc-spec-dropdown">
+              {specialties
+                .filter(s => s.name.toLowerCase().includes(specialtySearch.toLowerCase()) && !selectedSpecialtyIds.includes(s.id))
+                .length > 0
+                ? specialties
+                    .filter(s => s.name.toLowerCase().includes(specialtySearch.toLowerCase()) && !selectedSpecialtyIds.includes(s.id))
+                    .map(s => (
+                      <li key={s.id} className="doc-spec-dropdown-item"
+                        onMouseDown={(e: React.MouseEvent) => { e.preventDefault(); toggleSpecialty(s.id); setSpecialtySearch('') }}>
+                        {s.name}
+                      </li>
+                    ))
+                : <li className="doc-spec-dropdown-empty">No results found</li>
+              }
+            </ul>
+          )}
           <F name="specialties" />
         </div>
         <div>
@@ -219,10 +259,12 @@ const CreateClinic: FC<CreateClinicProps> = ({ onCreated }) => {
           <F name="ownerName" />
         </div>
         <div className="cc-field-wrap">
-          <FormField label="Phone Number" type="tel" placeholder="Enter phone number" value={form.ownerPhone} onChange={set('ownerPhone')} />
+          <FormField label="Phone Number" type="tel" placeholder="98765 43210" prefix="+91" inputMode="numeric" maxLength={10} value={form.ownerPhone}
+            onChange={e => { const v = e.target.value.replace(/\D/g, '').slice(0, 10); setForm(f => ({ ...f, ownerPhone: v })); setErrors(p => ({ ...p, ownerPhone: '' })) }} />
           <F name="ownerPhone" />
         </div>
         <FormField label="Email" type="email" placeholder="Enter email address" value={form.ownerEmail} onChange={set('ownerEmail')} showRequired={false} />
+        <F name="ownerEmail" />
       </div>
     )
     return null
@@ -230,6 +272,10 @@ const CreateClinic: FC<CreateClinicProps> = ({ onCreated }) => {
 
   return (
     <div className="cc-fullscreen" style={{ backgroundImage: `url(${spotlightBg})` }}>
+      <button className="cc-signout-btn" onClick={onBack}>
+        <img src={arrowLeft} alt="" style={{ width: 16, height: 16 }} />
+        Back to Login
+      </button>
       <div className="cc-box">
         <div className="cc-tabs">
           {tabs.map((t, i) => (

@@ -727,3 +727,13 @@
     gap: 10px;
   }
 }
+
+.dbp-no-results {
+  text-align: center;
+  padding: 48px 16px;
+  color: #A0A5B1;
+  font-size: 14px;
+  font-weight: 500;
+  font-family: 'Manrope', sans-serif;
+  margin: 0;
+}

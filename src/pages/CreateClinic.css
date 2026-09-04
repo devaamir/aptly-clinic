@@ -9,6 +9,32 @@
   justify-content: center;
   padding-top: 5vh;
   box-sizing: border-box;
+  position: relative;
+}
+
+.cc-signout-btn {
+  position: absolute;
+  top: 20px;
+  left: 24px;
+  background: rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 600;
+  font-family: 'Manrope', sans-serif;
+  padding: 7px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  backdrop-filter: blur(4px);
+  transition: background 0.15s;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.cc-signout-btn:hover {
+  background: rgba(255, 255, 255, 0.25);
 }
 
 .cc-box {
@@ -267,6 +293,13 @@
   .cc-fullscreen {
     padding-top: 0;
     align-items: flex-start;
+  }
+
+  .cc-signout-btn {
+    top: 12px;
+    left: 12px;
+    font-size: 12px;
+    padding: 6px 12px;
   }
 
   .cc-box {

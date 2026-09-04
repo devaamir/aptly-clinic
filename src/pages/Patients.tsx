@@ -186,7 +186,7 @@ const Patients: FC = () => {
           <h3 className="apt-section-title">Appointments</h3>
           {(() => {
             const patientApts = appointments.filter(a => a.patient === selectedPatient.name)
-            if (patientApts.length === 0) return <p style={{ color: '#A0A5B1', fontSize: 13 }}>No appointments found.</p>
+            if (patientApts.length === 0) return <p className="pat-no-results">No appointments found.</p>
             return patientApts.map(a => (
               <div key={a.id} className="apt-detail-card" style={{ marginBottom: 12 }}>
                 <div className="apt-detail-card-row">
