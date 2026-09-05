@@ -118,6 +118,12 @@
   height: 20px;
 }
 
+.apt-table td:last-child,
+.apt-table th:last-child {
+  width: 40px;
+  min-width: 40px;
+}
+
 .apt-token {
   background: #f1f2f4;
   border-radius: 10px;
@@ -148,6 +154,10 @@
   font-weight: 500;
   color: #00001d;
   margin-bottom: -5px;
+  max-width: 160px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .apt-patient-phone {
@@ -159,12 +169,22 @@
 .apt-table-card {
   flex: 1;
   min-height: 0;
-  overflow-y: auto;
+  overflow: hidden;
   padding: 4px;
+  display: flex;
+  flex-direction: column;
+}
+
+.apt-table-scroll {
+  flex: 1;
+  min-height: 0;
+  overflow-x: auto;
+  overflow-y: auto;
 }
 
 .apt-table {
   width: 100%;
+  min-width: 900px;
   border-collapse: collapse;
   font-size: 14px;
   font-family: "Manrope", sans-serif;
@@ -749,18 +769,20 @@
 
 .apt-no-results {
   text-align: center;
-  padding: 48px 16px 32px;
+  padding: 0;
   color: #a0a5b1;
   font-size: 14px;
   font-weight: 500;
   font-family: "Manrope", sans-serif;
   border-top: none;
+  height: 400px;
+  vertical-align: middle;
 }
 
 .apt-table td.apt-no-results {
   color: #a0a5b1;
   border-top: none;
-  padding: 48px 16px 32px;
+  padding: 0;
   white-space: normal;
 }
 
@@ -768,9 +790,11 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 8px;
+  justify-content: center;
+  gap: 0;
   width: 352px;
   margin: 0 auto;
+  height: 100%;
 }
 
 .apt-empty-icon {
@@ -778,27 +802,28 @@
   height: 101px;
   object-fit: contain;
   margin-top: 16px;
-  margin-bottom: 4px;
-  opacity: 0.75;
+  margin-bottom: 0px;
 }
 
 .apt-empty-title {
   font-size: 15px;
   font-weight: 600;
-  color: #4a5568;
+  color: var(--color-textPrimary);
   font-family: "Manrope", sans-serif;
+  margin-bottom: 8px;
 }
 
 .apt-empty-sub {
   display: block;
   font-size: 13px;
   font-weight: 400;
-  color: #a0a5b1;
+  color: var(--color-textSecondary);
   font-family: "Manrope", sans-serif;
   text-align: center;
   white-space: normal;
   word-wrap: break-word;
   width: 100%;
+  line-height: 1.4;
 }
 
 .apt-loader-wrap {
@@ -1100,4 +1125,73 @@
   .apt-detail-info-item:first-child {
     padding-left: 0;
   }
+}
+
+/* Pagination */
+.apt-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 16px;
+  margin-top: 8px;
+  background: #fff;
+  border-radius: 10px;
+  border: 1px solid #0000001a;
+}
+
+.apt-pagination-info {
+  font-size: 13px;
+  color: #636a79;
+  font-family: "Manrope", sans-serif;
+  font-weight: 500;
+}
+
+.apt-pagination-controls {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.apt-page-btn {
+  min-width: 32px;
+  height: 32px;
+  padding: 0 10px;
+  border: 1px solid #0000001a;
+  border-radius: 6px;
+  background: #fff;
+  color: #0a0a0a;
+  font-size: 14px;
+  font-family: "Manrope", sans-serif;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+}
+
+.apt-page-btn:hover:not(:disabled) {
+  background: #e9f2ff;
+  border-color: #2879e4;
+  color: #2b7fff;
+}
+
+.apt-page-btn.active {
+  background: #e9f2ff;
+  border-color: #2879e4;
+  color: #2b7fff;
+  font-weight: 600;
+}
+
+.apt-page-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.apt-page-ellipsis {
+  min-width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  color: #636a79;
+  font-family: "Manrope", sans-serif;
 }

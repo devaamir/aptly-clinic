@@ -196,8 +196,8 @@ const DoctorSchedulePage: FC = () => {
       </div>
 
       {showModify && (
-        <Modal onClose={() => { setShowModify(false); setScheduleError('') }}>
-          <div style={{ width: 520 }}>
+        <Modal onClose={() => { setShowModify(false); setScheduleError('') }} autoSize>
+          <div style={{ width: 520, minWidth: 520 }}>
             <div className="sch-header">
               <h2 className="sch-title">Modify Schedule</h2>
               <button className="sch-close" onClick={() => { setShowModify(false); setScheduleError('') }}>✕</button>
@@ -245,7 +245,7 @@ const DoctorSchedulePage: FC = () => {
                                 <label className="dp-modify-input-label">Max Tokens</label>
                                 <input type="number" className="dp-modify-input" value={s.tokenLimit} min={1} onChange={e => updateShift(day, si, 'tokenLimit', Number(e.target.value))} />
                               </div>
-                              <button className="dp-remove-shift-btn" onClick={() => removeShift(day, si)}>✕</button>
+                              <button className="dp-remove-shift-btn" onClick={() => removeShift(day, si)}>Remove</button>
                             </div>
                           </div>
                         ))}

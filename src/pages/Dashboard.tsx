@@ -1,6 +1,7 @@
 import type { FC } from 'react'
 import { useState, useRef, useEffect } from 'react'
 import logo from '../assets/images/logo.png'
+import logoIcon from '../assets/images/logo-icon.png'
 import QueueManagement from './QueueManagement'
 import DashboardPage from './DashboardPage'
 import Appointments from './Appointments'
@@ -23,6 +24,7 @@ import settingsIcon from '../assets/icons/settings-icon.svg'
 import notificationIcon from '../assets/icons/notification-icon.svg'
 import arrowLeftIcon from '../assets/icons/arrow-left.svg'
 import arrowDownIcon from '../assets/icons/arrow-down.svg'
+import navExpandIcon from '../assets/icons/nav-expand-icon.svg'
 import { switchContext, getContexts } from '../services/api'
 import { useAppContext } from '../context/AppContext'
 import './Dashboard.css'
@@ -68,6 +70,7 @@ const Dashboard: FC = () => {
   const [switchTarget, setSwitchTarget] = useState<{ name: string; role: string; avatar: string; id: string } | null>(null)
   const [showLogout, setShowLogout] = useState(false)
   const [sidebarOpen, setSidebarOpen] = useState(false)
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
 
   const navigate = (page: ActivePage, doctor: DoctorDetail | null = null) => {
     const state = { page, viewDoctor: doctor ? doctor.id : null }
@@ -107,19 +110,23 @@ const Dashboard: FC = () => {
       {/* Overlay backdrop for mobile drawer */}
       {sidebarOpen && <div className="sidebar-overlay" onClick={() => setSidebarOpen(false)} />}
 
-      <aside className={`sidebar${sidebarOpen ? ' sidebar-open' : ''}`}>
+      <aside className={`sidebar${sidebarOpen ? ' sidebar-open' : ''}${sidebarCollapsed ? ' sidebar-collapsed' : ''}`}>
         <div className="sidebar-logo">
-          <img src={logo} alt="Aptly" />
+          <img src={sidebarCollapsed ? logoIcon : logo} alt="Aptly" />
         </div>
+        <button className="sidebar-edge-toggle" onClick={() => setSidebarCollapsed(c => !c)} title={sidebarCollapsed ? 'Expand' : 'Collapse'}>
+          <img src={navExpandIcon} alt="toggle sidebar" className={`sidebar-collapse-icon${sidebarCollapsed ? ' rotated' : ''}`} />
+        </button>
         <nav className="sidebar-nav">
           {navItems.map(item => (
             <div
               key={item.label}
               className={`nav-item ${activePage === item.label ? 'nav-item-active' : ''}`}
               onClick={() => navigate(item.label)}
+              title={sidebarCollapsed ? item.label : undefined}
             >
               <img src={item.icon} alt="" className="nav-icon" />
-              <span className="nav-label">{item.label}</span>
+              {!sidebarCollapsed && <span className="nav-label">{item.label}</span>}
             </div>
           ))}
         </nav>

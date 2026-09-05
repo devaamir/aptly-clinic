@@ -227,7 +227,7 @@ const Doctors: FC<{ onViewProfile: (d: DoctorDetail) => void }> = ({ onViewProfi
       {toast && <Toast message={toast} onClose={() => setToast(null)} icon={<img src={verifyTickGreen} alt="" />} />}
 
       {deleteTarget && (
-        <Modal onClose={() => setDeleteTarget(null)}>
+        <Modal onClose={() => setDeleteTarget(null)} autoSize>
           <div style={{ width: 380, padding: 24, textAlign: 'center' }}>
             <h3 style={{ margin: '0 0 8px', fontSize: 16, fontWeight: 700, color: '#0A0A0A', fontFamily: 'Manrope' }}>Delete Doctor</h3>
             <p style={{ margin: '0 0 20px', fontSize: 13, color: '#636A79', fontFamily: 'Manrope' }}>

@@ -211,6 +211,7 @@ const Settings: FC = () => {
 
   const [medicalSystems, setMedicalSystems] = useState<MedicalSystem[]>([])
   const [specialtySearch, setSpecialtySearch] = useState('')
+  const [specialtyFocused, setSpecialtyFocused] = useState(false)
 
   useEffect(() => {
     getMedicalSystems().then(r => { if (r.success) setMedicalSystems(r.data) }).catch(() => {})
@@ -434,25 +435,34 @@ const Settings: FC = () => {
                             placeholder={draft.specialties.length === 0 ? 'Search specialty...' : ''}
                             value={specialtySearch}
                             onChange={e => setSpecialtySearch(e.target.value)}
+                            onFocus={() => setSpecialtyFocused(true)}
+                            onBlur={() => setTimeout(() => setSpecialtyFocused(false), 150)}
+                            onKeyDown={e => {
+                              if (e.key === 'Backspace' && !specialtySearch && draft.specialties.length > 0) {
+                                setDraft(p => ({ ...p, specialties: p.specialties.slice(0, -1) }))
+                              }
+                            }}
                           />
                         </div>
-                        {specialtySearch && (
-                          <ul className="doc-spec-dropdown">
-                            {contextSpecialties
-                              .filter(s => s.name.toLowerCase().includes(specialtySearch.toLowerCase()) && !draft.specialties.includes(s.name))
-                              .length > 0
-                              ? contextSpecialties
-                                  .filter(s => s.name.toLowerCase().includes(specialtySearch.toLowerCase()) && !draft.specialties.includes(s.name))
-                                  .map(s => (
+                        {specialtyFocused && (() => {
+                          const filtered = contextSpecialties.filter(s =>
+                            s.name.toLowerCase().includes(specialtySearch.toLowerCase()) && !draft.specialties.includes(s.name)
+                          )
+                          if (filtered.length === 0 && !specialtySearch) return null
+                          return (
+                            <ul className="doc-spec-dropdown">
+                              {filtered.length > 0
+                                ? filtered.map(s => (
                                     <li key={s.id} className="doc-spec-dropdown-item"
                                       onMouseDown={e => { e.preventDefault(); setDraft(p => ({ ...p, specialties: [...p.specialties, s.name] })); setSpecialtySearch('') }}>
                                       {s.name}
                                     </li>
                                   ))
-                              : <li className="doc-spec-dropdown-empty">No results found</li>
-                            }
-                          </ul>
-                        )}
+                                : <li className="doc-spec-dropdown-empty">No results found</li>
+                              }
+                            </ul>
+                          )
+                        })()}
                       </div>
                     ) : (
                       <span className="st-info-value">{draft.specialties.join(', ') || '—'}</span>

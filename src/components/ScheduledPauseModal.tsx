@@ -22,7 +22,7 @@ const ScheduledPauseModal: FC<ScheduledPauseModalProps> = ({ onClose, onSubmit }
   const [duration, setDuration] = useState('5 min')
 
   return (
-    <Modal onClose={onClose}>
+    <Modal onClose={onClose} autoSize>
       <div style={{ padding: '24px', width: 470 }}>
       <div className="ip-header">
         <div className="ip-icon-wrap">

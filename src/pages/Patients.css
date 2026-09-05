@@ -168,22 +168,26 @@
 
 .pat-no-results {
   text-align: center;
-  padding: 48px 16px;
+  padding: 0;
   color: #A0A5B1;
   font-size: 14px;
   font-weight: 500;
   font-family: 'Manrope', sans-serif;
   width: 100%;
   white-space: normal;
+  height: 400px;
+  vertical-align: middle;
 }
 
 .pat-empty-state {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 8px;
+  justify-content: center;
+  gap: 0;
   width: 352px;
   margin: 0 auto;
+  height: 100%;
 }
 
 .pat-empty-icon {
@@ -191,27 +195,28 @@
   height: 101px;
   object-fit: contain;
   margin-top: 16px;
-  margin-bottom: 4px;
-  opacity: 0.75;
+  margin-bottom: 0px;
 }
 
 .pat-empty-title {
   font-size: 15px;
   font-weight: 600;
-  color: #4a5568;
+  color: var(--color-textPrimary);
   font-family: 'Manrope', sans-serif;
+  margin-bottom: 8px;
 }
 
 .pat-empty-sub {
   display: block;
   font-size: 13px;
   font-weight: 400;
-  color: #a0a5b1;
+  color: var(--color-textSecondary);
   font-family: 'Manrope', sans-serif;
   text-align: center;
   white-space: normal;
   word-wrap: break-word;
   width: 100%;
+  line-height: 1.4;
 }
 
 .pat-search-clear {
