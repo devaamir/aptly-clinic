@@ -4,6 +4,7 @@ import Auth from "./pages/Auth";
 import Register from "./pages/Register";
 import SelectProfile from "./pages/SelectProfile";
 import Dashboard from "./pages/Dashboard";
+import DoctorDashboard from "./pages/DoctorDashboard";
 import DeleteAccount from "./pages/DeleteAccount";
 import SetPassword from "./pages/SetPassword";
 import CreateClinic from "./pages/CreateClinic";
@@ -30,8 +31,11 @@ const App: FC = () => {
     if (window.location.pathname === "/register") return "register";
     if (localStorage.getItem("pendingClinicSetup") === "true")
       return "create-clinic";
+    // Only go straight to dashboard if we have a token AND a stored active clinic context
     return localStorage.getItem("accessToken")
-      ? localStorage.getItem("selectedContextId") ? "dashboard" : "select-profile"
+      ? (localStorage.getItem("selectedContextId") && localStorage.getItem("selectedClinic"))
+        ? "dashboard"
+        : "select-profile"
       : "auth";
   });
   const [toast, setToast] = useState<string | null>(null)
@@ -72,15 +76,17 @@ const App: FC = () => {
               medicalCenter: switched.data.medicalCenter,
             });
             setActiveDoctor(switched.data.doctor);
+            localStorage.setItem("selectedContextId", ctx.medicalCenter.id);
+            setToast(`Only one clinic profile found. Switched to "${ctx.medicalCenter.name}" automatically.`)
+            setTimeout(() => setScreen("dashboard"), 2000);
           } else {
-            setActiveContext(ctx);
+            // Switch failed (e.g. doctor-only profile) — show profile selection so user can pick manually
+            setScreen("select-profile");
           }
         } catch {
-          setActiveContext(ctx);
+          // Switch threw an error — fall back to profile selection
+          setScreen("select-profile");
         }
-        setToast(`Only one clinic profile found. Switched to "${ctx.medicalCenter.name}" automatically.`)
-        localStorage.setItem("selectedContextId", ctx.medicalCenter.id);
-        setTimeout(() => setScreen("dashboard"), 2000);
       } else {
         setScreen("select-profile");
       }
@@ -122,7 +128,13 @@ const App: FC = () => {
         }}
       />
     );
-  if (screen === "dashboard") return <Dashboard />;
+  if (screen === "dashboard") {
+    const selectedRole = localStorage.getItem("selectedRole");
+    if (selectedRole === "doctor") {
+      return <DoctorDashboard onSwitchProfile={() => setScreen("select-profile")} onSwitchToDashboard={() => setScreen("dashboard")} />;
+    }
+    return <Dashboard />;
+  }
   if (screen === "select-profile")
     return <SelectProfile onSelect={handleSelectProfile} onBack={() => { logout(); setScreen("auth"); }} />;
   return (

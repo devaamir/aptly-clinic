@@ -47,6 +47,12 @@ const Dashboard: FC = () => {
   const navItems = allNavItems.filter(item => !item.excludeRoles || !item.excludeRoles.includes(role))
   const defaultPage: ActivePage = role === 'doctor' ? 'Queue Management' : 'Dashboard'
   const [activePage, setActivePage] = useState<ActivePage>(defaultPage)
+
+  // Sync activePage when activeContext loads or changes (handles async context hydration)
+  useEffect(() => {
+    const correctDefault: ActivePage = activeContext?.role?.toLowerCase() === 'doctor' ? 'Queue Management' : 'Dashboard'
+    setActivePage(correctDefault)
+  }, [activeContext?.role])
   const [viewDoctor, setViewDoctor] = useState<DoctorDetail | null>(null)
   const [showProfileMenu, setShowProfileMenu] = useState(false)
   const [switchTarget, setSwitchTarget] = useState<{ name: string; role: string; avatar: string; id: string } | null>(null)
@@ -190,7 +196,7 @@ const Dashboard: FC = () => {
             <button className="ip-btn ip-cancel" style={{ flex: 1 }} onClick={() => setSwitchTarget(null)}>Cancel</button>
             <button className="ip-btn ip-submit" style={{ flex: 1 }} onClick={async () => {
               if (!switchTarget) return
-              const ctx = contexts.find(c => c.medicalCenter.id === switchTarget.id)
+              const ctx = contexts.find(c => c.medicalCenter.id === switchTarget.id && c.role === switchTarget.role)
               if (ctx) {
                 try {
                   const res = await switchContext(ctx.role, ctx.medicalCenter.id)
