@@ -168,7 +168,7 @@ const LeaveManagement: FC = () => {
       )}
 
       {showApply && (
-        <Modal onClose={resetForm}>
+        <Modal onClose={resetForm} autoSize>
           <div style={{ width: 520 }}>
             <div className="sch-header">
               <h2 className="sch-title">Apply Leave</h2>
