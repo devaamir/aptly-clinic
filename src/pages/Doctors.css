@@ -450,6 +450,43 @@
   color: #f04438;
 }
 
+.doc-name-salutation-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+  border-right: 1px solid var(--color-border);
+  flex-shrink: 0;
+}
+
+.doc-name-salutation-select {
+  padding: 6px 22px 6px 8px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--color-inputText);
+  font-family: 'Manrope', sans-serif;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  outline: none;
+  appearance: none;
+  -webkit-appearance: none;
+}
+
+.doc-name-salutation-select:disabled {
+  cursor: default;
+  opacity: 0.7;
+}
+
+.doc-name-salutation-arrow {
+  position: absolute;
+  right: 5px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 14px;
+  height: 14px;
+  pointer-events: none;
+}
+
 @keyframes doc-spin {
   to {
     transform: translateY(-50%) rotate(360deg);

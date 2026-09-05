@@ -20,6 +20,12 @@
   flex-direction: column;
 }
 
+.modal-card--auto {
+  min-width: unset;
+  max-width: 90vw;
+  width: auto;
+}
+
 .modal-card:has(.modal-body-scroll) {
   max-height: 98vh;
 }

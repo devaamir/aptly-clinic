@@ -143,6 +143,8 @@
   flex-direction: column;
   align-items: flex-start;
   gap: 0;
+  width: 150px;
+  min-width: 0;
 }
 
 .topbar-hospital-name {
@@ -151,6 +153,10 @@
   color: #0a0a0a;
   font-family: "Manrope", sans-serif;
   line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  width: 100%;
 }
 
 .topbar-role {
@@ -159,6 +165,10 @@
   color: #636a79;
   font-family: "Manrope", sans-serif;
   line-height: 1.4;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  width: 100%;
 }
 
 .profile-menu {

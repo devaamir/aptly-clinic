@@ -9,7 +9,23 @@ import cameraIcon from '../assets/icons/camera-icon.svg'
 import smsIcon from '../assets/icons/sms.svg'
 import avatarIcon from '../assets/icons/avatar-icon.svg'
 import doctorProfileImg from '../assets/images/doctor-profile.png'
+import arrowDown from '../assets/icons/arrow-down.svg'
 import '../pages/Doctors.css'
+
+const SALUTATION_OPTIONS = ['Dr.', 'Mr.', 'Mrs.', 'Ms.']
+
+function extractSalutation(fullName: string): { salutation: string; name: string } {
+  for (const s of SALUTATION_OPTIONS) {
+    if (fullName.startsWith(s + ' ')) return { salutation: s, name: fullName.slice(s.length + 1) }
+  }
+  // Backward compat: names saved without trailing period (e.g. "Dr John")
+  for (const s of SALUTATION_OPTIONS) {
+    const bare = s.slice(0, -1)
+    if (fullName.startsWith(bare + '. ')) return { salutation: s, name: fullName.slice(bare.length + 2) }
+    if (fullName.startsWith(bare + ' ')) return { salutation: s, name: fullName.slice(bare.length + 1) }
+  }
+  return { salutation: 'Dr.', name: fullName }
+}
 
 interface ChipInputProps {
   ids: string[]
@@ -109,9 +125,12 @@ const DoctorFormModal: FC<DoctorFormModalProps> = ({ doctor, onClose, onCreated,
   const isEdit = !!doctor
   const { specialties, medicalSystems, qualifications } = useAppContext()
 
+  const { salutation: initSalutation, name: initName } = extractSalutation(doctor?.name ?? '')
+
   // Form state
+  const [salutation, setSalutation] = useState(initSalutation)
   const [form, setForm] = useState({
-    name: doctor?.name ?? '',
+    name: initName,
     phoneNumber: doctor?.phoneNumber ?? '',
     emailAddress: doctor?.emailAddress ?? '',
     about: doctor?.about ?? '',
@@ -130,7 +149,7 @@ const DoctorFormModal: FC<DoctorFormModalProps> = ({ doctor, onClose, onCreated,
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   // Name search (create mode only)
-  const [nameSearch, setNameSearch] = useState(doctor?.name ?? '')
+  const [nameSearch, setNameSearch] = useState(initName)
   const [nameResults, setNameResults] = useState<DoctorListItem[]>([])
   const [nameSearchLoading, setNameSearchLoading] = useState(false)
   const nameSearchTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -192,14 +211,15 @@ const DoctorFormModal: FC<DoctorFormModalProps> = ({ doctor, onClose, onCreated,
     if (selectedQualificationIds.length === 0) errors.qualification = 'At least one qualification is required'
     if (!form.yearsOfExperience) errors.yearsOfExperience = 'Experience is required'
     if (form.phoneNumber && !/^[6-9]\d{9}$/.test(form.phoneNumber.trim())) errors.phoneNumber = 'Enter a valid 10-digit mobile number'
-    if (form.emailAddress && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.emailAddress.trim())) errors.emailAddress = 'Enter a valid email address'
+    if (!form.emailAddress.trim()) errors.emailAddress = 'Email is required'
+    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.emailAddress.trim())) errors.emailAddress = 'Enter a valid email address'
     setFormErrors(errors)
     return Object.keys(errors).length === 0
   }
 
   const buildFormData = (includeProfilePicture: boolean): FormData => {
     const fd = new FormData()
-    if (form.name) fd.append('name', form.name)
+    if (form.name) fd.append('name', `${salutation} ${form.name}`.trim())
     if (form.phoneNumber) fd.append('phoneNumber', form.phoneNumber)
     if (form.emailAddress) fd.append('emailAddress', form.emailAddress)
     if (form.about) fd.append('about', form.about)
@@ -223,7 +243,7 @@ const DoctorFormModal: FC<DoctorFormModalProps> = ({ doctor, onClose, onCreated,
         const body = avatarFileRef.current
           ? buildFormData(true)
           : {
-              name: form.name || undefined,
+              name: form.name ? `${salutation} ${form.name}`.trim() : undefined,
               emailAddress: form.emailAddress || undefined,
               about: form.about || undefined,
               consultationFee: form.consultationFee ? Number(form.consultationFee) : undefined,
@@ -240,7 +260,7 @@ const DoctorFormModal: FC<DoctorFormModalProps> = ({ doctor, onClose, onCreated,
         const body = avatarFileRef.current
           ? buildFormData(true)
           : {
-              name: form.name,
+              name: `${salutation} ${form.name}`.trim(),
               phoneNumber: form.phoneNumber,
               yearsOfExperience: Number(form.yearsOfExperience),
               medicalSystemId: form.medicalSystemId,
@@ -312,6 +332,17 @@ const DoctorFormModal: FC<DoctorFormModalProps> = ({ doctor, onClose, onCreated,
                   <div className="form-field">
                     <label className="form-field-label">Full Name<span className="form-field-required"> *</span></label>
                     <div className="form-field-input-wrap" ref={nameInputRef}>
+                      <div className="doc-name-salutation-wrap">
+                        <select
+                          className="doc-name-salutation-select"
+                          value={salutation}
+                          onChange={e => setSalutation(e.target.value)}
+                          disabled={isReadOnly}
+                        >
+                          {SALUTATION_OPTIONS.map(s => <option key={s} value={s}>{s}</option>)}
+                        </select>
+                        <img src={arrowDown} alt="" className="doc-name-salutation-arrow" />
+                      </div>
                       <input
                         className={`form-field-input${formErrors.name ? ' form-field-input--error' : ''}`}
                         placeholder={isEdit ? 'Full name' : 'Search doctor by name...'}
@@ -351,12 +382,14 @@ const DoctorFormModal: FC<DoctorFormModalProps> = ({ doctor, onClose, onCreated,
                           {nameResults.map(d => (
                             <li key={d.id} className="doc-name-dropdown-item"
                               onMouseDown={() => {
+                                const { salutation: sal, name: cleanName } = extractSalutation(d.name)
+                                setSalutation(sal)
                                 setSelectedDoctor(d)
-                                setNameSearch(d.name)
+                                setNameSearch(cleanName)
                                 setNameResults([])
                                 setAvatarPreview(d.profilePicture || null)
                                 setForm({
-                                  name: d.name,
+                                  name: cleanName,
                                   phoneNumber: d.phoneNumber,
                                   emailAddress: d.emailAddress,
                                   about: d.about,
@@ -442,7 +475,7 @@ const DoctorFormModal: FC<DoctorFormModalProps> = ({ doctor, onClose, onCreated,
                     onChange={e => { if (!isReadOnly) { const v = (e.target as HTMLInputElement).value.replace(/\D/g, '').slice(0, 10); setForm(p => ({ ...p, phoneNumber: v })); setFormErrors(p => ({ ...p, phoneNumber: '' })) } }}
                     onBlur={() => { if (form.phoneNumber && !/^[6-9]\d{9}$/.test(form.phoneNumber.trim())) setFormErrors(p => ({ ...p, phoneNumber: 'Enter a valid 10-digit mobile number' })) }} />
                   <FormField label="Email" placeholder="Enter email" type="email"
-                    value={form.emailAddress} showRequired={false}
+                    value={form.emailAddress}
                     error={formErrors.emailAddress}
                     readOnly={isReadOnly}
                     onChange={e => { if (!isReadOnly) { setForm(p => ({ ...p, emailAddress: (e.target as HTMLInputElement).value })); setFormErrors(p => ({ ...p, emailAddress: '' })) } }}

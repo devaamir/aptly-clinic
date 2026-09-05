@@ -195,8 +195,8 @@ const Dashboard: FC = () => {
     </div>
 
     {switchTarget && (
-      <Modal onClose={() => setSwitchTarget(null)}>
-        <div style={{ width: 400, padding: 24, textAlign: 'center' }}>
+      <Modal onClose={() => setSwitchTarget(null)} autoSize>
+        <div style={{ padding: 24, textAlign: 'center' }}>
           <img src={switchTarget.avatar} alt={switchTarget.name} style={{ width: 56, height: 56, borderRadius: '50%', marginBottom: 12 }} />
           <h3 style={{ margin: '0 0 6px', fontSize: 16, fontWeight: 700, color: '#0A0A0A', fontFamily: 'Manrope' }}>Switch Account?</h3>
           <p style={{ margin: '0 0 20px', fontSize: 13, color: '#636A79', fontFamily: 'Manrope' }}>

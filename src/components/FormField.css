@@ -112,8 +112,13 @@ input[type="date"]::-webkit-calendar-picker-indicator {
   display: none;
 }
 
+.form-field-input--empty-date {
+  color: var(--color-placeholder);
+}
+
 .form-field-input--error,
-.form-field-input-wrap:has(.form-field-input--error) {
+.form-field-input-wrap:has(.form-field-input--error),
+.form-field-wrap--error {
   border-color: #F04438 !important;
 }
 
