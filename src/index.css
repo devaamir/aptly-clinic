@@ -37,6 +37,7 @@
 :root {
   --color-primary: #ffffff;
   --color-background: #ffffff;
+  --color-pageBg: #efefef;
   --color-textPrimary: #1C1E22;
   --color-textSecondary: #636A79;
   --color-text: #1C1E22;
@@ -45,6 +46,7 @@
   --color-borderHover: #94a3b8;
   --color-accent: #418EFD;
   --color-accentHover: #2d7ef0;
+  --color-accentBg: #EAF3FF;
   --color-inputBg: #F8F9FB;
   --color-placeholder: #7E8695;
   --color-inputText: #1D1E21;

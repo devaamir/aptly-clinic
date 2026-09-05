@@ -1,6 +1,7 @@
 export const colors = {
   primary: '#ffffff',
   background: '#ffffff',
+  pageBg: '#efefef',
   textPrimary: '#1C1E22',
   textSecondary: '#636A79',
   patientName: '#00001D',
@@ -9,6 +10,7 @@ export const colors = {
   rightBg: 'linear-gradient(#7FA8FF4D 10%, #FFFFFFFF 100%, #7FA8FF4D 10%)',
   accent: '#418EFD',
   accentHover: '#2d7ef0',
+  accentBg: '#EAF3FF',
   inputBg: '#F8F9FB',
   placeholder: '#7E8695',
   checkboxBorder: '#A0A5B1',

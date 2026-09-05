@@ -62,6 +62,8 @@ const Appointments: FC = () => {
 
   const [appointments, setAppointments] = useState<Appointment[]>([])
   const [loading, setLoading] = useState(true)
+  const [page, setPage] = useState(1)
+  const [pagination, setPagination] = useState<{ totalPages: number; totalItems: number; hasNextPage: boolean } | null>(null)
   const [filter, setFilter] = useState<Filter>('Today')
   const [filterDate, setFilterDate] = useState<string | null>(null)
   const [filterRangeStart, setFilterRangeStart] = useState<string | null>(null)
@@ -88,16 +90,23 @@ const Appointments: FC = () => {
   const [doctorSchedules, setDoctorSchedules] = useState<DoctorSchedule[]>([])
   const [scheduleLoading, setScheduleLoading] = useState(false)
 
-  const fetchAppointments = () => {
+  const fetchAppointments = (p = page) => {
     setLoading(true)
-    getAppointments().then(res => {
+    getAppointments(p).then(res => {
       console.log('getAppointments res', res)
-      if (res.success) setAppointments(res.data.map(mapApiAppointment))
+      if (res.success) {
+        setAppointments(res.data.map(mapApiAppointment))
+        setPagination(res.pagination ? {
+          totalPages: res.pagination.totalPages,
+          totalItems: res.pagination.totalItems,
+          hasNextPage: res.pagination.hasNextPage,
+        } : null)
+      }
     }).catch(e => console.log('getAppointments error', e)).finally(() => setLoading(false))
   }
 
   useEffect(() => {
-    fetchAppointments()
+    fetchAppointments(page)
 
     if (isDoctor && activeDoctor) {
       setClinicDoctors([{
@@ -121,7 +130,7 @@ const Appointments: FC = () => {
     } else {
       getDoctors(activeContext?.medicalCenter.id).then(res => { if (res.success) setClinicDoctors(res.data) }).catch(() => { })
     }
-  }, [activeContext?.medicalCenter.id])
+  }, [activeContext?.medicalCenter.id, page])
 
   useEffect(() => {
     if (phoneSearchTimer.current) clearTimeout(phoneSearchTimer.current)
@@ -326,7 +335,7 @@ const Appointments: FC = () => {
             </div>
             <div className="apt-icon-group">
               {/* <button className="apt-icon-btn"><img src={sortIcon} alt="sort" /></button> */}
-              <button className="apt-icon-btn" onClick={fetchAppointments}><img src={reloadIcon} alt="reload" /></button>
+              <button className="apt-icon-btn" onClick={() => { setPage(1); fetchAppointments(1) }}><img src={reloadIcon} alt="reload" /></button>
             </div>
           </div>
         </div>
@@ -334,9 +343,11 @@ const Appointments: FC = () => {
 
       {/* Patient List */}
       <div className="apt-main-card apt-table-card">
+        <div className="apt-table-scroll">
         {loading ? (
           <div className="apt-loader-wrap"><div className="apt-loader" /></div>
         ) : (
+          <>
           <table className="apt-table">
             <thead>
               <tr>
@@ -397,7 +408,35 @@ const Appointments: FC = () => {
               ))}
             </tbody>
           </table>
+          {/* Pagination */}
+          {pagination && pagination.totalPages > 1 && filteredAppointments.length > 0 && (
+            <div className="apt-pagination">
+              <span className="apt-pagination-info">
+                Page {page} of {pagination.totalPages} · {pagination.totalItems} total
+              </span>
+              <div className="apt-pagination-controls">
+                <button className="apt-page-btn" onClick={() => setPage(1)} disabled={page === 1}>«</button>
+                <button className="apt-page-btn" onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1}>‹ Prev</button>
+                {Array.from({ length: pagination.totalPages }, (_, i) => i + 1)
+                  .filter(p => p === 1 || p === pagination.totalPages || Math.abs(p - page) <= 1)
+                  .reduce<(number | '...')[]>((acc, p, i, arr) => {
+                    if (i > 0 && p - (arr[i - 1] as number) > 1) acc.push('...')
+                    acc.push(p)
+                    return acc
+                  }, [])
+                  .map((p, i) =>
+                    p === '...'
+                      ? <span key={`ellipsis-${i}`} className="apt-page-ellipsis">…</span>
+                      : <button key={p} className={`apt-page-btn${page === p ? ' active' : ''}`} onClick={() => setPage(p as number)}>{p}</button>
+                  )}
+                <button className="apt-page-btn" onClick={() => setPage(p => Math.min(pagination.totalPages, p + 1))} disabled={!pagination.hasNextPage}>Next ›</button>
+                <button className="apt-page-btn" onClick={() => setPage(pagination.totalPages)} disabled={page === pagination.totalPages}>»</button>
+              </div>
+            </div>
+          )}
+          </>
         )}
+        </div>
       </div>
 
       {selected && (

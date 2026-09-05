@@ -176,19 +176,23 @@
 
 .lm-empty {
   text-align: center;
-  padding: 48px 16px 32px;
+  padding: 0;
   color: #A0A5B1;
   font-size: 14px;
   white-space: normal;
+  height: 400px;
+  vertical-align: middle;
 }
 
 .lm-empty-state {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 8px;
+  justify-content: center;
+  gap: 0;
   width: 352px;
   margin: 0 auto;
+  height: 100%;
 }
 
 .lm-empty-icon {
@@ -196,25 +200,26 @@
   height: 101px;
   object-fit: contain;
   margin-top: 16px;
-  margin-bottom: 4px;
-  opacity: 0.75;
+  margin-bottom: 0px;
 }
 
 .lm-empty-title {
   font-size: 15px;
   font-weight: 600;
-  color: #4a5568;
+  color: var(--color-textPrimary);
   font-family: "Manrope", sans-serif;
+  margin-bottom: 8px;
 }
 
 .lm-empty-sub {
   display: block;
   font-size: 13px;
   font-weight: 400;
-  color: #a0a5b1;
+  color: var(--color-textSecondary);
   font-family: "Manrope", sans-serif;
   text-align: center;
   white-space: normal;
+  line-height: 1.4;
   word-wrap: break-word;
   width: 100%;
 }

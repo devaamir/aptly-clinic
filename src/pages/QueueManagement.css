@@ -8,6 +8,22 @@
   flex-direction: column;
 }
 
+.qm-header-wrap {
+  transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+              opacity 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+              margin-bottom 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  transform: translateY(0);
+  opacity: 1;
+  margin-bottom: 0;
+}
+
+.qm-header-hidden {
+  transform: translateY(-100%);
+  opacity: 0;
+  margin-bottom: -56px;
+  pointer-events: none;
+}
+
 .qm-header {
   display: flex;
   align-items: center;
@@ -269,7 +285,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 16px 20px;
+  padding: 10px;
   margin-bottom: 6px;
 }
 
@@ -360,9 +376,10 @@
   gap: 1px;
   background: var(--color-border);
   margin-bottom: 10px;
+  margin-left: 8px;
   width: 50%;
   background: #f5f9ff;
-  border-radius: 10px;
+  border-radius: 8px;
   border: 1px solid var(--color-border);
 }
 
@@ -370,20 +387,22 @@
   flex: 1;
   display: flex;
   flex-direction: column;
-  padding: 10px 14px;
+  padding: 7px 12px;
+  gap: 3px;
   border-right: 1px solid var(--color-border);
 }
 
 .stat-label {
   font-size: 10px;
   color: var(--color-textSecondary);
-  margin-bottom: -6px;
+  line-height: 1.2;
 }
 
 .stat-value {
   font-size: 12px;
   font-weight: 600;
   color: var(--color-textPrimary);
+  line-height: 1.2;
 }
 
 /* Table */
@@ -441,18 +460,22 @@
 
 .qm-no-results {
   text-align: center;
-  padding: 48px 16px 32px;
+  padding: 0;
   border-top: none;
   white-space: normal;
+  height: 400px;
+  vertical-align: middle;
 }
 
 .qm-empty-state {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 8px;
+  justify-content: center;
+  gap: 0;
   width: 352px;
   margin: 0 auto;
+  height: 100%;
 }
 
 .qm-empty-icon {
@@ -460,27 +483,28 @@
   height: 101px;
   object-fit: contain;
   margin-top: 16px;
-  margin-bottom: 4px;
-  opacity: 0.75;
+  margin-bottom: 0px;
 }
 
 .qm-empty-title {
   font-size: 15px;
   font-weight: 600;
-  color: #4a5568;
+  color: var(--color-textPrimary);
   font-family: "Manrope", sans-serif;
+  margin-bottom: 8px;
 }
 
 .qm-empty-sub {
   display: block;
   font-size: 13px;
   font-weight: 400;
-  color: #a0a5b1;
+  color: var(--color-textSecondary);
   font-family: "Manrope", sans-serif;
   text-align: center;
   white-space: normal;
   word-wrap: break-word;
   width: 100%;
+  line-height: 1.4;
 }
 
 .row-current {

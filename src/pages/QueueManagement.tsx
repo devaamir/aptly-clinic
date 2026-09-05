@@ -1,5 +1,5 @@
 import type { FC } from 'react'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import PatientModal from '../components/PatientModal'
 import Modal from '../components/Modal'
 import PageHeader from '../components/PageHeader'
@@ -162,6 +162,33 @@ const QueueManagement: FC = () => {
   const [reloadKey, setReloadKey] = useState(0)
   const [searchQuery, setSearchQuery] = useState('')
   const [showSearch, setShowSearch] = useState(false)
+  const [headerHidden, setHeaderHidden] = useState(false)
+  const lastScrollY = useRef(0)
+  const scrollRef = useRef<HTMLDivElement | null>(null)
+
+  const handleScroll = useCallback(() => {
+    const el = scrollRef.current
+    if (!el) return
+    const currentY = el.scrollTop
+    if (currentY > 60) {
+      setHeaderHidden(true)
+    } else {
+      setHeaderHidden(false)
+    }
+    lastScrollY.current = currentY
+  }, [])
+
+  const tableWrapperRef = useCallback((el: HTMLDivElement | null) => {
+    if (scrollRef.current) {
+      scrollRef.current.removeEventListener('scroll', handleScroll)
+    }
+    scrollRef.current = el
+    if (el) {
+      el.addEventListener('scroll', handleScroll)
+    } else {
+      setHeaderHidden(false)
+    }
+  }, [])
 
   const reloadQueue = () => {
     setPatientsMap(prev => { const next = { ...prev }; delete next[`${selectedId}-${sessionIdx}`]; return next })
@@ -442,9 +469,9 @@ const QueueManagement: FC = () => {
   return (
     <div className="qm-container">
       {/* Header */}
+      <div className={`qm-header-wrap${headerHidden ? ' qm-header-hidden' : ''}`}>
       <PageHeader
         title="Queue Management"
-        hideTitle
         actions={
           <div className="qm-header-actions">
             {showSearch && (
@@ -469,6 +496,7 @@ const QueueManagement: FC = () => {
           </div>
         }
       />
+      </div>
 
       {/* Doctor Tabs */}
       <div className="qm-doctor-tabs">
@@ -566,6 +594,7 @@ const QueueManagement: FC = () => {
             </div>
 
             {/* Stats */}
+            <div className={`qm-header-wrap${headerHidden ? ' qm-header-hidden' : ''}`}>
             <div className="qm-stats">
               <div className="stat-item">
                 <span className="stat-label">Working Time</span>
@@ -584,9 +613,10 @@ const QueueManagement: FC = () => {
                 <span className="stat-value">{session.avgInterval}</span>
               </div>
             </div>
+            </div>
 
             {/* Queue Table / Grid */}
-            <div className="qm-table-wrapper">
+            <div className="qm-table-wrapper" ref={filteredPatients.length > 0 ? tableWrapperRef : undefined}>
               {view === 'list' ? (
                 <table className="qm-table">
                   <thead>
@@ -662,7 +692,7 @@ const QueueManagement: FC = () => {
       {toast && <Toast message={toast} onClose={() => setToast(null)} icon={<img src={verifyTickGreen} alt="" />} />}
 
       {showStartConfirm && (
-        <Modal onClose={() => setShowStartConfirm(false)}>
+        <Modal onClose={() => setShowStartConfirm(false)} autoSize>
           <div style={{ width: 400, padding: 24 }}>
             <h2 style={{ margin: 0, marginBottom: 16, fontFamily: 'Manrope', fontSize: 20, fontWeight: 600, color: '#1A1D1F' }}>
               Start Appointments
@@ -681,7 +711,7 @@ const QueueManagement: FC = () => {
       )}
 
       {showNextConfirm && (
-        <Modal onClose={() => setShowNextConfirm(false)}>
+        <Modal onClose={() => setShowNextConfirm(false)} autoSize>
           <div style={{ width: 400, padding: 24 }}>
             <h2 style={{ margin: 0, marginBottom: 16, fontFamily: 'Manrope', fontSize: 20, fontWeight: 600, color: '#1A1D1F' }}>
               Complete Consultation
