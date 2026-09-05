@@ -20,6 +20,7 @@ import dotsIcon from '../assets/icons/3dots-icon.svg'
 import './Appointments.css'
 import doctorProfileImg from '../assets/images/doctor-profile.png'
 import userProfileImg from '../assets/images/user-profile.png'
+import folderIcon from '../assets/images/folder-icon.png'
 
 const to12h = (t: string) => {
   const [h, m] = t.slice(0, 5).split(':').map(Number)
@@ -79,6 +80,7 @@ const Appointments: FC = () => {
   const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null)
   const [phoneResults, setPhoneResults] = useState<Patient[]>([])
   const [phoneSearchLoading, setPhoneSearchLoading] = useState(false)
+  const [phoneError, setPhoneError] = useState('')
   const phoneSearchTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const phoneInputRef = useRef<HTMLDivElement>(null)
 
@@ -86,12 +88,16 @@ const Appointments: FC = () => {
   const [doctorSchedules, setDoctorSchedules] = useState<DoctorSchedule[]>([])
   const [scheduleLoading, setScheduleLoading] = useState(false)
 
-  useEffect(() => {
+  const fetchAppointments = () => {
     setLoading(true)
     getAppointments().then(res => {
       console.log('getAppointments res', res)
       if (res.success) setAppointments(res.data.map(mapApiAppointment))
     }).catch(e => console.log('getAppointments error', e)).finally(() => setLoading(false))
+  }
+
+  useEffect(() => {
+    fetchAppointments()
 
     if (isDoctor && activeDoctor) {
       setClinicDoctors([{
@@ -139,6 +145,14 @@ const Appointments: FC = () => {
       .catch(() => setDoctorSchedules([]))
       .finally(() => setScheduleLoading(false))
   }, [selectedDoctor, selectedDate, activeContext])
+
+  const dateScrollRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (!dateScrollRef.current) return
+    const selected = dateScrollRef.current.querySelector('.sch-date-card.selected') as HTMLElement
+    if (selected) selected.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' })
+  }, [selectedDate])
 
   const datePickerRef = useRef<HTMLInputElement>(null)
   const filterDateRef = useRef<HTMLInputElement>(null)
@@ -207,6 +221,7 @@ const Appointments: FC = () => {
     setPatientDob('')
     setSelectedPatient(null)
     setPhoneResults([])
+    setPhoneError('')
     setSelectedSpecialty('')
     setSelectedDoctor(isDoctor && activeDoctor ? activeDoctor.id : '')
     setSelectedDate(new Date().toDateString())
@@ -310,8 +325,8 @@ const Appointments: FC = () => {
                 onChange={e => setFilterRangeEnd(e.target.value)} />
             </div>
             <div className="apt-icon-group">
-              <button className="apt-icon-btn"><img src={sortIcon} alt="sort" /></button>
-              <button className="apt-icon-btn"><img src={reloadIcon} alt="reload" /></button>
+              {/* <button className="apt-icon-btn"><img src={sortIcon} alt="sort" /></button> */}
+              <button className="apt-icon-btn" onClick={fetchAppointments}><img src={reloadIcon} alt="reload" /></button>
             </div>
           </div>
         </div>
@@ -340,7 +355,13 @@ const Appointments: FC = () => {
             <tbody>
               {filteredAppointments.length === 0 ? (
                 <tr>
-                  <td colSpan={10} className="apt-no-results">No appointments found</td>
+                  <td colSpan={10} className="apt-no-results">
+                    <div className="apt-empty-state">
+                      <img src={folderIcon} alt="No appointments" className="apt-empty-icon" />
+                      <span className="apt-empty-title">No Records Found</span>
+                      <span className="apt-empty-sub">We couldn't find anything matching your criteria. Try changing your filters or add something new.</span>
+                    </div>
+                  </td>
                 </tr>
               ) : filteredAppointments.map(a => (
                 <tr key={a.id}>
@@ -543,21 +564,27 @@ const Appointments: FC = () => {
                     <div className="sch-form-row">
                       <div className="form-field">
                         <label className="form-field-label">Phone Number<span className="form-field-required"> *</span></label>
-                        <div className="form-field-input-wrap" ref={phoneInputRef}>
+                        <div className={`form-field-input-wrap${phoneError ? ' form-field-wrap--error' : ''}`} ref={phoneInputRef}>
                           <span className="form-field-prefix">+91</span>
                           <input
-                            className="form-field-input"
+                            className={`form-field-input${phoneError ? ' form-field-input--error' : ''}`}
                             type="tel"
                             placeholder="Enter phone"
                             value={patientPhone}
                             onChange={e => {
-                              setPatientPhone(e.target.value)
+                              const v = e.target.value.replace(/\D/g, '').slice(0, 10)
+                              setPatientPhone(v)
+                              setPhoneError('')
                               if (selectedPatient) { setSelectedPatient(null); setPatientName(''); setPatientGender(''); setPatientDob('') }
+                            }}
+                            onBlur={() => {
+                              if (patientPhone && !/^[6-9]\d{9}$/.test(patientPhone)) setPhoneError('Enter a valid 10-digit mobile number')
                             }}
                           />
                           {phoneSearchLoading && <span className="doc-name-search-spinner" />}
-                          {selectedPatient && <button className="doc-name-clear-btn" onMouseDown={() => { setSelectedPatient(null); setPatientPhone(''); setPatientName(''); setPatientGender(''); setPatientDob(''); setPhoneResults([]) }}>✕</button>}
+                          {selectedPatient && <button className="doc-name-clear-btn" onMouseDown={() => { setSelectedPatient(null); setPatientPhone(''); setPatientName(''); setPatientGender(''); setPatientDob(''); setPhoneResults([]); setPhoneError('') }}>✕</button>}
                         </div>
+                        {phoneError && <span className="form-field-error-msg">{phoneError}</span>}
                         {phoneResults.length > 0 && phoneInputRef.current && (() => {
                           const r = phoneInputRef.current!.getBoundingClientRect()
                           return (
@@ -636,7 +663,7 @@ const Appointments: FC = () => {
                         }}
                       />
                     </h3>
-                    <div className="sch-date-scroll">
+                    <div className="sch-date-scroll" ref={dateScrollRef}>
                       {next30Days.map(d => {
                         const key = d.toDateString()
                         const isSelected = selectedDate === key

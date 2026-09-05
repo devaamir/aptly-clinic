@@ -38,7 +38,10 @@ const FormField: FC<FormFieldProps> = ({ label, showRequired = true, as, ...prop
       </label>
       {as === 'select' ? (
         <div className={`form-field-select-wrap${error ? ' form-field-wrap--error' : ''}`}>
-          <select className={`form-field-input form-field-select${error ? ' form-field-input--error' : ''}`} {...(props as SelectHTMLAttributes<HTMLSelectElement>)}>
+          <select
+            className={`form-field-input form-field-select${error ? ' form-field-input--error' : ''}${!(props as SelectHTMLAttributes<HTMLSelectElement>).value ? ' form-field-select--placeholder' : ''}`}
+            {...(props as SelectHTMLAttributes<HTMLSelectElement>)}
+          >
             <option value="">{selectPlaceholder}</option>
             {(props as SelectProps).options?.map(o => (
               <option key={o.value} value={o.value}>{o.label}</option>
@@ -51,7 +54,7 @@ const FormField: FC<FormFieldProps> = ({ label, showRequired = true, as, ...prop
           {inputProps.prefix && <span className="form-field-prefix">{inputProps.prefix}</span>}
           <input
             ref={inputRef}
-            className={`form-field-input${error ? ' form-field-input--error' : ''}`}
+            className={`form-field-input${error ? ' form-field-input--error' : ''}${(props as InputHTMLAttributes<HTMLInputElement>).type === 'date' && !(props as InputHTMLAttributes<HTMLInputElement>).value ? ' form-field-input--empty-date' : ''}`}
             {...(props as InputHTMLAttributes<HTMLInputElement>)}
           />
           {inputProps.rightIcon && (

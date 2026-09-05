@@ -9,7 +9,23 @@ import cameraIcon from '../assets/icons/camera-icon.svg'
 import smsIcon from '../assets/icons/sms.svg'
 import avatarIcon from '../assets/icons/avatar-icon.svg'
 import doctorProfileImg from '../assets/images/doctor-profile.png'
+import arrowDown from '../assets/icons/arrow-down.svg'
 import '../pages/Doctors.css'
+
+const SALUTATION_OPTIONS = ['Dr.', 'Mr.', 'Mrs.', 'Ms.']
+
+function extractSalutation(fullName: string): { salutation: string; name: string } {
+  for (const s of SALUTATION_OPTIONS) {
+    if (fullName.startsWith(s + ' ')) return { salutation: s, name: fullName.slice(s.length + 1) }
+  }
+  // Backward compat: names saved without trailing period (e.g. "Dr John")
+  for (const s of SALUTATION_OPTIONS) {
+    const bare = s.slice(0, -1)
+    if (fullName.startsWith(bare + '. ')) return { salutation: s, name: fullName.slice(bare.length + 2) }
+    if (fullName.startsWith(bare + ' ')) return { salutation: s, name: fullName.slice(bare.length + 1) }
+  }
+  return { salutation: 'Dr.', name: fullName }
+}
 
 interface ChipInputProps {
   ids: string[]
@@ -28,10 +44,15 @@ interface ChipInputProps {
 const ChipInput: React.FC<ChipInputProps> = ({
   ids, onRemove, search, onSearchChange, onSelect, allItems, errorKey, placeholder, isReadOnly, error, onClearError,
 }) => {
+  const [focused, setFocused] = React.useState(false)
   const filtered = allItems.filter(i => i.name.toLowerCase().includes(search.toLowerCase()) && !ids.includes(i.id))
+  const showDropdown = focused && !isReadOnly && filtered.length > 0
   return (
     <>
-      <div className={`doc-spec-input${isReadOnly ? ' doc-spec-input--disabled' : ''}${error ? ' doc-spec-input--error' : ''}`}>
+      <div
+        className={`doc-spec-input${isReadOnly ? ' doc-spec-input--disabled' : ''}${error ? ' doc-spec-input--error' : ''}`}
+        onClick={() => !isReadOnly && document.querySelector<HTMLInputElement>('.doc-spec-search')}
+      >
         {ids.map(id => {
           const item = allItems.find(x => x.id === id)
           return item ? (
@@ -50,18 +71,30 @@ const ChipInput: React.FC<ChipInputProps> = ({
             placeholder={ids.length === 0 ? placeholder : ''}
             value={search}
             onChange={e => { onSearchChange(e.target.value); if (error) onClearError(errorKey) }}
+            onFocus={() => setFocused(true)}
+            onBlur={() => setTimeout(() => setFocused(false), 150)}
+            onKeyDown={e => {
+              if (e.key === 'Backspace' && !search && ids.length > 0) {
+                onRemove(ids[ids.length - 1])
+              }
+            }}
           />
         )}
       </div>
       {error && <span className="doc-field-error">{error}</span>}
-      {search && !isReadOnly && (
+      {showDropdown && (
         <ul className="doc-spec-dropdown">
-          {filtered.length > 0 ? filtered.map(i => (
+          {filtered.map(i => (
             <li key={i.id} className="doc-spec-dropdown-item"
               onMouseDown={e => { e.preventDefault(); onSelect(i.id); onSearchChange(''); onClearError(errorKey) }}>
               {i.name}
             </li>
-          )) : <li className="doc-spec-dropdown-empty">No results found</li>}
+          ))}
+        </ul>
+      )}
+      {focused && !isReadOnly && filtered.length === 0 && search && (
+        <ul className="doc-spec-dropdown">
+          <li className="doc-spec-dropdown-empty">No results found</li>
         </ul>
       )}
     </>
@@ -92,9 +125,12 @@ const DoctorFormModal: FC<DoctorFormModalProps> = ({ doctor, onClose, onCreated,
   const isEdit = !!doctor
   const { specialties, medicalSystems, qualifications } = useAppContext()
 
+  const { salutation: initSalutation, name: initName } = extractSalutation(doctor?.name ?? '')
+
   // Form state
+  const [salutation, setSalutation] = useState(initSalutation)
   const [form, setForm] = useState({
-    name: doctor?.name ?? '',
+    name: initName,
     phoneNumber: doctor?.phoneNumber ?? '',
     emailAddress: doctor?.emailAddress ?? '',
     about: doctor?.about ?? '',
@@ -113,7 +149,7 @@ const DoctorFormModal: FC<DoctorFormModalProps> = ({ doctor, onClose, onCreated,
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   // Name search (create mode only)
-  const [nameSearch, setNameSearch] = useState(doctor?.name ?? '')
+  const [nameSearch, setNameSearch] = useState(initName)
   const [nameResults, setNameResults] = useState<DoctorListItem[]>([])
   const [nameSearchLoading, setNameSearchLoading] = useState(false)
   const nameSearchTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -174,13 +210,16 @@ const DoctorFormModal: FC<DoctorFormModalProps> = ({ doctor, onClose, onCreated,
     if (selectedSpecialtyIds.length === 0) errors.specialty = 'At least one specialty is required'
     if (selectedQualificationIds.length === 0) errors.qualification = 'At least one qualification is required'
     if (!form.yearsOfExperience) errors.yearsOfExperience = 'Experience is required'
+    if (form.phoneNumber && !/^[6-9]\d{9}$/.test(form.phoneNumber.trim())) errors.phoneNumber = 'Enter a valid 10-digit mobile number'
+    if (!form.emailAddress.trim()) errors.emailAddress = 'Email is required'
+    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.emailAddress.trim())) errors.emailAddress = 'Enter a valid email address'
     setFormErrors(errors)
     return Object.keys(errors).length === 0
   }
 
   const buildFormData = (includeProfilePicture: boolean): FormData => {
     const fd = new FormData()
-    if (form.name) fd.append('name', form.name)
+    if (form.name) fd.append('name', `${salutation} ${form.name}`.trim())
     if (form.phoneNumber) fd.append('phoneNumber', form.phoneNumber)
     if (form.emailAddress) fd.append('emailAddress', form.emailAddress)
     if (form.about) fd.append('about', form.about)
@@ -204,7 +243,7 @@ const DoctorFormModal: FC<DoctorFormModalProps> = ({ doctor, onClose, onCreated,
         const body = avatarFileRef.current
           ? buildFormData(true)
           : {
-              name: form.name || undefined,
+              name: form.name ? `${salutation} ${form.name}`.trim() : undefined,
               emailAddress: form.emailAddress || undefined,
               about: form.about || undefined,
               consultationFee: form.consultationFee ? Number(form.consultationFee) : undefined,
@@ -221,7 +260,7 @@ const DoctorFormModal: FC<DoctorFormModalProps> = ({ doctor, onClose, onCreated,
         const body = avatarFileRef.current
           ? buildFormData(true)
           : {
-              name: form.name,
+              name: `${salutation} ${form.name}`.trim(),
               phoneNumber: form.phoneNumber,
               yearsOfExperience: Number(form.yearsOfExperience),
               medicalSystemId: form.medicalSystemId,
@@ -276,6 +315,13 @@ const DoctorFormModal: FC<DoctorFormModalProps> = ({ doctor, onClose, onCreated,
                         <img src={cameraIcon} alt="camera" style={{ width: 18, height: 18 }} />
                       </div>
                     )}
+                    {!isReadOnly && avatarPreview && (
+                      <button
+                        type="button"
+                        className="doc-avatar-remove-btn"
+                        onClick={e => { e.stopPropagation(); setAvatarPreview(null); avatarFileRef.current = null; if (fileInputRef.current) fileInputRef.current.value = '' }}
+                      >✕</button>
+                    )}
                   </div>
                   <input ref={fileInputRef} type="file" accept="image/*" style={{ display: 'none' }}
                     onChange={e => { const f = e.target.files?.[0]; if (f) { avatarFileRef.current = f; setAvatarPreview(URL.createObjectURL(f)) } }} />
@@ -286,6 +332,17 @@ const DoctorFormModal: FC<DoctorFormModalProps> = ({ doctor, onClose, onCreated,
                   <div className="form-field">
                     <label className="form-field-label">Full Name<span className="form-field-required"> *</span></label>
                     <div className="form-field-input-wrap" ref={nameInputRef}>
+                      <div className="doc-name-salutation-wrap">
+                        <select
+                          className="doc-name-salutation-select"
+                          value={salutation}
+                          onChange={e => setSalutation(e.target.value)}
+                          disabled={isReadOnly}
+                        >
+                          {SALUTATION_OPTIONS.map(s => <option key={s} value={s}>{s}</option>)}
+                        </select>
+                        <img src={arrowDown} alt="" className="doc-name-salutation-arrow" />
+                      </div>
                       <input
                         className={`form-field-input${formErrors.name ? ' form-field-input--error' : ''}`}
                         placeholder={isEdit ? 'Full name' : 'Search doctor by name...'}
@@ -325,12 +382,14 @@ const DoctorFormModal: FC<DoctorFormModalProps> = ({ doctor, onClose, onCreated,
                           {nameResults.map(d => (
                             <li key={d.id} className="doc-name-dropdown-item"
                               onMouseDown={() => {
+                                const { salutation: sal, name: cleanName } = extractSalutation(d.name)
+                                setSalutation(sal)
                                 setSelectedDoctor(d)
-                                setNameSearch(d.name)
+                                setNameSearch(cleanName)
                                 setNameResults([])
                                 setAvatarPreview(d.profilePicture || null)
                                 setForm({
-                                  name: d.name,
+                                  name: cleanName,
                                   phoneNumber: d.phoneNumber,
                                   emailAddress: d.emailAddress,
                                   about: d.about,
@@ -413,12 +472,14 @@ const DoctorFormModal: FC<DoctorFormModalProps> = ({ doctor, onClose, onCreated,
                     value={form.phoneNumber} showRequired={false}
                     error={formErrors.phoneNumber}
                     readOnly={isReadOnly}
-                    onChange={e => { if (!isReadOnly) { setForm(p => ({ ...p, phoneNumber: (e.target as HTMLInputElement).value })); setFormErrors(p => ({ ...p, phoneNumber: '' })) } }} />
+                    onChange={e => { if (!isReadOnly) { const v = (e.target as HTMLInputElement).value.replace(/\D/g, '').slice(0, 10); setForm(p => ({ ...p, phoneNumber: v })); setFormErrors(p => ({ ...p, phoneNumber: '' })) } }}
+                    onBlur={() => { if (form.phoneNumber && !/^[6-9]\d{9}$/.test(form.phoneNumber.trim())) setFormErrors(p => ({ ...p, phoneNumber: 'Enter a valid 10-digit mobile number' })) }} />
                   <FormField label="Email" placeholder="Enter email" type="email"
-                    value={form.emailAddress} showRequired={false}
+                    value={form.emailAddress}
                     error={formErrors.emailAddress}
                     readOnly={isReadOnly}
-                    onChange={e => { if (!isReadOnly) { setForm(p => ({ ...p, emailAddress: (e.target as HTMLInputElement).value })); setFormErrors(p => ({ ...p, emailAddress: '' })) } }} />
+                    onChange={e => { if (!isReadOnly) { setForm(p => ({ ...p, emailAddress: (e.target as HTMLInputElement).value })); setFormErrors(p => ({ ...p, emailAddress: '' })) } }}
+                    onBlur={() => { if (form.emailAddress && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.emailAddress.trim())) setFormErrors(p => ({ ...p, emailAddress: 'Enter a valid email address' })) }} />
                 </div>
 
                 {/* Experience + Avg Time */}

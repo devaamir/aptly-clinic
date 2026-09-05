@@ -12,6 +12,7 @@ import warningIcon from '../assets/icons/warning-red.svg'
 import searchIcon from '../assets/icons/search-icon.svg'
 import sortIcon from '../assets/icons/sort-icon.svg'
 import reloadIcon from '../assets/icons/reload-icon.svg'
+import folderIcon from '../assets/images/folder-icon.png'
 import './LeaveManagement.css'
 
 type LeaveStatus = 'Approved' | 'Rejected'
@@ -114,7 +115,15 @@ const LeaveManagement: FC = () => {
           </thead>
           <tbody>
             {filtered.length === 0 ? (
-              <tr><td colSpan={7} className="lm-empty">No leave requests found</td></tr>
+              <tr>
+                <td colSpan={7} className="lm-empty">
+                  <div className="lm-empty-state">
+                    <img src={folderIcon} alt="No leave requests" className="lm-empty-icon" />
+                    <span className="lm-empty-title">No Records Found</span>
+                    <span className="lm-empty-sub">We couldn't find anything matching your criteria. Try changing your filters or add something new.</span>
+                  </div>
+                </td>
+              </tr>
             ) : filtered.map(l => (
               <tr key={l.id}>
                 <td className="lm-cell">{l.appliedDate}</td>

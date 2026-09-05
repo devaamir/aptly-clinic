@@ -225,6 +225,44 @@
   font-size: 14px;
   font-weight: 500;
   font-family: "Manrope", sans-serif;
+  white-space: normal;
+}
+
+.doc-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  width: 352px;
+  margin: 0 auto;
+}
+
+.doc-empty-icon {
+  width: auto;
+  height: 101px;
+  object-fit: contain;
+  margin-top: 16px;
+  margin-bottom: 4px;
+  opacity: 0.75;
+}
+
+.doc-empty-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: #4a5568;
+  font-family: "Manrope", sans-serif;
+}
+
+.doc-empty-sub {
+  display: block;
+  font-size: 13px;
+  font-weight: 400;
+  color: #a0a5b1;
+  font-family: "Manrope", sans-serif;
+  text-align: center;
+  white-space: normal;
+  word-wrap: break-word;
+  width: 100%;
 }
 
 .doc-search-clear {
@@ -276,6 +314,25 @@
   justify-content: center;
   cursor: pointer;
   box-sizing: border-box;
+}
+
+.doc-avatar-remove-btn {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  width: 24px;
+  height: 24px;
+  background: #F04438;
+  color: #fff;
+  border: none;
+  border-radius: 50%;
+  font-size: 11px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
+  line-height: 1;
 }
 
 .doc-avatar-hint {
@@ -391,6 +448,43 @@
 }
 .doc-name-clear-btn:hover {
   color: #f04438;
+}
+
+.doc-name-salutation-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+  border-right: 1px solid var(--color-border);
+  flex-shrink: 0;
+}
+
+.doc-name-salutation-select {
+  padding: 6px 22px 6px 8px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--color-inputText);
+  font-family: 'Manrope', sans-serif;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  outline: none;
+  appearance: none;
+  -webkit-appearance: none;
+}
+
+.doc-name-salutation-select:disabled {
+  cursor: default;
+  opacity: 0.7;
+}
+
+.doc-name-salutation-arrow {
+  position: absolute;
+  right: 5px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 14px;
+  height: 14px;
+  pointer-events: none;
 }
 
 @keyframes doc-spin {
@@ -514,6 +608,8 @@
   align-items: center;
   gap: 6px;
   min-height: 38px;
+  max-height: 100px;
+  overflow-y: auto;
   padding: 5px 10px;
   border: 1px solid var(--color-border);
   border-radius: 8px;
@@ -559,11 +655,7 @@
 }
 
 .doc-spec-chip-remove:hover {
-  color: #000;
-}
-
-.doc-spec-chip-remove:hover {
-  color: #fff;
+  color: #F04438;
 }
 
 .doc-spec-search {

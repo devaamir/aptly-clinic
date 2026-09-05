@@ -14,7 +14,7 @@
   font-family: 'Manrope', sans-serif;
   outline: none;
   box-sizing: border-box;
-  color: #1C1E22;
+  color: var(--color-inputText);
   background: var(--color-inputBg);
 }
 
@@ -33,7 +33,7 @@
 }
 
 .input-box:focus {
-  border-color: #418EFD;
+  border-color: var(--color-accent);
 }
 
 .input-icon {

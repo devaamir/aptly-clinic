@@ -176,9 +176,47 @@
 
 .lm-empty {
   text-align: center;
-  padding: 48px;
+  padding: 48px 16px 32px;
   color: #A0A5B1;
   font-size: 14px;
+  white-space: normal;
+}
+
+.lm-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  width: 352px;
+  margin: 0 auto;
+}
+
+.lm-empty-icon {
+  width: auto;
+  height: 101px;
+  object-fit: contain;
+  margin-top: 16px;
+  margin-bottom: 4px;
+  opacity: 0.75;
+}
+
+.lm-empty-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: #4a5568;
+  font-family: "Manrope", sans-serif;
+}
+
+.lm-empty-sub {
+  display: block;
+  font-size: 13px;
+  font-weight: 400;
+  color: #a0a5b1;
+  font-family: "Manrope", sans-serif;
+  text-align: center;
+  white-space: normal;
+  word-wrap: break-word;
+  width: 100%;
 }
 
 .lm-clear {

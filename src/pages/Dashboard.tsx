@@ -1,12 +1,11 @@
 import type { FC } from 'react'
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import logo from '../assets/images/logo.png'
 import QueueManagement from './QueueManagement'
 import DashboardPage from './DashboardPage'
 import Appointments from './Appointments'
 import Patients from './Patients'
 import Doctors from './Doctors'
-import { useEffect } from 'react'
 import DoctorProfile from './DoctorProfile'
 import type { DoctorDetail } from '../services/types'
 import Modal from '../components/Modal'
@@ -55,6 +54,17 @@ const Dashboard: FC = () => {
   }, [activeContext?.role])
   const [viewDoctor, setViewDoctor] = useState<DoctorDetail | null>(null)
   const [showProfileMenu, setShowProfileMenu] = useState(false)
+  const profileMenuRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (profileMenuRef.current && !profileMenuRef.current.contains(e.target as Node)) {
+        setShowProfileMenu(false)
+      }
+    }
+    document.addEventListener('mousedown', handler)
+    return () => document.removeEventListener('mousedown', handler)
+  }, [])
   const [switchTarget, setSwitchTarget] = useState<{ name: string; role: string; avatar: string; id: string } | null>(null)
   const [showLogout, setShowLogout] = useState(false)
   const [sidebarOpen, setSidebarOpen] = useState(false)
@@ -136,7 +146,7 @@ const Dashboard: FC = () => {
           <div className="topbar-right">
             <button className={`topbar-icon-btn${activePage === 'Settings' ? ' topbar-icon-btn-active' : ''}`} onClick={() => { navigate('Settings') }}><img src={settingsIcon} alt="settings" style={{ width: 20, height: 20 }} /></button>
             <button className="topbar-icon-btn"><img src={notificationIcon} alt="notifications" style={{ width: 20, height: 20 }} /></button>
-            <div style={{ position: 'relative' }}>
+            <div style={{ position: 'relative' }} ref={profileMenuRef}>
               <div className="topbar-profile" style={{ cursor: 'pointer' }} onClick={() => setShowProfileMenu(p => !p)}>
                 <img
                   src={role === 'doctor' && activeDoctor?.profilePicture ? activeDoctor.profilePicture : activeContext?.medicalCenter.profilePicture || 'https://i.pravatar.cc/32?img=20'}
@@ -156,11 +166,11 @@ const Dashboard: FC = () => {
                   {contexts.map(c => (
                     <div key={c.medicalCenter.id + c.role} className={`profile-menu-item ${activeContext?.medicalCenter.id === c.medicalCenter.id && activeContext?.role === c.role ? 'active' : ''}`} onClick={() => { setShowProfileMenu(false); setSwitchTarget({ id: c.medicalCenter.id, name: c.medicalCenter.name, role: c.role, avatar: c.medicalCenter.profilePicture || `https://i.pravatar.cc/32?u=${c.medicalCenter.id}` }) }}>
                       <img src={c.medicalCenter.profilePicture || `https://i.pravatar.cc/32?u=${c.medicalCenter.id}`} alt={c.medicalCenter.name} className="profile-menu-avatar" />
-                      <div>
+                      <div className="profile-menu-info">
                         <div className="profile-menu-name">{c.medicalCenter.name}</div>
                         <div className="profile-menu-role">{c.role}</div>
                       </div>
-                      {activeContext?.medicalCenter.id === c.medicalCenter.id && activeContext?.role === c.role && <span style={{ marginLeft: 'auto', color: '#2879E4', fontSize: 12 }}>●</span>}
+                      {activeContext?.medicalCenter.id === c.medicalCenter.id && activeContext?.role === c.role && null}
                     </div>
                   ))}
                   <div className="profile-menu-divider" />
@@ -185,8 +195,8 @@ const Dashboard: FC = () => {
     </div>
 
     {switchTarget && (
-      <Modal onClose={() => setSwitchTarget(null)}>
-        <div style={{ width: 400, padding: 24, textAlign: 'center' }}>
+      <Modal onClose={() => setSwitchTarget(null)} autoSize>
+        <div style={{ padding: 24, textAlign: 'center' }}>
           <img src={switchTarget.avatar} alt={switchTarget.name} style={{ width: 56, height: 56, borderRadius: '50%', marginBottom: 12 }} />
           <h3 style={{ margin: '0 0 6px', fontSize: 16, fontWeight: 700, color: '#0A0A0A', fontFamily: 'Manrope' }}>Switch Account?</h3>
           <p style={{ margin: '0 0 20px', fontSize: 13, color: '#636A79', fontFamily: 'Manrope' }}>

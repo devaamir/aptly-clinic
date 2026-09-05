@@ -202,7 +202,7 @@
   font-size: 14px;
   font-family: 'Manrope', sans-serif;
   background: var(--color-inputBg);
-  color: #0A0A0A;
+  color: var(--color-inputText);
   outline: none;
   width: 100%;
   box-sizing: border-box;

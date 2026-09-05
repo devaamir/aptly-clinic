@@ -28,6 +28,7 @@ import Badge from '../components/Badge'
 import './QueueManagement.css'
 import doctorProfileImg from '../assets/images/doctor-profile.png'
 import userProfileImg from '../assets/images/user-profile.png'
+import folderIcon from '../assets/images/folder-icon.png'
 
 const parseMinutes = (time: string): number => {
   const t = time.toLowerCase().replace(/\s/g, '')
@@ -158,6 +159,14 @@ const QueueManagement: FC = () => {
   const [view, setView] = useState<'list' | 'grid'>('list')
   const [patientsMap, setPatientsMap] = useState<Record<string, Patient[]>>({})
   const [statsMap, setStatsMap] = useState<Record<string, { completedPatient: number; totalPatient: number }>>({})
+  const [reloadKey, setReloadKey] = useState(0)
+  const [searchQuery, setSearchQuery] = useState('')
+  const [showSearch, setShowSearch] = useState(false)
+
+  const reloadQueue = () => {
+    setPatientsMap(prev => { const next = { ...prev }; delete next[`${selectedId}-${sessionIdx}`]; return next })
+    setReloadKey(k => k + 1)
+  }
 
   useEffect(() => {
     if (isDoctor && activeDoctor) {
@@ -239,12 +248,19 @@ const QueueManagement: FC = () => {
       }
     })
     return () => es.close()
-  }, [selectedId, sessionIdx, doctors])
+  }, [selectedId, sessionIdx, doctors, reloadKey])
 
   const doctor = doctors.find(d => d.id === selectedId) ?? doctors[0]
   const session = doctor?.sessions[sessionIdx] ?? doctor?.sessions[0]
   const sessionKey = `${selectedId}-${sessionIdx}`
   const patients = patientsMap[sessionKey] ?? session?.patients ?? []
+  const filteredPatients = searchQuery.trim()
+    ? patients.filter(p =>
+        p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        p.token.includes(searchQuery) ||
+        p.phone.includes(searchQuery)
+      )
+    : patients
   const completedCount = patients.filter(p => p.status === 'done').length
   const stats = statsMap[sessionKey] ?? {
     completedPatient: completedCount,
@@ -428,13 +444,24 @@ const QueueManagement: FC = () => {
       {/* Header */}
       <PageHeader
         title="Queue Management"
+        hideTitle
         actions={
           <div className="qm-header-actions">
-            <button className="qm-icon-btn"><img src={searchIcon} alt="search" /></button>
-            <button className="qm-icon-btn"><img src={upDownArrow} alt="sort" /></button>
-            <button className="qm-icon-btn"><img src={sortIcon} alt="filter" /></button>
-            <button className="qm-icon-btn"><img src={settingsIconsIcon} alt="settings" /></button>
-            <button className="qm-icon-btn"><img src={reloadIcon} alt="reload" /></button>
+            {showSearch && (
+              <input
+                autoFocus
+                className="qm-search-input"
+                placeholder="Search by name, token, phone..."
+                value={searchQuery}
+                onChange={e => setSearchQuery(e.target.value)}
+                onBlur={() => { if (!searchQuery) setShowSearch(false) }}
+              />
+            )}
+            <button className="qm-icon-btn" onClick={() => { setShowSearch(s => !s); if (showSearch) setSearchQuery('') }}><img src={searchIcon} alt="search" /></button>
+            {/* <button className="qm-icon-btn"><img src={upDownArrow} alt="sort" /></button> */}
+            {/* <button className="qm-icon-btn"><img src={sortIcon} alt="filter" /></button> */}
+            {/* <button className="qm-icon-btn"><img src={settingsIconsIcon} alt="settings" /></button> */}
+            <button className="qm-icon-btn" onClick={reloadQueue}><img src={reloadIcon} alt="reload" /></button>
             <div className="view-toggle">
               <button className={`qm-icon-btn view-btn ${view === 'list' ? 'view-active' : ''}`} onClick={() => setView('list')}><img src={listIcon} alt="list" /></button>
               <button className={`qm-icon-btn view-btn ${view === 'grid' ? 'view-active' : ''}`} onClick={() => setView('grid')}><img src={gridIcon} alt="grid" /></button>
@@ -573,9 +600,17 @@ const QueueManagement: FC = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {patients.length === 0 ? (
-                      <tr><td colSpan={8} style={{ textAlign: 'center', padding: '48px 16px', color: '#A0A5B1', fontSize: 14, fontFamily: 'Manrope' }}>No patients in queue</td></tr>
-                    ) : patients.map((p, idx) => (
+                    {filteredPatients.length === 0 ? (
+                      <tr>
+                        <td colSpan={8} className="qm-no-results">
+                          <div className="qm-empty-state">
+                            <img src={folderIcon} alt="No patients" className="qm-empty-icon" />
+                            <span className="qm-empty-title">No Records Found</span>
+                            <span className="qm-empty-sub">We couldn't find anything matching your criteria. Try changing your filters or add something new.</span>
+                          </div>
+                        </td>
+                      </tr>
+                    ) : filteredPatients.map((p, idx) => (
                       <tr key={p.token} className={p.status === 'ongoing' && !p.isSilentConsult ? 'row-current' : ''}>
                         <td>
                           <span className={`token-badge ${p.status === 'ongoing' && !p.isSilentConsult ? 'token-current' : ''}`}>
@@ -608,7 +643,7 @@ const QueueManagement: FC = () => {
                 </table>
               ) : (
                 <div className="qm-grid">
-                  {patients.map(p => (
+                  {filteredPatients.map(p => (
                     <div key={p.token} onClick={() => openModal(p)} className={`grid-token ${p.status === 'ongoing' && !p.isSilentConsult ? 'grid-token-current' : ''} ${p.status === 'done' ? 'grid-token-completed' : ''} ${p.status === 'skipped' ? 'grid-token-skipped' : ''} ${p.status === 'cancelled' ? 'grid-token-cancelled' : ''} ${p.status === 'pending' ? 'grid-token-waiting' : ''}`}>
                       <span className="grid-token-number">{p.token}</span>
                       {p.status !== 'ongoing' && p.status !== 'pending' && (

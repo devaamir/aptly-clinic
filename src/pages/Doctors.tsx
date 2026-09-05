@@ -16,6 +16,7 @@ import verifyTickGreen from '../assets/icons/verify-tick-green.svg'
 import addIcon from '../assets/icons/add-icon-white.svg'
 import dotsIcon from '../assets/icons/3dots-icon.svg'
 import doctorProfileImg from '../assets/images/doctor-profile.png'
+import folderIcon from '../assets/images/folder-icon.png'
 import './Doctors.css'
 
 interface Doctor {
@@ -109,8 +110,8 @@ const Doctors: FC<{ onViewProfile: (d: DoctorDetail) => void }> = ({ onViewProfi
                 rightIcon={searchQuery ? <span className="doc-search-clear" onClick={() => setSearchQuery('')}>✕</span> : undefined}
               />
             </div>
-            <button className="doc-icon-btn"><img src={upDownArrow} alt="order" /></button>
-            <button className="doc-icon-btn"><img src={sortIcon} alt="sort" /></button>
+            {/* <button className="doc-icon-btn"><img src={upDownArrow} alt="order" /></button> */}
+            {/* <button className="doc-icon-btn"><img src={sortIcon} alt="sort" /></button> */}
             <button className="doc-icon-btn"><img src={reloadIcon} alt="reload" /></button>
             <button className="doc-add-btn" onClick={() => setShowAdd(true)}>
               <img src={addIcon} alt="" style={{ width: 16, height: 16 }} />
@@ -147,7 +148,15 @@ const Doctors: FC<{ onViewProfile: (d: DoctorDetail) => void }> = ({ onViewProfi
             </thead>
             <tbody>
               {filtered.length === 0 ? (
-                <tr><td colSpan={7} className="doc-no-results">No doctors found</td></tr>
+                <tr>
+                  <td colSpan={7} className="doc-no-results">
+                    <div className="doc-empty-state">
+                      <img src={folderIcon} alt="No doctors" className="doc-empty-icon" />
+                      <span className="doc-empty-title">No Records Found</span>
+                      <span className="doc-empty-sub">We couldn't find anything matching your criteria. Try changing your filters or add something new.</span>
+                    </div>
+                  </td>
+                </tr>
               ) : filtered.map(d => (
                 <tr key={d.id}>
                   <td className="doc-id">{d.id}</td>
