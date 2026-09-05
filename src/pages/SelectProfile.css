@@ -1,8 +1,28 @@
+.sp-back-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: none;
+  border: none;
+  color: #636A79;
+  font-size: 13px;
+  font-weight: 600;
+  font-family: 'Manrope', sans-serif;
+  cursor: pointer;
+  padding: 0;
+  margin-bottom: 20px;
+  transition: color 0.15s;
+}
+
+.sp-back-btn:hover {
+  color: #418EFD;
+}
+
 .sp-card {
   display: flex;
   align-items: center;
   gap: 14px;
-  padding: 14px 16px;
+  padding: 6px;
   border: 1px solid var(--color-border);
   border-radius: 10px;
   background: #fff;
@@ -18,7 +38,7 @@
 .sp-avatar {
   width: 44px;
   height: 44px;
-  border-radius: 50%;
+  border-radius: 8px;
   object-fit: cover;
   flex-shrink: 0;
 }

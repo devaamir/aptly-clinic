@@ -6,9 +6,9 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: 'primary' | 'outline'
 }
 
-const Button: FC<ButtonProps> = ({ label, variant = 'primary', ...props }) => {
+const Button: FC<ButtonProps> = ({ label, variant = 'primary', type = 'button', ...props }) => {
   return (
-    <button className={`btn btn-${variant}`} {...props}>
+    <button type={type} className={`btn btn-${variant}`} {...props}>
       {label}
     </button>
   )

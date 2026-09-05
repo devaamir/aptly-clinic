@@ -4,13 +4,15 @@ import { getContexts, switchContext } from '../services/api'
 import type { UserContext } from '../services/types'
 import { useAppContext } from '../context/AppContext'
 import AuthLayout from '../components/AuthLayout'
+import arrowLeft from '../assets/icons/arrow-left.svg'
 import './SelectProfile.css'
 
 interface SelectProfileProps {
   onSelect: (ctx: UserContext) => void
+  onBack: () => void
 }
 
-const SelectProfile: FC<SelectProfileProps> = ({ onSelect }) => {
+const SelectProfile: FC<SelectProfileProps> = ({ onSelect, onBack }) => {
   const { setTokens, setContexts: storeContexts, setActiveContext, setActiveDoctor } = useAppContext()
   const [contexts, setContexts] = useState<UserContext[]>([])
   const [loading, setLoading] = useState(true)
@@ -43,6 +45,10 @@ const SelectProfile: FC<SelectProfileProps> = ({ onSelect }) => {
 
   return (
     <AuthLayout>
+      <button className="sp-back-btn" onClick={onBack}>
+        <img src={arrowLeft} alt="" style={{ width: 16, height: 16 }} />
+        Back to Login
+      </button>
       <h2 className="form-title">Select Profile</h2>
       <p className="form-subtitle">Choose a clinic profile to continue</p>
 

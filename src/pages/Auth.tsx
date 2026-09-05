@@ -37,7 +37,21 @@ const Auth: FC<AuthProps> = ({ onLogin }) => {
     if (password.length < 6) { setPasswordError('Password must be at least 6 characters.'); return }
     setError(''); setLoading(true)
     try {
-      const res = await login(email, password)
+      const res = await login(email, password) as any
+      if (!res.success) {
+        // handle field-level errors from backend
+        if (res.errors?.length) {
+          res.errors.forEach((e: { field: string; message: string }) => {
+            if (e.field === 'emailAddress') setEmailError(e.message)
+            else if (e.field === 'password') setPasswordError(e.message)
+            else setError(e.message)
+          })
+        } else {
+          setError(res.message || 'Invalid email or password.')
+        }
+        setLoading(false)
+        return
+      }
       setTokens(res.data.accessToken, res.data.refreshToken)
       setUser({ ...res.data.user })
       onLogin(res.data.context?.medicalCenterId === null)
@@ -56,33 +70,36 @@ const Auth: FC<AuthProps> = ({ onLogin }) => {
           <h2 className="form-title">Login to continue</h2>
           <p className="form-subtitle">Enter your email address and password to login</p>
 
-          <div className="form-group" style={{ marginBottom: '17.5px' }}>
-            <InputBox type="email" placeholder="Email Address" leftIcon={<img src={smsIcon} alt="" />} value={email} onChange={e => { setEmail(e.target.value); setEmailError('') }} error={!!emailError} />
-            {emailError && <p style={{ color: '#F04438', fontSize: 12, marginTop: 4, fontFamily: 'Manrope' }}>{emailError}</p>}
-          </div>
+          <form onSubmit={e => { e.preventDefault(); handleLogin() }}>
+            <div className="form-group" style={{ marginBottom: '17.5px' }}>
+              <InputBox type="email" placeholder="Email Address" leftIcon={<img src={smsIcon} alt="" />} value={email} onChange={e => { setEmail(e.target.value); setEmailError('') }} error={!!emailError} />
+              {emailError && <p style={{ color: '#F04438', fontSize: 12, marginTop: 4, fontFamily: 'Manrope' }}>{emailError}</p>}
+            </div>
 
-          <div className="form-group">
-            <InputBox
-              type={showPassword ? 'text' : 'password'}
-              placeholder="Password"
-              leftIcon={<img src={lockIcon} alt="" />}
-              value={password}
-              onChange={e => { setPassword(e.target.value); setPasswordError('') }}
-              error={!!passwordError}
-              rightIcon={
-                <img src={eyeIcon} alt="toggle" style={{ cursor: 'pointer', pointerEvents: 'all' }}
-                  onClick={() => setShowPassword(p => !p)} />
-              }
-            />
-            {passwordError && <p style={{ color: '#F04438', fontSize: 12, marginTop: 4, fontFamily: 'Manrope' }}>{passwordError}</p>}
-          </div>
+            <div className="form-group">
+              <InputBox
+                type={showPassword ? 'text' : 'password'}
+                placeholder="Password"
+                leftIcon={<img src={lockIcon} alt="" />}
+                value={password}
+                onChange={e => { setPassword(e.target.value); setPasswordError('') }}
+                error={!!passwordError}
+                rightIcon={
+                  <img src={eyeIcon} alt="toggle" style={{ cursor: 'pointer', pointerEvents: 'all' }}
+                    onClick={() => setShowPassword(p => !p)} />
+                }
+              />
+              {passwordError && <p style={{ color: '#F04438', fontSize: 12, marginTop: 4, fontFamily: 'Manrope' }}>{passwordError}</p>}
+            </div>
 
-          <div className="form-row">
-            <a href="#" className="forgot-link" onClick={e => { e.preventDefault(); setScreen('set-password') }}>Forgot Password?</a>
-          </div>
+            <div className="form-row">
+              <a href="#" className="forgot-link" onClick={e => { e.preventDefault(); setScreen('set-password') }}>Forgot Password?</a>
+            </div>
 
-          {error && <p style={{ color: '#F04438', fontSize: 13, marginBottom: 8, fontFamily: 'Manrope' }}>{error}</p>}
-          <Button label={loading ? 'Logging in...' : 'Login'} style={{ marginBottom: '24px' }} onClick={handleLogin} />          <p className="trouble-text">Having trouble logging in? <a href="https://wa.me/919778798511" target="_blank" rel="noreferrer">Contact Us</a></p>
+            {error && <p style={{ color: '#F04438', fontSize: 13, marginBottom: 8, fontFamily: 'Manrope' }}>{error}</p>}
+            <Button type="submit" label={loading ? 'Logging in...' : 'Login'} style={{ marginBottom: '24px' }} />
+          </form>
+          <p className="trouble-text">Having trouble logging in? <a href="https://wa.me/919778798511" target="_blank" rel="noreferrer">Contact Us</a></p>
         </>
       )}
 
@@ -92,7 +109,15 @@ const Auth: FC<AuthProps> = ({ onLogin }) => {
           <p className="form-subtitle">Please create a secure password to use for logging into your account</p>
 
           <div className="form-group" style={{ marginBottom: '24px' }}>
-            <InputBox type="password" placeholder="New Password" leftIcon={<img src={lockIcon} alt="" />} />
+            <InputBox
+              type={showPassword ? 'text' : 'password'}
+              placeholder="New Password"
+              leftIcon={<img src={lockIcon} alt="" />}
+              rightIcon={
+                <img src={eyeIcon} alt="toggle" style={{ cursor: 'pointer', pointerEvents: 'all' }}
+                  onClick={() => setShowPassword(p => !p)} />
+              }
+            />
             <span className="input-hint">Must be least 8 characters</span>
           </div>
 
