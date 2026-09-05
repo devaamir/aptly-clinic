@@ -28,10 +28,15 @@ interface ChipInputProps {
 const ChipInput: React.FC<ChipInputProps> = ({
   ids, onRemove, search, onSearchChange, onSelect, allItems, errorKey, placeholder, isReadOnly, error, onClearError,
 }) => {
+  const [focused, setFocused] = React.useState(false)
   const filtered = allItems.filter(i => i.name.toLowerCase().includes(search.toLowerCase()) && !ids.includes(i.id))
+  const showDropdown = focused && !isReadOnly && filtered.length > 0
   return (
     <>
-      <div className={`doc-spec-input${isReadOnly ? ' doc-spec-input--disabled' : ''}${error ? ' doc-spec-input--error' : ''}`}>
+      <div
+        className={`doc-spec-input${isReadOnly ? ' doc-spec-input--disabled' : ''}${error ? ' doc-spec-input--error' : ''}`}
+        onClick={() => !isReadOnly && document.querySelector<HTMLInputElement>('.doc-spec-search')}
+      >
         {ids.map(id => {
           const item = allItems.find(x => x.id === id)
           return item ? (
@@ -50,18 +55,30 @@ const ChipInput: React.FC<ChipInputProps> = ({
             placeholder={ids.length === 0 ? placeholder : ''}
             value={search}
             onChange={e => { onSearchChange(e.target.value); if (error) onClearError(errorKey) }}
+            onFocus={() => setFocused(true)}
+            onBlur={() => setTimeout(() => setFocused(false), 150)}
+            onKeyDown={e => {
+              if (e.key === 'Backspace' && !search && ids.length > 0) {
+                onRemove(ids[ids.length - 1])
+              }
+            }}
           />
         )}
       </div>
       {error && <span className="doc-field-error">{error}</span>}
-      {search && !isReadOnly && (
+      {showDropdown && (
         <ul className="doc-spec-dropdown">
-          {filtered.length > 0 ? filtered.map(i => (
+          {filtered.map(i => (
             <li key={i.id} className="doc-spec-dropdown-item"
               onMouseDown={e => { e.preventDefault(); onSelect(i.id); onSearchChange(''); onClearError(errorKey) }}>
               {i.name}
             </li>
-          )) : <li className="doc-spec-dropdown-empty">No results found</li>}
+          ))}
+        </ul>
+      )}
+      {focused && !isReadOnly && filtered.length === 0 && search && (
+        <ul className="doc-spec-dropdown">
+          <li className="doc-spec-dropdown-empty">No results found</li>
         </ul>
       )}
     </>
@@ -174,6 +191,8 @@ const DoctorFormModal: FC<DoctorFormModalProps> = ({ doctor, onClose, onCreated,
     if (selectedSpecialtyIds.length === 0) errors.specialty = 'At least one specialty is required'
     if (selectedQualificationIds.length === 0) errors.qualification = 'At least one qualification is required'
     if (!form.yearsOfExperience) errors.yearsOfExperience = 'Experience is required'
+    if (form.phoneNumber && !/^[6-9]\d{9}$/.test(form.phoneNumber.trim())) errors.phoneNumber = 'Enter a valid 10-digit mobile number'
+    if (form.emailAddress && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.emailAddress.trim())) errors.emailAddress = 'Enter a valid email address'
     setFormErrors(errors)
     return Object.keys(errors).length === 0
   }
@@ -275,6 +294,13 @@ const DoctorFormModal: FC<DoctorFormModalProps> = ({ doctor, onClose, onCreated,
                       <div className="doc-camera-btn" onClick={() => fileInputRef.current?.click()}>
                         <img src={cameraIcon} alt="camera" style={{ width: 18, height: 18 }} />
                       </div>
+                    )}
+                    {!isReadOnly && avatarPreview && (
+                      <button
+                        type="button"
+                        className="doc-avatar-remove-btn"
+                        onClick={e => { e.stopPropagation(); setAvatarPreview(null); avatarFileRef.current = null; if (fileInputRef.current) fileInputRef.current.value = '' }}
+                      >✕</button>
                     )}
                   </div>
                   <input ref={fileInputRef} type="file" accept="image/*" style={{ display: 'none' }}
@@ -413,12 +439,14 @@ const DoctorFormModal: FC<DoctorFormModalProps> = ({ doctor, onClose, onCreated,
                     value={form.phoneNumber} showRequired={false}
                     error={formErrors.phoneNumber}
                     readOnly={isReadOnly}
-                    onChange={e => { if (!isReadOnly) { setForm(p => ({ ...p, phoneNumber: (e.target as HTMLInputElement).value })); setFormErrors(p => ({ ...p, phoneNumber: '' })) } }} />
+                    onChange={e => { if (!isReadOnly) { const v = (e.target as HTMLInputElement).value.replace(/\D/g, '').slice(0, 10); setForm(p => ({ ...p, phoneNumber: v })); setFormErrors(p => ({ ...p, phoneNumber: '' })) } }}
+                    onBlur={() => { if (form.phoneNumber && !/^[6-9]\d{9}$/.test(form.phoneNumber.trim())) setFormErrors(p => ({ ...p, phoneNumber: 'Enter a valid 10-digit mobile number' })) }} />
                   <FormField label="Email" placeholder="Enter email" type="email"
                     value={form.emailAddress} showRequired={false}
                     error={formErrors.emailAddress}
                     readOnly={isReadOnly}
-                    onChange={e => { if (!isReadOnly) { setForm(p => ({ ...p, emailAddress: (e.target as HTMLInputElement).value })); setFormErrors(p => ({ ...p, emailAddress: '' })) } }} />
+                    onChange={e => { if (!isReadOnly) { setForm(p => ({ ...p, emailAddress: (e.target as HTMLInputElement).value })); setFormErrors(p => ({ ...p, emailAddress: '' })) } }}
+                    onBlur={() => { if (form.emailAddress && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.emailAddress.trim())) setFormErrors(p => ({ ...p, emailAddress: 'Enter a valid email address' })) }} />
                 </div>
 
                 {/* Experience + Avg Time */}

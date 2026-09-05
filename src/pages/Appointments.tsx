@@ -20,6 +20,7 @@ import dotsIcon from '../assets/icons/3dots-icon.svg'
 import './Appointments.css'
 import doctorProfileImg from '../assets/images/doctor-profile.png'
 import userProfileImg from '../assets/images/user-profile.png'
+import folderIcon from '../assets/images/folder-icon.png'
 
 const to12h = (t: string) => {
   const [h, m] = t.slice(0, 5).split(':').map(Number)
@@ -86,12 +87,16 @@ const Appointments: FC = () => {
   const [doctorSchedules, setDoctorSchedules] = useState<DoctorSchedule[]>([])
   const [scheduleLoading, setScheduleLoading] = useState(false)
 
-  useEffect(() => {
+  const fetchAppointments = () => {
     setLoading(true)
     getAppointments().then(res => {
       console.log('getAppointments res', res)
       if (res.success) setAppointments(res.data.map(mapApiAppointment))
     }).catch(e => console.log('getAppointments error', e)).finally(() => setLoading(false))
+  }
+
+  useEffect(() => {
+    fetchAppointments()
 
     if (isDoctor && activeDoctor) {
       setClinicDoctors([{
@@ -310,8 +315,8 @@ const Appointments: FC = () => {
                 onChange={e => setFilterRangeEnd(e.target.value)} />
             </div>
             <div className="apt-icon-group">
-              <button className="apt-icon-btn"><img src={sortIcon} alt="sort" /></button>
-              <button className="apt-icon-btn"><img src={reloadIcon} alt="reload" /></button>
+              {/* <button className="apt-icon-btn"><img src={sortIcon} alt="sort" /></button> */}
+              <button className="apt-icon-btn" onClick={fetchAppointments}><img src={reloadIcon} alt="reload" /></button>
             </div>
           </div>
         </div>
@@ -340,7 +345,13 @@ const Appointments: FC = () => {
             <tbody>
               {filteredAppointments.length === 0 ? (
                 <tr>
-                  <td colSpan={10} className="apt-no-results">No appointments found</td>
+                  <td colSpan={10} className="apt-no-results">
+                    <div className="apt-empty-state">
+                      <img src={folderIcon} alt="No appointments" className="apt-empty-icon" />
+                      <span className="apt-empty-title">No Records Found</span>
+                      <span className="apt-empty-sub">We couldn't find anything matching your criteria. Try changing your filters or add something new.</span>
+                    </div>
+                  </td>
                 </tr>
               ) : filteredAppointments.map(a => (
                 <tr key={a.id}>

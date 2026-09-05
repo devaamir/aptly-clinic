@@ -12,6 +12,8 @@
   background: #fff;
   border-radius: 12px;
   min-width: 540px;
+  max-width: 564px;
+  width: 564px;
   padding: 0;
   box-sizing: border-box;
   display: flex;

@@ -25,7 +25,7 @@
   padding: 3px 6px;
   font-size: 13px;
   font-weight: 500;
-  color: #1D1E21;
+  color: var(--color-inputText);
   font-family: 'Manrope', sans-serif;
   border-right: 1px solid var(--color-border);
   white-space: nowrap;
@@ -40,7 +40,7 @@
   font-weight: 500;
   font-family: 'Manrope', sans-serif;
   background: transparent;
-  color: #7E8695;
+  color: var(--color-inputText);
   outline: none;
   box-sizing: border-box;
   width: 100%;
@@ -48,6 +48,19 @@
 
 .form-field-input:focus {
   border-color: var(--color-accent);
+}
+
+.form-field-input-wrap:focus-within {
+  border-color: var(--color-accent);
+}
+
+.form-field-select:focus {
+  border-color: var(--color-accent) !important;
+  outline: none;
+}
+
+.form-field-select--placeholder {
+  color: var(--color-placeholder);
 }
 
 .form-field-input::placeholder {

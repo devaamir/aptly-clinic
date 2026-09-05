@@ -169,7 +169,7 @@
   border: 1px solid var(--color-border);
   border-radius: 10px;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
-  min-width: 220px;
+  width: 250px;
   z-index: 100;
   overflow: hidden;
 }
@@ -186,6 +186,10 @@
   background: #f8f9fb;
 }
 
+.profile-menu-item.active {
+  background: #EBF2FD;
+}
+
 .profile-menu-avatar {
   width: 32px;
   height: 32px;
@@ -194,12 +198,20 @@
   flex-shrink: 0;
 }
 
+.profile-menu-info {
+  flex: 1;
+  min-width: 0;
+}
+
 .profile-menu-name {
   font-size: 13px;
   font-weight: 600;
   color: #0a0a0a;
   font-family: "Manrope", sans-serif;
   line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .profile-menu-role {
@@ -207,6 +219,9 @@
   font-weight: 400;
   color: #636a79;
   font-family: "Manrope", sans-serif;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .profile-menu-divider {

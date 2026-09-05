@@ -1,5 +1,5 @@
 import type { FC } from 'react'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import logo from '../assets/images/logo.png'
 import QueueManagement from './QueueManagement'
 import Appointments from './Appointments'
@@ -36,6 +36,17 @@ const DoctorDashboard: FC<DoctorDashboardProps> = ({ onSwitchProfile, onSwitchTo
   const { activeContext, activeDoctor, contexts, setTokens, setActiveContext, setActiveDoctor, setContexts, logout } = useAppContext()
   const [activePage, setActivePage] = useState<ActivePage>('Queue Management')
   const [showProfileMenu, setShowProfileMenu] = useState(false)
+  const profileMenuRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (profileMenuRef.current && !profileMenuRef.current.contains(e.target as Node)) {
+        setShowProfileMenu(false)
+      }
+    }
+    document.addEventListener('mousedown', handler)
+    return () => document.removeEventListener('mousedown', handler)
+  }, [])
   const [switchTarget, setSwitchTarget] = useState<{ name: string; role: string; avatar: string; id: string } | null>(null)
   const [showLogout, setShowLogout] = useState(false)
   const [sidebarOpen, setSidebarOpen] = useState(false)
@@ -87,7 +98,7 @@ const DoctorDashboard: FC<DoctorDashboardProps> = ({ onSwitchProfile, onSwitchTo
               <button className="topbar-icon-btn">
                 <img src={notificationIcon} alt="notifications" style={{ width: 20, height: 20 }} />
               </button>
-              <div style={{ position: 'relative' }}>
+              <div style={{ position: 'relative' }} ref={profileMenuRef}>
                 <div className="topbar-profile" style={{ cursor: 'pointer' }} onClick={() => setShowProfileMenu(p => !p)}>
                   <img
                     src={activeDoctor?.profilePicture || activeContext?.medicalCenter.profilePicture || 'https://i.pravatar.cc/32?img=20'}
@@ -124,13 +135,11 @@ const DoctorDashboard: FC<DoctorDashboardProps> = ({ onSwitchProfile, onSwitchTo
                           alt={c.medicalCenter.name}
                           className="profile-menu-avatar"
                         />
-                        <div>
+                        <div className="profile-menu-info">
                           <div className="profile-menu-name">{c.medicalCenter.name}</div>
                           <div className="profile-menu-role">{c.role}</div>
                         </div>
-                        {activeContext?.medicalCenter.id === c.medicalCenter.id && activeContext?.role === c.role && (
-                          <span style={{ marginLeft: 'auto', color: '#2879E4', fontSize: 12 }}>●</span>
-                        )}
+                        {activeContext?.medicalCenter.id === c.medicalCenter.id && activeContext?.role === c.role && null}
                       </div>
                     ))}
                     <div className="profile-menu-divider" />

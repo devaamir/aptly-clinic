@@ -28,6 +28,24 @@
   gap: 8px;
 }
 
+.qm-search-input {
+  height: 36px;
+  padding: 0 12px;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  font-family: Manrope;
+  font-size: 13px;
+  color: var(--color-inputText);
+  background: var(--color-inputBg);
+  outline: none;
+  width: 220px;
+  transition: border-color 0.15s;
+}
+
+.qm-search-input:focus {
+  border-color: var(--color-accent);
+}
+
 .qm-icon-btn {
   background: #ffffff;
   border: 1px solid var(--color-border);
@@ -419,6 +437,50 @@
   padding: 14px 16px;
   border-top: 1px solid var(--color-border);
   color: var(--color-textPrimary);
+}
+
+.qm-no-results {
+  text-align: center;
+  padding: 48px 16px 32px;
+  border-top: none;
+  white-space: normal;
+}
+
+.qm-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  width: 352px;
+  margin: 0 auto;
+}
+
+.qm-empty-icon {
+  width: auto;
+  height: 101px;
+  object-fit: contain;
+  margin-top: 16px;
+  margin-bottom: 4px;
+  opacity: 0.75;
+}
+
+.qm-empty-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: #4a5568;
+  font-family: "Manrope", sans-serif;
+}
+
+.qm-empty-sub {
+  display: block;
+  font-size: 13px;
+  font-weight: 400;
+  color: #a0a5b1;
+  font-family: "Manrope", sans-serif;
+  text-align: center;
+  white-space: normal;
+  word-wrap: break-word;
+  width: 100%;
 }
 
 .row-current {

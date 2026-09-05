@@ -761,6 +761,44 @@
   color: #a0a5b1;
   border-top: none;
   padding: 48px 16px 32px;
+  white-space: normal;
+}
+
+.apt-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  width: 352px;
+  margin: 0 auto;
+}
+
+.apt-empty-icon {
+  width: auto;
+  height: 101px;
+  object-fit: contain;
+  margin-top: 16px;
+  margin-bottom: 4px;
+  opacity: 0.75;
+}
+
+.apt-empty-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: #4a5568;
+  font-family: "Manrope", sans-serif;
+}
+
+.apt-empty-sub {
+  display: block;
+  font-size: 13px;
+  font-weight: 400;
+  color: #a0a5b1;
+  font-family: "Manrope", sans-serif;
+  text-align: center;
+  white-space: normal;
+  word-wrap: break-word;
+  width: 100%;
 }
 
 .apt-loader-wrap {

@@ -16,6 +16,7 @@ import searchIcon from '../assets/icons/search-icon.svg'
 import sortIcon from '../assets/icons/sort-icon.svg'
 import reloadIcon from '../assets/icons/reload-icon.svg'
 import userProfileImg from '../assets/images/user-profile.png'
+import folderIcon from '../assets/images/folder-icon.png'
 import './Patients.css'
 
 interface Patient {
@@ -55,11 +56,15 @@ const Patients: FC = () => {
 
   const [loading, setLoading] = useState(true)
 
-  useEffect(() => {
+  const fetchPatients = () => {
     setLoading(true)
     getPatients().then(res => {
       if (res.success) setPatients(res.data.map(mapPatient))
     }).catch(() => {}).finally(() => setLoading(false))
+  }
+
+  useEffect(() => {
+    fetchPatients()
   }, [activeContext?.medicalCenter.id])
 
   const filtered = patients.filter(p =>
@@ -84,11 +89,11 @@ const Patients: FC = () => {
                 rightIcon={searchQuery ? <span className="pat-search-clear" onClick={() => setSearchQuery('')}>✕</span> : undefined}
               />
             </div>
-            <button className="pat-icon-btn"><img src={sortIcon} alt="sort" /></button>
-            <button className="pat-icon-btn"><img src={upDownArrow} alt="sort order" /></button>
-            <button className="pat-icon-btn"><img src={exportIcon} alt="export" /></button>
-            <button className="pat-icon-btn"><img src={importIcon} alt="import" /></button>
-            <button className="pat-icon-btn"><img src={reloadIcon} alt="reload" /></button>
+            {/* <button className="pat-icon-btn"><img src={sortIcon} alt="sort" /></button> */}
+            {/* <button className="pat-icon-btn"><img src={upDownArrow} alt="sort order" /></button> */}
+            {/* <button className="pat-icon-btn"><img src={exportIcon} alt="export" /></button> */}
+            {/* <button className="pat-icon-btn"><img src={importIcon} alt="import" /></button> */}
+            <button className="pat-icon-btn" onClick={fetchPatients}><img src={reloadIcon} alt="reload" /></button>
           </div>
         }
       />
@@ -126,7 +131,15 @@ const Patients: FC = () => {
           </thead>
           <tbody>
             {filtered.length === 0 ? (
-              <tr><td colSpan={8} className="pat-no-results" style={{ textAlign: 'center' }}>No patients found</td></tr>
+              <tr>
+                <td colSpan={8} className="pat-no-results">
+                  <div className="pat-empty-state">
+                    <img src={folderIcon} alt="No patients" className="pat-empty-icon" />
+                    <span className="pat-empty-title">No Records Found</span>
+                    <span className="pat-empty-sub">We couldn't find anything matching your criteria. Try changing your filters or add something new.</span>
+                  </div>
+                </td>
+              </tr>
             ) : filtered.map(p => (
               <tr key={p.id}>
                 <td className="pat-id">{p.id}</td>
