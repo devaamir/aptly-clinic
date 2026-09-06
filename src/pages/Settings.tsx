@@ -163,6 +163,8 @@ const BillingTab: FC = () => {
   )
 }
 
+const stripCountryCode = (v: string) => v.trim().replace(/^\+91\s*/, '').replace(/^91(?=[6-9]\d{9}$)/, '')
+
 const Settings: FC = () => {
   const { activeContext, specialties: contextSpecialties, setActiveContext } = useAppContext()
   const mc = activeContext?.medicalCenter
@@ -187,7 +189,7 @@ const Settings: FC = () => {
       name: mc.name ?? '',
       practice: mc.medicalSystem?.name ?? '',
       medicalSystemId: mc.medicalSystem?.id ?? '',
-      phone: mc.phoneNumber ?? '',
+      phone: stripCountryCode(mc.phoneNumber ?? ''),
       email: mc.emailAddress ?? '',
       website: mc.websiteUrl ?? '',
       specialties: mc.specialties?.map(s => s.name) ?? [],
@@ -196,7 +198,7 @@ const Settings: FC = () => {
       lat: mc.latitude != null ? String(mc.latitude) : '',
       lng: mc.longitude != null ? String(mc.longitude) : '',
       ownerName: mc.creatorManager?.name ?? '',
-      ownerPhone: mc.creatorManager?.phoneNumber ?? '',
+      ownerPhone: stripCountryCode(mc.creatorManager?.phoneNumber ?? ''),
       ownerEmail: mc.creatorManager?.emailAddress ?? '',
       avatar: mc.profilePicture ?? '',
     }
