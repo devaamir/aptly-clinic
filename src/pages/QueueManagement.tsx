@@ -211,9 +211,27 @@ const QueueManagement: FC = () => {
     }).catch(() => { })
   }, [activeContext?.medicalCenter.id])
 
+  // Track which doctor IDs we've already fetched a schedule for, so that
+  // subsequent `setDoctors` calls (e.g. from SSE avgInterval updates) don't
+  // re-trigger this effect and create duplicate schedule fetches.
+  const scheduleFetchedFor = useRef<Set<number>>(new Set())
+  const doctorsLoaded = doctors.length > 0
+
   useEffect(() => {
+    // When selectedId changes, allow re-fetching for the new selection
+    scheduleFetchedFor.current.delete(selectedId)
+  }, [selectedId])
+
+  useEffect(() => {
+    // Only run after doctors have been loaded
+    if (!doctorsLoaded) return
+    // Skip if we already fetched the schedule for this selectedId
+    if (scheduleFetchedFor.current.has(selectedId)) return
+
     const doc = doctors.find(d => d.id === selectedId)
     if (!doc?.apiId || !activeContext?.medicalCenter.id) return
+
+    scheduleFetchedFor.current.add(selectedId)
     const today = new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Kolkata' })
     getDoctorSchedule(doc.apiId, today, activeContext.medicalCenter.id).then(res => {
       if (res.success) {
@@ -222,15 +240,22 @@ const QueueManagement: FC = () => {
         ))
         setSessionIdx(0)
       }
-    }).catch(() => { })
-  }, [selectedId, doctors.length])
+    }).catch(() => {
+      // Allow retry on error by removing from fetched set
+      scheduleFetchedFor.current.delete(selectedId)
+    })
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedId, doctorsLoaded])
+
+  // Derive the active schedule ID from state so the SSE effect re-runs exactly
+  // when the schedule changes (doctor/session switch or schedule load) but NOT
+  // on every unrelated doctors state update (e.g. avgInterval sync from SSE).
+  const activeScheduleId = doctors.find(d => d.id === selectedId)?.sessions[sessionIdx]?.scheduleId
 
   // SSE: subscribe to queue for the active session
   useEffect(() => {
-    const doc = doctors.find(d => d.id === selectedId)
-    const scheduleId = doc?.sessions[sessionIdx]?.scheduleId
-    if (!scheduleId) return
-    const es = subscribeQueue(scheduleId, (data: QueueSSEData) => {
+    if (!activeScheduleId) return
+    const es = subscribeQueue(activeScheduleId, (data: QueueSSEData) => {
       const mapped: Patient[] = data.appointments.map((a, i) => ({
         appointmentId: a.id,
         token: String(a.tokenNumber).padStart(2, '0'),
@@ -262,7 +287,7 @@ const QueueManagement: FC = () => {
       }
 
       // Update avgInterval from first appointment's doctor data
-      if (data.appointments.length > 0 && doc) {
+      if (data.appointments.length > 0) {
         const avgMins = data.appointments[0].doctor.estimateConsultationTime
         setDoctors(prev => prev.map(d =>
           d.id === selectedId ? {
@@ -275,7 +300,7 @@ const QueueManagement: FC = () => {
       }
     })
     return () => es.close()
-  }, [selectedId, sessionIdx, doctors, reloadKey])
+  }, [activeScheduleId, reloadKey]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const doctor = doctors.find(d => d.id === selectedId) ?? doctors[0]
   const session = doctor?.sessions[sessionIdx] ?? doctor?.sessions[0]
