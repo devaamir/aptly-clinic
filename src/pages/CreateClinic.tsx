@@ -32,6 +32,7 @@ const CreateClinic: FC<CreateClinicProps> = ({ onCreated, onBack }) => {
   const [loading, setLoading] = useState(false)
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [specialtySearch, setSpecialtySearch] = useState('')
+  const [specialtyFocused, setSpecialtyFocused] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [form, setForm] = useState({
     name: '', medicalSystemId: '', phoneNumber: '', emailAddress: '',
@@ -187,23 +188,30 @@ const CreateClinic: FC<CreateClinicProps> = ({ onCreated, onBack }) => {
               placeholder={selectedSpecialtyIds.length === 0 ? 'Search specialty...' : ''}
               value={specialtySearch}
               onChange={(e: ChangeEvent<HTMLInputElement>) => { setSpecialtySearch(e.target.value); setErrors(prev => ({ ...prev, specialties: '' })) }}
+              onFocus={() => setSpecialtyFocused(true)}
+              onBlur={() => setTimeout(() => setSpecialtyFocused(false), 150)}
+              onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) => {
+                if (e.key === 'Backspace' && !specialtySearch && selectedSpecialtyIds.length > 0)
+                  toggleSpecialty(selectedSpecialtyIds[selectedSpecialtyIds.length - 1])
+              }}
             />
           </div>
-          {specialtySearch && (
+          {specialtyFocused && specialties.filter(s => s.name.toLowerCase().includes(specialtySearch.toLowerCase()) && !selectedSpecialtyIds.includes(s.id)).length > 0 && (
             <ul className="doc-spec-dropdown">
               {specialties
                 .filter(s => s.name.toLowerCase().includes(specialtySearch.toLowerCase()) && !selectedSpecialtyIds.includes(s.id))
-                .length > 0
-                ? specialties
-                    .filter(s => s.name.toLowerCase().includes(specialtySearch.toLowerCase()) && !selectedSpecialtyIds.includes(s.id))
-                    .map(s => (
-                      <li key={s.id} className="doc-spec-dropdown-item"
-                        onMouseDown={(e: React.MouseEvent) => { e.preventDefault(); toggleSpecialty(s.id); setSpecialtySearch('') }}>
-                        {s.name}
-                      </li>
-                    ))
-                : <li className="doc-spec-dropdown-empty">No results found</li>
+                .map(s => (
+                  <li key={s.id} className="doc-spec-dropdown-item"
+                    onMouseDown={(e: React.MouseEvent) => { e.preventDefault(); toggleSpecialty(s.id); setSpecialtySearch('') }}>
+                    {s.name}
+                  </li>
+                ))
               }
+            </ul>
+          )}
+          {specialtyFocused && specialtySearch && specialties.filter(s => s.name.toLowerCase().includes(specialtySearch.toLowerCase()) && !selectedSpecialtyIds.includes(s.id)).length === 0 && (
+            <ul className="doc-spec-dropdown">
+              <li className="doc-spec-dropdown-empty">No results found</li>
             </ul>
           )}
           <F name="specialties" />
