@@ -2,10 +2,12 @@ import type { FC, ChangeEvent } from 'react'
 import { useState, useEffect, useRef } from 'react'
 import avatarIcon from '../assets/icons/avatar-icon.svg'
 import cameraIcon from '../assets/icons/camera-icon.svg'
+import verifyTickGreen from '../assets/icons/verify-tick-green.svg'
 import { updateClinic, createSubscriptionCheckout, getSubscriptionStatus, getMedicalSystems } from '../services/api'
 import type { MedicalSystem } from '../services/types'
 import { useAppContext } from '../context/AppContext'
 import Modal from '../components/Modal'
+import Toast from '../components/Toast'
 import './Settings.css'
 import './Doctors.css'
 
@@ -222,6 +224,7 @@ const Settings: FC = () => {
   const [saving, setSaving] = useState(false)
   const [saveError, setSaveError] = useState('')
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({})
+  const [toast, setToast] = useState<string | null>(null)
 
   const isValidIndianPhone = (v: string) => /^[6-9]\d{9}$/.test(v.trim())
   const isValidEmail = (v: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.trim())
@@ -268,6 +271,7 @@ const Settings: FC = () => {
       setProfile({ ...draft, avatar: newAvatar })
       setDraft(p => ({ ...p, avatar: newAvatar }))
       setEditing(false)
+      setToast('Clinic profile updated successfully')
       avatarFileRef.current = null
       // update context immediately
       if (activeContext) {
@@ -499,6 +503,7 @@ const Settings: FC = () => {
           <div className="st-placeholder">{activeTab} settings coming soon.</div>
         )}
       </div>
+      {toast && <Toast message={toast} onClose={() => setToast(null)} icon={<img src={verifyTickGreen} alt="" />} />}
     </div>
   )
 }
