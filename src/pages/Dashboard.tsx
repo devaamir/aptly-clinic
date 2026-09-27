@@ -16,8 +16,13 @@ import Settings from './Settings'
 import dashboardIcon from '../assets/icons/dashboard-icon.svg'
 import queueIcon from '../assets/icons/quemanagment-icon.svg'
 import appointmentIcon from '../assets/icons/appointment-icon.svg'
-import instantAppointmentIcon from '../assets/icons/clock-blue-icon.svg'
+import instantAppointmentIcon from '../assets/icons/flash-icon.svg'
 import staffIcon from '../assets/icons/staff-icon.svg'
+import financeIcon from '../assets/icons/banknote-icon.svg'
+import facilitiesIcon from '../assets/icons/facilities-icon.svg'
+import medicalRecordsIcon from '../assets/icons/medical-records-icon.svg'
+import labResultIcon from '../assets/icons/lab-result-icon.svg'
+import analyticsIcon from '../assets/icons/analytics-icon.svg'
 import patientsIcon from '../assets/icons/patients-icon.svg'
 import doctorsIcon from '../assets/icons/doctors-icon.svg'
 import leaveIcon from '../assets/icons/leave-managment.svg'
@@ -31,7 +36,7 @@ import { switchContext, getContexts } from '../services/api'
 import { useAppContext } from '../context/AppContext'
 import './Dashboard.css'
 
-type ActivePage = 'Dashboard' | 'Queue Management' | 'Appointments' | 'Instant Appointment' | 'Patients' | 'Doctors' | 'Leave Management' | 'Staff' | 'Settings'
+type ActivePage = 'Dashboard' | 'Queue Management' | 'Appointments' | 'Instant Appointment' | 'Patients' | 'Doctors' | 'Leave Management' | 'Staff' | 'Finance' | 'Facilities' | 'Medical Records' | 'Lab Results' | 'Analytics' | 'Settings'
 
 interface Doctor { id: string; doctorUuid: string; name: string; avatar: string; specialty: string; phone: string; email: string; experience: string; status: 'Active' | 'Inactive' }
 
@@ -44,6 +49,11 @@ const allNavItems: { label: ActivePage; icon: string; excludeRoles?: string[] }[
   { label: 'Leave Management', icon: leaveIcon },
   { label: 'Instant Appointment', icon: instantAppointmentIcon },
   { label: 'Staff', icon: staffIcon },
+  { label: 'Finance', icon: financeIcon },
+  { label: 'Facilities', icon: facilitiesIcon },
+  { label: 'Medical Records', icon: medicalRecordsIcon },
+  { label: 'Lab Results', icon: labResultIcon },
+  { label: 'Analytics', icon: analyticsIcon },
 ]
 
 const Dashboard: FC = () => {
@@ -124,15 +134,13 @@ const Dashboard: FC = () => {
         </button>
         <nav className="sidebar-nav">
           {navItems.map(item => {
-            const isComingSoon = item.label === 'Instant Appointment' || item.label === 'Staff'
+            const isComingSoon = item.label === 'Instant Appointment' || item.label === 'Staff' || item.label === 'Finance' || item.label === 'Facilities' || item.label === 'Medical Records' || item.label === 'Lab Results' || item.label === 'Analytics'
             return (
               <div
                 key={item.label}
                 className={`nav-item ${activePage === item.label ? 'nav-item-active' : ''}`}
                 onClick={() => {
-                  if (isComingSoon) {
-                    setShowComingSoon(prev => prev === item.label ? null : item.label)
-                  } else {
+                  if (!isComingSoon) {
                     setShowComingSoon(null)
                     navigate(item.label)
                   }
@@ -141,9 +149,9 @@ const Dashboard: FC = () => {
               >
                 <img src={item.icon} alt="" className="nav-icon" />
                 {!sidebarCollapsed && (
-                  <span className="nav-label" style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                    <span style={{ whiteSpace: 'nowrap' }}>{item.label}</span>
-                    {isComingSoon && showComingSoon === item.label && (
+                  <span className="nav-label" style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 6 }}>
+                    <span style={{ whiteSpace: 'nowrap', ...(isComingSoon ? { maxWidth: '60%', overflow: 'hidden', textOverflow: 'ellipsis' } : {}) }}>{item.label}</span>
+                    {isComingSoon && (
                       <span className="coming-soon-badge">Coming Soon</span>
                     )}
                   </span>
