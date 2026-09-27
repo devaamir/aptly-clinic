@@ -107,7 +107,7 @@
 
 .nav-item {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 12px;
   padding: 8px 10px;
   border-radius: 8px;
@@ -128,11 +128,30 @@
   width: 20px;
   height: 20px;
   flex-shrink: 0;
+  align-self: flex-start;
+  margin-top: 2px;
+}
+
+.nav-label {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex: 1;
+  min-width: 0;
 }
 
 .nav-item-active {
   background: #eceef2;
   /* color: var(--color-accent) !important; */
+}
+
+.coming-soon-badge {
+  font-size: 10px;
+  font-weight: 600;
+  font-family: 'Manrope', sans-serif;
+  color: #F59E0B;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
 }
 
 .dashboard-main {

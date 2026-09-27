@@ -16,6 +16,8 @@ import Settings from './Settings'
 import dashboardIcon from '../assets/icons/dashboard-icon.svg'
 import queueIcon from '../assets/icons/quemanagment-icon.svg'
 import appointmentIcon from '../assets/icons/appointment-icon.svg'
+import instantAppointmentIcon from '../assets/icons/clock-blue-icon.svg'
+import staffIcon from '../assets/icons/staff-icon.svg'
 import patientsIcon from '../assets/icons/patients-icon.svg'
 import doctorsIcon from '../assets/icons/doctors-icon.svg'
 import leaveIcon from '../assets/icons/leave-managment.svg'
@@ -29,7 +31,7 @@ import { switchContext, getContexts } from '../services/api'
 import { useAppContext } from '../context/AppContext'
 import './Dashboard.css'
 
-type ActivePage = 'Dashboard' | 'Queue Management' | 'Appointments' | 'Patients' | 'Doctors' | 'Leave Management' | 'Settings'
+type ActivePage = 'Dashboard' | 'Queue Management' | 'Appointments' | 'Instant Appointment' | 'Patients' | 'Doctors' | 'Leave Management' | 'Staff' | 'Settings'
 
 interface Doctor { id: string; doctorUuid: string; name: string; avatar: string; specialty: string; phone: string; email: string; experience: string; status: 'Active' | 'Inactive' }
 
@@ -40,6 +42,8 @@ const allNavItems: { label: ActivePage; icon: string; excludeRoles?: string[] }[
   { label: 'Patients', icon: patientsIcon },
   { label: 'Doctors', icon: doctorsIcon, excludeRoles: ['doctor'] },
   { label: 'Leave Management', icon: leaveIcon },
+  { label: 'Instant Appointment', icon: instantAppointmentIcon },
+  { label: 'Staff', icon: staffIcon },
 ]
 
 const Dashboard: FC = () => {
@@ -71,6 +75,7 @@ const Dashboard: FC = () => {
   const [showLogout, setShowLogout] = useState(false)
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
+  const [showComingSoon, setShowComingSoon] = useState<string | null>(null)
 
   const navigate = (page: ActivePage, doctor: DoctorDetail | null = null) => {
     const state = { page, viewDoctor: doctor ? doctor.id : null }
@@ -118,17 +123,34 @@ const Dashboard: FC = () => {
           <img src={navExpandIcon} alt="toggle sidebar" className={`sidebar-collapse-icon${sidebarCollapsed ? ' rotated' : ''}`} />
         </button>
         <nav className="sidebar-nav">
-          {navItems.map(item => (
-            <div
-              key={item.label}
-              className={`nav-item ${activePage === item.label ? 'nav-item-active' : ''}`}
-              onClick={() => navigate(item.label)}
-              title={sidebarCollapsed ? item.label : undefined}
-            >
-              <img src={item.icon} alt="" className="nav-icon" />
-              {!sidebarCollapsed && <span className="nav-label">{item.label}</span>}
-            </div>
-          ))}
+          {navItems.map(item => {
+            const isComingSoon = item.label === 'Instant Appointment' || item.label === 'Staff'
+            return (
+              <div
+                key={item.label}
+                className={`nav-item ${activePage === item.label ? 'nav-item-active' : ''}`}
+                onClick={() => {
+                  if (isComingSoon) {
+                    setShowComingSoon(prev => prev === item.label ? null : item.label)
+                  } else {
+                    setShowComingSoon(null)
+                    navigate(item.label)
+                  }
+                }}
+                title={sidebarCollapsed ? item.label : undefined}
+              >
+                <img src={item.icon} alt="" className="nav-icon" />
+                {!sidebarCollapsed && (
+                  <span className="nav-label" style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                    <span style={{ whiteSpace: 'nowrap' }}>{item.label}</span>
+                    {isComingSoon && showComingSoon === item.label && (
+                      <span className="coming-soon-badge">Coming Soon</span>
+                    )}
+                  </span>
+                )}
+              </div>
+            )
+          })}
         </nav>
       </aside>
       <main className="dashboard-main">
