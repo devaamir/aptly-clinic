@@ -241,3 +241,69 @@ export interface ClinicData {
   specialties: Speciality[]; medicalSystem: MedicalSystem
 }
 export interface CreateClinicResponse { success: boolean; data: ClinicData }
+
+// Leave Management
+export type LeaveStatus = 'Pending' | 'Approved' | 'Rejected' | 'Cancelled'
+export type LeaveSession = 'morning' | 'afternoon'
+
+export interface LeaveDoctor {
+  id: string
+  name: string
+  profilePicture: string
+  specialty: string | null
+}
+
+export interface Leave {
+  id: string
+  doctor: LeaveDoctor
+  appliedDate: string
+  startDate: string
+  endDate: string
+  duration: string
+  isHalfDay: boolean
+  session: LeaveSession | null
+  reason: string
+  status: LeaveStatus
+  rejectionReason: string | null
+  creatorRole: string          // 'doctor' | 'medical-center-manager' | 'staff-member'
+  createdAt: string
+  updatedAt: string
+}
+
+export interface LeavesResponse {
+  success: boolean
+  data: Leave[]
+  pagination: Pagination
+}
+
+export interface LeaveResponse {
+  success: boolean
+  message: string
+  data: Leave
+}
+
+export interface LeaveStatusUpdateResponse {
+  success: boolean
+  message: string
+  data: {
+    id: string
+    status: LeaveStatus
+    updatedAt: string
+  }
+}
+
+export interface ApplyLeaveRequest {
+  doctorId?: string          // omit when doctor is calling for themselves
+  startDate: string          // YYYY-MM-DD
+  endDate: string            // YYYY-MM-DD
+  isHalfDay: boolean
+  session: LeaveSession | null
+  reason: string
+}
+
+export interface GetLeavesParams {
+  status?: LeaveStatus
+  search?: string
+  page?: number
+  limit?: number
+}
