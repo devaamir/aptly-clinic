@@ -203,6 +203,29 @@ export const updateDoctorSchedule = (
     body
   );
 
+// Leave Management
+export const getLeaves = (params: import("./types").GetLeavesParams = {}) => {
+  const query = new URLSearchParams()
+  if (params.status) query.set("status", params.status)
+  if (params.search) query.set("search", params.search)
+  if (params.page != null) query.set("page", String(params.page))
+  if (params.limit != null) query.set("limit", String(params.limit))
+  const qs = query.toString()
+  return api.get<import("./types").LeavesResponse>(`/leaves${qs ? `?${qs}` : ""}`)
+}
+
+export const applyLeave = (body: import("./types").ApplyLeaveRequest) =>
+  api.post<import("./types").LeaveResponse>("/leaves", body)
+
+export const cancelLeave = (leaveId: string) =>
+  api.patch<import("./types").LeaveStatusUpdateResponse>(`/leaves/${leaveId}/cancel`, {})
+
+export const approveLeave = (leaveId: string) =>
+  api.patch<import("./types").LeaveStatusUpdateResponse>(`/leaves/${leaveId}/approve`, {})
+
+export const rejectLeave = (leaveId: string, rejectionReason?: string) =>
+  api.patch<import("./types").LeaveStatusUpdateResponse>(`/leaves/${leaveId}/reject`, rejectionReason ? { rejectionReason } : {})
+
 // SSE
 import { EventSourcePolyfill } from "event-source-polyfill";
 
