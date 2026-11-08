@@ -78,7 +78,8 @@ const Appointments: FC = () => {
   const [patientName, setPatientName] = useState('')
   const [patientPhone, setPatientPhone] = useState('')
   const [patientGender, setPatientGender] = useState('')
-  const [patientDob, setPatientDob] = useState('')
+  const [patientDob, setPatientDob] = useState('') // kept for backend; not shown in UI
+  const [patientAge, setPatientAge] = useState('') // shown in UI; converted to DOB on submit
   const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null)
   const [phoneResults, setPhoneResults] = useState<Patient[]>([])
   const [phoneSearchLoading, setPhoneSearchLoading] = useState(false)
@@ -204,7 +205,11 @@ const Appointments: FC = () => {
     try {
       let patientId = selectedPatient?.id
       if (!patientId) {
-        const pr = await createPatient({ name: patientName, phoneNumber: patientPhone, gender: patientGender, dateOfBirth: patientDob })
+        // Convert age to a DOB (Jan 1 of the birth year) for the backend
+        const dobForBackend = patientAge
+          ? `${new Date().getFullYear() - parseInt(patientAge, 10)}-01-01`
+          : patientDob
+        const pr = await createPatient({ name: patientName, phoneNumber: patientPhone, gender: patientGender, dateOfBirth: dobForBackend })
         if (!pr.success) return
         patientId = pr.data.id
       }
@@ -228,6 +233,7 @@ const Appointments: FC = () => {
     setPatientPhone('')
     setPatientGender('')
     setPatientDob('')
+    setPatientAge('')
     setSelectedPatient(null)
     setPhoneResults([])
     setPhoneError('')
@@ -614,14 +620,14 @@ const Appointments: FC = () => {
                               const v = e.target.value.replace(/\D/g, '').slice(0, 10)
                               setPatientPhone(v)
                               setPhoneError('')
-                              if (selectedPatient) { setSelectedPatient(null); setPatientName(''); setPatientGender(''); setPatientDob('') }
+                              if (selectedPatient) { setSelectedPatient(null); setPatientName(''); setPatientGender(''); setPatientDob(''); setPatientAge('') }
                             }}
                             onBlur={() => {
                               if (patientPhone && !/^[6-9]\d{9}$/.test(patientPhone)) setPhoneError('Enter a valid 10-digit mobile number')
                             }}
                           />
                           {phoneSearchLoading && <span className="doc-name-search-spinner" />}
-                          {selectedPatient && <button className="doc-name-clear-btn" onMouseDown={() => { setSelectedPatient(null); setPatientPhone(''); setPatientName(''); setPatientGender(''); setPatientDob(''); setPhoneResults([]); setPhoneError('') }}>✕</button>}
+                          {selectedPatient && <button className="doc-name-clear-btn" onMouseDown={() => { setSelectedPatient(null); setPatientPhone(''); setPatientName(''); setPatientGender(''); setPatientDob(''); setPatientAge(''); setPhoneResults([]); setPhoneError('') }}>✕</button>}
                         </div>
                         {phoneError && <span className="form-field-error-msg">{phoneError}</span>}
                         {phoneResults.length > 0 && phoneInputRef.current && (() => {
@@ -636,6 +642,13 @@ const Appointments: FC = () => {
                                     setPatientName(p.name)
                                     setPatientGender(p.gender)
                                     setPatientDob(p.dateOfBirth)
+                                    // Compute age from stored DOB for display
+                                    if (p.dateOfBirth) {
+                                      const birthYear = new Date(p.dateOfBirth).getFullYear()
+                                      setPatientAge(String(new Date().getFullYear() - birthYear))
+                                    } else {
+                                      setPatientAge('')
+                                    }
                                     setPhoneResults([])
                                   }}>
                                   <img src={userProfileImg} alt={p.name} className="doc-name-dropdown-avatar" />
@@ -653,7 +666,7 @@ const Appointments: FC = () => {
                     </div>
                     <div className="sch-form-row">
                       <FormField as="select" label="Gender" value={patientGender} options={[{ label: 'Male', value: 'male' }, { label: 'Female', value: 'female' }]} disabled={!!selectedPatient} onChange={e => !selectedPatient && setPatientGender((e.target as HTMLSelectElement).value)} />
-                      <FormField label="Date of Birth" placeholder="DD/MM/YYYY" type="date" rightIcon={calendarIcon} value={patientDob} readOnly={!!selectedPatient} onChange={e => !selectedPatient && setPatientDob((e.target as HTMLInputElement).value)} />
+                      <FormField label="Age" placeholder="Enter age" type="number" value={patientAge} readOnly={!!selectedPatient} onChange={e => !selectedPatient && setPatientAge((e.target as HTMLInputElement).value)} />
                     </div>
                     <h3 className="sch-section-title">Doctor Assign</h3>
                     <div className="sch-form-row">
