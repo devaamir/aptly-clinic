@@ -42,10 +42,7 @@ export type {
 };
 export * from "./types";
 
-const baseURL =
-  import.meta.env.VITE_USE_LIVE === "true"
-    ? import.meta.env.VITE_LIVE_BASE_URL
-    : import.meta.env.VITE_API_BASE_URL;
+const baseURL = import.meta.env.VITE_LIVE_BASE_URL;
 
 const client = axios.create({
   baseURL: baseURL ?? "",
@@ -63,7 +60,9 @@ client.interceptors.response.use(
   async (error) => {
     const original = error.config;
     // Don't try to refresh or redirect for auth endpoints themselves
-    const isAuthEndpoint = original?.url?.includes('/auth/login') || original?.url?.includes('/auth/refresh-token')
+    const isAuthEndpoint =
+      original?.url?.includes("/auth/login") ||
+      original?.url?.includes("/auth/refresh-token");
     if (error.response?.status === 401 && !original._retry && !isAuthEndpoint) {
       original._retry = true;
       try {
@@ -79,7 +78,7 @@ client.interceptors.response.use(
         localStorage.removeItem("accessToken");
         localStorage.removeItem("refreshToken");
         localStorage.removeItem("pendingClinicSetup");
-        const publicPaths = ['/set-password', '/register', '/delete-account']
+        const publicPaths = ["/set-password", "/register", "/delete-account"];
         if (!publicPaths.includes(window.location.pathname)) {
           window.location.href = "/";
         }
@@ -104,8 +103,10 @@ export const api = {
 export const login = (emailAddress: string, password: string) =>
   api.post<LoginResponse>("/auth/login", { emailAddress, password });
 
-export const register = (emailAddress: string, role: 'doctor' | 'medical-center-manager') =>
-  api.post<RegisterResponse>("/auth/register", { emailAddress, role });
+export const register = (
+  emailAddress: string,
+  role: "doctor" | "medical-center-manager"
+) => api.post<RegisterResponse>("/auth/register", { emailAddress, role });
 
 export const getAppointments = (page = 1, limit = 20) =>
   api.get<AppointmentsResponse>(
@@ -205,26 +206,37 @@ export const updateDoctorSchedule = (
 
 // Leave Management
 export const getLeaves = (params: import("./types").GetLeavesParams = {}) => {
-  const query = new URLSearchParams()
-  if (params.status) query.set("status", params.status)
-  if (params.search) query.set("search", params.search)
-  if (params.page != null) query.set("page", String(params.page))
-  if (params.limit != null) query.set("limit", String(params.limit))
-  const qs = query.toString()
-  return api.get<import("./types").LeavesResponse>(`/leaves${qs ? `?${qs}` : ""}`)
-}
+  const query = new URLSearchParams();
+  if (params.status) query.set("status", params.status);
+  if (params.search) query.set("search", params.search);
+  if (params.page != null) query.set("page", String(params.page));
+  if (params.limit != null) query.set("limit", String(params.limit));
+  const qs = query.toString();
+  return api.get<import("./types").LeavesResponse>(
+    `/leaves${qs ? `?${qs}` : ""}`
+  );
+};
 
 export const applyLeave = (body: import("./types").ApplyLeaveRequest) =>
-  api.post<import("./types").LeaveResponse>("/leaves", body)
+  api.post<import("./types").LeaveResponse>("/leaves", body);
 
 export const cancelLeave = (leaveId: string) =>
-  api.patch<import("./types").LeaveStatusUpdateResponse>(`/leaves/${leaveId}/cancel`, {})
+  api.patch<import("./types").LeaveStatusUpdateResponse>(
+    `/leaves/${leaveId}/cancel`,
+    {}
+  );
 
 export const approveLeave = (leaveId: string) =>
-  api.patch<import("./types").LeaveStatusUpdateResponse>(`/leaves/${leaveId}/approve`, {})
+  api.patch<import("./types").LeaveStatusUpdateResponse>(
+    `/leaves/${leaveId}/approve`,
+    {}
+  );
 
 export const rejectLeave = (leaveId: string, rejectionReason?: string) =>
-  api.patch<import("./types").LeaveStatusUpdateResponse>(`/leaves/${leaveId}/reject`, rejectionReason ? { rejectionReason } : {})
+  api.patch<import("./types").LeaveStatusUpdateResponse>(
+    `/leaves/${leaveId}/reject`,
+    rejectionReason ? { rejectionReason } : {}
+  );
 
 // SSE
 import { EventSourcePolyfill } from "event-source-polyfill";
@@ -316,7 +328,10 @@ export const createSubscriptionCheckout = (plan: "monthly" | "annually") =>
   );
 
 export const getSubscriptionStatus = () =>
-  api.get<{ success: boolean; data: { trialExpiresAt: string; subscriptionStatus: string } }>('/subscriptions/status')
+  api.get<{
+    success: boolean;
+    data: { trialExpiresAt: string; subscriptionStatus: string };
+  }>("/subscriptions/status");
 
 export interface DashboardData {
   todayAppointmentCounts: { confirmedCount: number; cancelledCount: number };
