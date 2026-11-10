@@ -86,6 +86,8 @@ const Appointments: FC = () => {
   const [phoneError, setPhoneError] = useState('')
   const phoneSearchTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const phoneInputRef = useRef<HTMLDivElement>(null)
+  const nameFieldRef = useRef<HTMLDivElement>(null)
+  const ageFieldRef = useRef<HTMLDivElement>(null)
 
   const [clinicDoctors, setClinicDoctors] = useState<AppointmentDoctor[]>([])
   const [doctorSchedules, setDoctorSchedules] = useState<DoctorSchedule[]>([])
@@ -183,6 +185,7 @@ const Appointments: FC = () => {
     : []
 
   const [submitLoading, setSubmitLoading] = useState(false)
+  const [submitError, setSubmitError] = useState<string | null>(null)
   const [cancelLoading, setCancelLoading] = useState(false)
   const [showCancelConfirm, setShowCancelConfirm] = useState(false)
 
@@ -202,6 +205,7 @@ const Appointments: FC = () => {
   const handleSubmit = async () => {
     if (!selectedSession || !selectedDate || !/^[6-9]\d{9}$/.test(patientPhone.trim()) || !patientName.trim()) return
     setSubmitLoading(true)
+    setSubmitError(null)
     try {
       let patientId = selectedPatient?.id
       if (!patientId) {
@@ -223,7 +227,12 @@ const Appointments: FC = () => {
         setAppointments(prev => [mapApiAppointment(res.data as unknown as ApiAppointment), ...prev])
         setSubmitted(true)
       }
-    } catch { /* silent */ } finally { setSubmitLoading(false) }
+    } catch (err: unknown) {
+      const message =
+        (err as { response?: { data?: { message?: string } } })?.response?.data?.message
+        ?? 'Something went wrong. Please try again.'
+      setSubmitError(message)
+    } finally { setSubmitLoading(false) }
   }
 
   const resetSchedule = () => {
@@ -243,6 +252,7 @@ const Appointments: FC = () => {
     setSelectedSession(null)
     setDoctorSchedules([])
     setCreatedAppointment(null)
+    setSubmitError(null)
   }
 
   const bookedDateTime = new Date().toLocaleString('en-US', { month: 'short', day: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })
@@ -625,6 +635,7 @@ const Appointments: FC = () => {
                             onBlur={() => {
                               if (patientPhone && !/^[6-9]\d{9}$/.test(patientPhone)) setPhoneError('Enter a valid 10-digit mobile number')
                             }}
+                            onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); nameFieldRef.current?.querySelector('input')?.focus() } }}
                           />
                           {phoneSearchLoading && <span className="doc-name-search-spinner" />}
                           {selectedPatient && <button className="doc-name-clear-btn" onMouseDown={() => { setSelectedPatient(null); setPatientPhone(''); setPatientName(''); setPatientGender(''); setPatientDob(''); setPatientAge(''); setPhoneResults([]); setPhoneError('') }}>✕</button>}
@@ -662,11 +673,15 @@ const Appointments: FC = () => {
                           )
                         })()}
                       </div>
-                      <FormField label="Name" placeholder="Enter name" value={patientName} readOnly={!!selectedPatient} onChange={e => !selectedPatient && setPatientName((e.target as HTMLInputElement).value)} />
+                      <div ref={nameFieldRef}>
+                        <FormField label="Name" placeholder="Enter name" value={patientName} readOnly={!!selectedPatient} onChange={e => !selectedPatient && setPatientName((e.target as HTMLInputElement).value)} onKeyDown={(e: React.KeyboardEvent) => { if (e.key === 'Enter') { e.preventDefault(); ageFieldRef.current?.querySelector('input')?.focus() } }} />
+                      </div>
                     </div>
                     <div className="sch-form-row">
                       <FormField as="select" label="Gender" value={patientGender} options={[{ label: 'Male', value: 'male' }, { label: 'Female', value: 'female' }]} disabled={!!selectedPatient} onChange={e => !selectedPatient && setPatientGender((e.target as HTMLSelectElement).value)} />
-                      <FormField label="Age" placeholder="Enter age" type="number" value={patientAge} readOnly={!!selectedPatient} onChange={e => !selectedPatient && setPatientAge((e.target as HTMLInputElement).value)} />
+                      <div ref={ageFieldRef}>
+                        <FormField label="Age" placeholder="Enter age" type="number" value={patientAge} readOnly={!!selectedPatient} onChange={e => !selectedPatient && setPatientAge((e.target as HTMLInputElement).value)} />
+                      </div>
                     </div>
                     <h3 className="sch-section-title">Doctor Assign</h3>
                     <div className="sch-form-row">
@@ -767,17 +782,21 @@ const Appointments: FC = () => {
                 <div className="sch-divider" />
                 {(() => {
                   const activeSchedule = doctorSchedules.find(s => s.id === selectedSession)
-                  const isExpired = activeSchedule ? (() => {
+                  const isStaffRole = !isDoctor && activeContext?.role?.toLowerCase() !== 'patient'
+                  const isExpired = activeSchedule && !isStaffRole ? (() => {
                     const [h, m] = activeSchedule.stopTime.split(':').map(Number)
                     const stop = new Date(selectedDate); stop.setHours(h, m, 0, 0)
                     return new Date() > stop
                   })() : false
-                  const noTokens = activeSchedule ? activeSchedule.remainingTokenCount === 0 : false
+                  const noTokens = activeSchedule && !isStaffRole ? activeSchedule.remainingTokenCount === 0 : false
                   const blockReason = isExpired ? 'Session time has passed' : noTokens ? 'No tokens left' : null
                   return (
                     <>
                       {blockReason && (
                         <div style={{ padding: '8px 24px 0', fontFamily: 'Manrope', fontSize: 12, color: '#F04438' }}>{blockReason}</div>
+                      )}
+                      {submitError && (
+                        <div style={{ padding: '8px 24px 0', fontFamily: 'Manrope', fontSize: 12, color: '#F04438' }}>{submitError}</div>
                       )}
                       <div className="ip-actions" style={{ padding: '16px 24px' }}>
                         <button className="ip-btn ip-cancel" onClick={resetSchedule}>Cancel</button>
