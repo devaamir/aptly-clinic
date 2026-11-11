@@ -1,7 +1,5 @@
 import type { FC } from 'react'
-import { useState, useEffect } from 'react'
-import { RecaptchaVerifier, signInWithPhoneNumber, type ConfirmationResult } from 'firebase/auth'
-import { auth } from '../services/firebase'
+import { useState } from 'react'
 import AuthLayout from '../components/AuthLayout'
 import FormField from '../components/FormField'
 import './DeleteAccount.css'
@@ -10,67 +8,22 @@ const DeleteAccount: FC = () => {
   const [step, setStep] = useState<'phone' | 'otp' | 'success'>('phone')
   const [phoneNumber, setPhoneNumber] = useState('')
   const [otp, setOtp] = useState('')
-  const [loading, setLoading] = useState(false)
-  const [confirmationResult, setConfirmationResult] = useState<ConfirmationResult | null>(null)
-  const [error, setError] = useState('')
+  const [loading] = useState(false)
+  const [error] = useState('')
 
-  useEffect(() => {
-    // Initialize reCAPTCHA
-    if (!window.recaptchaVerifier) {
-      window.recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
-        size: 'invisible',
-        callback: () => {
-          // reCAPTCHA solved
-        },
-      })
-      window.recaptchaVerifier.render()
-    }
-  }, [])
-
-  const handleSendOtp = async () => {
+  const handleSendOtp = () => {
     if (!phoneNumber || phoneNumber.length < 10) return
-    setLoading(true)
-    setError('')
-    
-    try {
-      const appVerifier = window.recaptchaVerifier
-      
-      // Force captcha execution
-      await appVerifier.verify()
-      
-      const fullPhoneNumber = `+91${phoneNumber}`
-      const result = await signInWithPhoneNumber(auth, fullPhoneNumber, appVerifier)
-      setConfirmationResult(result)
-      setStep('otp')
-    } catch (err: any) {
-      setError(err.message || 'Failed to send OTP')
-    } finally {
-      setLoading(false)
-    }
+    setStep('otp')
   }
 
-  const handleVerifyAndDelete = async () => {
-    if (!otp || otp.length < 6 || !confirmationResult) return
-    setLoading(true)
-    setError('')
-    
-    try {
-      await confirmationResult.confirm(otp)
-      // TODO: Call your backend API to delete the account
-      // await api.post('/auth/delete-account', { phoneNumber })
-      setStep('success')
-    } catch (err: any) {
-      setError('Invalid OTP. Please try again.')
-    } finally {
-      setLoading(false)
-    }
+  const handleVerifyAndDelete = () => {
+    if (!otp || otp.length < 6) return
+    setStep('success')
   }
 
   return (
     <AuthLayout>
       <div className="delete-account-content">
-        <div id="recaptcha-container"></div>
-        
         {step === 'phone' && (
           <>
             <h1 className="delete-account-title">Delete Account</h1>
@@ -92,7 +45,7 @@ const DeleteAccount: FC = () => {
                 onClick={handleSendOtp}
                 disabled={loading || phoneNumber.length < 10}
               >
-                {loading ? 'Sending...' : 'Send OTP'}
+                Send OTP
               </button>
             </div>
           </>
@@ -118,11 +71,11 @@ const DeleteAccount: FC = () => {
                 onClick={handleVerifyAndDelete}
                 disabled={loading || otp.length < 6}
               >
-                {loading ? 'Verifying...' : 'Delete Account'}
+                Delete Account
               </button>
               <button
                 className="delete-account-btn-secondary"
-                onClick={() => { setStep('phone'); setOtp(''); setError('') }}
+                onClick={() => { setStep('phone'); setOtp('') }}
                 disabled={loading}
               >
                 Back
