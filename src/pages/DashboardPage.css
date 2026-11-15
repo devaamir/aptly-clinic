@@ -369,6 +369,18 @@
   border-radius: 20px;
 }
 
+.dbp-doctor-status.not-started {
+  color: #B54708;
+  background-color: #FFFAEB;
+  border-radius: 20px;
+}
+
+.dbp-doctor-status.on-leave {
+  color: #6941C6;
+  background-color: #F4F3FF;
+  border-radius: 20px;
+}
+
 /* Skeleton loader */
 @keyframes dbp-shimmer {
   0% {

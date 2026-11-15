@@ -220,6 +220,12 @@ export const getLeaves = (params: import("./types").GetLeavesParams = {}) => {
 export const applyLeave = (body: import("./types").ApplyLeaveRequest) =>
   api.post<import("./types").LeaveResponse>("/leaves", body);
 
+export const editLeave = (leaveId: string, body: import("./types").EditLeaveRequest) =>
+  api.put<import("./types").LeaveResponse>(`/leaves/${leaveId}`, body);
+
+export const deleteLeave = (leaveId: string) =>
+  api.delete<import("./types").DeleteLeaveResponse>(`/leaves/${leaveId}`);
+
 export const cancelLeave = (leaveId: string) =>
   api.patch<import("./types").LeaveStatusUpdateResponse>(
     `/leaves/${leaveId}/cancel`,
@@ -309,6 +315,23 @@ export const cancelSchedulePause = (pauseId: string) =>
     {}
   );
 
+// Queue Session Management
+export const openQueueSession = (doctorScheduleId: string) =>
+  client
+    .post<import("./types").OpenSessionResponse>(
+      `/doctors/schedules/${doctorScheduleId}/session`,
+      {}
+    )
+    .then((r) => r.data);
+
+export const closeQueueSession = (doctorScheduleId: string) =>
+  client
+    .patch<import("./types").CloseSessionResponse>(
+      `/doctors/schedules/${doctorScheduleId}/session`,
+      {}
+    )
+    .then((r) => r.data);
+
 export const setPassword = (token: string, password: string) =>
   api.post<{ success: boolean }>("/auth/set-password", { token, password });
 
@@ -354,12 +377,15 @@ export interface DashboardData {
     id: string;
     name: string;
     profilePicture: string | null;
+    isOnLeave: boolean;
     specialties: { id: string; name: string }[];
     schedules: {
       id: string;
       dayOfWeek: string;
       startTime: string;
       stopTime: string;
+      tokenLimit: number;
+      isLive: boolean;
     }[];
   }[];
   todayAppointments: {

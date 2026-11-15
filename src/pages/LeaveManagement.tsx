@@ -8,6 +8,8 @@ import FormField from '../components/FormField'
 import {
   getLeaves,
   applyLeave,
+  editLeave,
+  deleteLeave,
   cancelLeave,
   approveLeave,
   rejectLeave,
@@ -42,6 +44,7 @@ const LeaveManagement: FC = () => {
   const { activeContext } = useAppContext()
   const role = activeContext?.role?.toLowerCase() ?? ''
   const isAdmin = role === 'medical-center-manager' || role === 'staff-member'
+  const isManager = role === 'medical-center-manager'
 
   // ── List state ──────────────────────────────────────────────────────────────
   const [leaves, setLeaves] = useState<Leave[]>([])
@@ -55,9 +58,14 @@ const LeaveManagement: FC = () => {
   // ── Action state ─────────────────────────────────────────────────────────────
   const [cancelTarget, setCancelTarget] = useState<Leave | null>(null)
   const [rejectTarget, setRejectTarget] = useState<Leave | null>(null)
+  const [deleteTarget, setDeleteTarget] = useState<Leave | null>(null)
   const [selectedLeave, setSelectedLeave] = useState<Leave | null>(null)
   const [actionLoading, setActionLoading] = useState(false)
   const [actionError, setActionError] = useState<string | null>(null)
+
+  // ── Edit Leave form state ────────────────────────────────────────────────────
+  const [editTarget, setEditTarget] = useState<Leave | null>(null)
+  const [showEditWarning, setShowEditWarning] = useState(false)
 
   // ── Apply Leave form state ───────────────────────────────────────────────────
   const [showApply, setShowApply] = useState(false)
@@ -127,6 +135,90 @@ const LeaveManagement: FC = () => {
     setSession('')
     setReason('')
     setSubmitError(null)
+  }
+
+  // ── Open Edit modal — pre-populate form from existing leave ───────────────────
+  const openEdit = (leave: Leave) => {
+    setEditTarget(leave)
+    setStartDate(leave.startDate)
+    setEndDate(leave.endDate)
+    setHalfDay(leave.isHalfDay)
+    setSession(leave.session ?? '')
+    setReason(leave.reason)
+    setSubmitError(null)
+  }
+
+  const resetEdit = () => {
+    setEditTarget(null)
+    setShowEditWarning(false)
+    setStartDate(todayStr)
+    setEndDate(todayStr)
+    setHalfDay(false)
+    setSession('')
+    setReason('')
+    setSubmitError(null)
+  }
+
+  // Step 1: validate, then show appointment warning
+  const handleEditSubmitClick = () => {
+    setSubmitError(null)
+    if (!startDate || !endDate) { setSubmitError('Please select start and end dates.'); return }
+    if (!reason.trim()) { setSubmitError('Please enter a reason for the leave.'); return }
+    if (halfDay && !session) { setSubmitError('Please select a session (morning or afternoon) for half day.'); return }
+    setEditTarget(prev => prev) // keep open
+    setShowEditWarning(true)
+  }
+
+  // Step 2: confirmed — call PUT API
+  const handleConfirmEdit = async () => {
+    if (!editTarget) return
+    setShowEditWarning(false)
+    setSubmitLoading(true)
+    setSubmitError(null)
+    try {
+      const res = await editLeave(editTarget.id, {
+        startDate,
+        endDate,
+        isHalfDay: halfDay,
+        session: halfDay ? (session as LeaveSession) : null,
+        reason: reason.trim(),
+      })
+      setLeaves(prev => prev.map(l => l.id === res.data.id ? res.data : l))
+      // If the detail panel is open for this leave, refresh it too
+      setSelectedLeave(prev => prev?.id === res.data.id ? res.data : prev)
+      resetEdit()
+    } catch (err: unknown) {
+      const msg = (err as { response?: { data?: { message?: string; errors?: { message: string }[] } } })
+        ?.response?.data
+      if (msg?.errors?.length) {
+        setSubmitError(msg.errors.map(e => e.message).join(' · '))
+      } else {
+        setSubmitError(msg?.message ?? 'Failed to update leave. Please try again.')
+      }
+      setShowEditWarning(false) // re-show edit form with error
+    } finally {
+      setSubmitLoading(false)
+    }
+  }
+
+  // ── Delete Leave ──────────────────────────────────────────────────────────────
+  const handleDelete = async () => {
+    if (!deleteTarget) return
+    setActionLoading(true)
+    setActionError(null)
+    try {
+      await deleteLeave(deleteTarget.id)
+      setLeaves(prev => prev.filter(l => l.id !== deleteTarget.id))
+      // Close detail panel if open for this leave
+      setSelectedLeave(prev => prev?.id === deleteTarget.id ? null : prev)
+      setDeleteTarget(null)
+    } catch (err: unknown) {
+      const msg = (err as { response?: { data?: { message?: string } } })
+        ?.response?.data?.message
+      setActionError(msg ?? 'Failed to delete leave. Please try again.')
+    } finally {
+      setActionLoading(false)
+    }
   }
 
   // ── Submit Apply Leave ────────────────────────────────────────────────────────
@@ -341,7 +433,7 @@ const LeaveManagement: FC = () => {
                         </button>
                       </>
                     )}
-                    {(l.status === 'Approved' || l.status === 'Pending') && new Date(l.startDate) > new Date() && (
+                    {(l.status === 'Approved' || l.status === 'Pending') && l.startDate >= todayStr && (
                       <>
                         {isAdmin && l.status === 'Pending' && l.creatorRole !== 'medical-center-manager' && <span className="lm-action-divider" />}
                         <button className="lm-cancel-btn" onClick={() => setCancelTarget(l)}>
@@ -349,6 +441,7 @@ const LeaveManagement: FC = () => {
                         </button>
                       </>
                     )}
+                    {/* Edit & Delete are inside the 3-dots slide panel only */}
                     <button className="pat-dots-btn lm-dots-btn" onClick={() => setSelectedLeave(l)}>
                       <img src={dotsIcon} alt="details" />
                     </button>
@@ -451,8 +544,167 @@ const LeaveManagement: FC = () => {
         </Modal>
       )}
 
-      {/* ── Apply Leave Modal ────────────────────────────────────────────────── */}
-      {showApply && (
+      {/* ── Delete Confirm Modal ─────────────────────────────────────────────── */}
+      {deleteTarget && (
+        <Modal onClose={() => { setDeleteTarget(null); setActionError(null) }}>
+          <div className="lm-confirm-modal">
+            <div className="lm-confirm-icon-wrap">
+              <img src={warningIcon} alt="" style={{ width: 56, height: 56 }} />
+            </div>
+            <h3 className="lm-confirm-title">Delete Leave</h3>
+            <p className="lm-confirm-desc">
+              Are you sure you want to permanently delete the leave request for <strong>{deleteTarget.doctor.name}</strong> from <strong>{deleteTarget.startDate}</strong> to <strong>{deleteTarget.endDate}</strong>? This action cannot be undone.
+            </p>
+            {actionError && <p style={{ color: '#F04438', fontSize: 13, margin: '0 0 12px', textAlign: 'center' }}>{actionError}</p>}
+            <div className="lm-confirm-actions">
+              <button className="ip-btn ip-cancel" style={{ flex: 1 }} onClick={() => { setDeleteTarget(null); setActionError(null) }} disabled={actionLoading}>Keep Leave</button>
+              <button className="ip-btn ip-submit" style={{ flex: 1, background: '#FF5A4F' }} onClick={handleDelete} disabled={actionLoading}>
+                {actionLoading ? 'Deleting...' : 'Delete Leave'}
+              </button>
+            </div>
+          </div>
+        </Modal>
+      )}
+
+      {/* ── Edit Warning Modal ───────────────────────────────────────────────── */}
+      {showEditWarning && (
+        <Modal onClose={() => setShowEditWarning(false)}>
+          <div className="lm-confirm-modal">
+            <div className="lm-confirm-icon-wrap">
+              <img src={warningIcon} alt="" style={{ width: 56, height: 56 }} />
+            </div>
+            <h3 className="lm-confirm-title">Appointments May Be Affected</h3>
+            <p className="lm-confirm-desc">
+              Updating these leave dates may cancel existing appointments or schedules in the affected period. Patients will be notified automatically.
+            </p>
+            <p className="lm-confirm-desc" style={{ fontSize: 12, color: '#A0A5B1', marginTop: -4 }}>
+              Do you want to proceed?
+            </p>
+            <div className="lm-confirm-actions">
+              <button className="ip-btn ip-cancel" style={{ flex: 1 }} onClick={() => setShowEditWarning(false)}>
+                Go Back
+              </button>
+              <button className="ip-btn ip-submit" style={{ flex: 1 }} onClick={handleConfirmEdit} disabled={submitLoading}>
+                {submitLoading ? 'Saving...' : 'Yes, Update Leave'}
+              </button>
+            </div>
+          </div>
+        </Modal>
+      )}
+
+      {/* ── Edit Leave Modal ─────────────────────────────────────────────────── */}
+      {editTarget && !showEditWarning && (
+        <Modal onClose={resetEdit} autoSize>
+          <div style={{ width: 520 }}>
+            <div className="sch-header">
+              <h2 className="sch-title">Edit Leave</h2>
+              <button className="sch-close" onClick={resetEdit}>✕</button>
+            </div>
+            <div className="sch-divider" />
+            <div className="modal-body-scroll">
+              <div className="sch-body">
+                {/* Doctor — read-only, shown for context */}
+                <div style={{ marginBottom: 18 }}>
+                  <label className="form-field-label">Doctor / Staff</label>
+                  <div className="lm-edit-doctor-display">
+                    <img
+                      src={editTarget.doctor.profilePicture || doctorProfileImg}
+                      alt={editTarget.doctor.name}
+                      className="lm-edit-doctor-avatar"
+                    />
+                    <div>
+                      <div className="lm-edit-doctor-name">{editTarget.doctor.name}</div>
+                      {editTarget.doctor.specialty && (
+                        <div className="lm-edit-doctor-spec">{editTarget.doctor.specialty}</div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="sch-form-row">
+                  <FormField
+                    label="Start Date"
+                    type="date"
+                    value={startDate}
+                    rightIcon={calendarIcon}
+                    onChange={e => {
+                      const val = (e.target as HTMLInputElement).value
+                      setStartDate(val)
+                      if (!endDate || endDate < val) setEndDate(val)
+                      setHalfDay(false)
+                      setSession('')
+                    }}
+                  />
+                  <FormField
+                    label="End Date"
+                    type="date"
+                    value={endDate}
+                    rightIcon={calendarIcon}
+                    onChange={e => {
+                      setEndDate((e.target as HTMLInputElement).value)
+                      setHalfDay(false)
+                      setSession('')
+                    }}
+                  />
+                </div>
+
+                {isHalfDayEligible && (
+                  <div className="lm-halfday-row">
+                    <label className="lm-halfday-label" onClick={() => { setHalfDay(h => !h); setSession('') }}>
+                      <span className={`lm-checkbox ${halfDay ? 'checked' : ''}`}>
+                        {halfDay && <img src={tickBlue} alt="" style={{ width: 12, height: 12 }} />}
+                      </span>
+                      Half Day
+                    </label>
+                    {halfDay && (
+                      <div className="lm-session-group">
+                        {(['morning', 'afternoon'] as LeaveSession[]).map(s => (
+                          <label key={s} className="lm-session-option">
+                            <input
+                              type="radio"
+                              name="edit-session"
+                              value={s}
+                              checked={session === s}
+                              onChange={() => setSession(s)}
+                            />
+                            {s.charAt(0).toUpperCase() + s.slice(1)}
+                          </label>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                <div style={{ marginBottom: 18 }}>
+                  <label className="form-field-label">
+                    Reason<span className="form-field-required"> *</span>
+                  </label>
+                  <textarea
+                    className="doc-textarea"
+                    placeholder="Enter reason for leave..."
+                    style={{ height: 80 }}
+                    value={reason}
+                    onChange={e => setReason(e.target.value)}
+                  />
+                </div>
+
+                {submitError && (
+                  <p style={{ color: '#F04438', fontSize: 13, margin: '-8px 0 12px' }}>{submitError}</p>
+                )}
+              </div>
+            </div>
+            <div className="sch-divider" />
+            <div className="ip-actions" style={{ padding: '16px 24px' }}>
+              <button className="ip-btn ip-cancel" onClick={resetEdit} disabled={submitLoading}>Cancel</button>
+              <button className="ip-btn ip-submit" onClick={handleEditSubmitClick} disabled={submitLoading}>
+                {submitLoading ? 'Saving...' : 'Save Changes'}
+              </button>
+            </div>
+          </div>
+        </Modal>
+      )}
+
+      {/* ── Apply Leave Modal ────────────────────────────────────────────────── */}      {showApply && (
         <Modal onClose={resetForm} autoSize>
           <div style={{ width: 520 }}>
             <div className="sch-header">
@@ -621,6 +873,32 @@ const LeaveManagement: FC = () => {
                 <div className="lm-detail-section">
                   <span className="lm-detail-label">Rejection Reason</span>
                   <p className="lm-detail-reason" style={{ color: '#B42318' }}>{selectedLeave.rejectionReason}</p>
+                </div>
+              </>
+            )}
+
+            {/* Edit / Delete actions — same permission rules as table row */}
+            {selectedLeave.startDate >= todayStr &&
+              (selectedLeave.status === 'Pending' || (selectedLeave.status === 'Approved' && isManager)) && (
+              <>
+                <div className="lm-detail-divider" />
+                <div className="lm-detail-section lm-detail-actions">
+                  {/* Edit: Pending → all roles; Approved → manager only */}
+                  {(selectedLeave.status === 'Pending' || (selectedLeave.status === 'Approved' && isManager)) && (
+                    <button
+                      className="lm-detail-action-btn lm-detail-edit-btn"
+                      onClick={() => { openEdit(selectedLeave); setSelectedLeave(null) }}
+                    >
+                      Edit Leave
+                    </button>
+                  )}
+                  {/* Delete: Pending → all roles; Approved → manager only */}
+                  <button
+                    className="lm-detail-action-btn lm-detail-delete-btn"
+                    onClick={() => { setDeleteTarget(selectedLeave); setSelectedLeave(null) }}
+                  >
+                    Delete Leave
+                  </button>
                 </div>
               </>
             )}
