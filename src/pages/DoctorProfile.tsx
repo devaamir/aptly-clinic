@@ -43,7 +43,7 @@ const DoctorProfile: FC<DoctorProfileProps> = ({ doctor, onBack, onEdit }) => {
     return `${h12}:${m} ${ampm}`
   }
 
-  const allSchedules = doctor.medicalCenters.flatMap(mc => mc.schedules)
+  const allSchedules = (doctor.medicalCenters ?? []).flatMap(mc => mc.schedules ?? []).filter(Boolean)
 
   const DAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
   const weekSchedule = DAYS.map(day => {
@@ -106,7 +106,7 @@ const DoctorProfile: FC<DoctorProfileProps> = ({ doctor, onBack, onEdit }) => {
     try {
       const response = await updateDoctorSchedule(doctor.id, { toAdd, toUpdate, toRemove, force: false })
       if (response.success) {
-        doctor.medicalCenters[0].schedules = response.data
+        if (doctor.medicalCenters?.[0]) doctor.medicalCenters[0].schedules = response.data ?? []
         setDayShifts(initShifts())
         setShowModify(false)
       }
