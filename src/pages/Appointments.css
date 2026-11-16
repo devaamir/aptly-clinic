@@ -519,6 +519,11 @@
   min-width: 0;
 }
 
+/* "All" is a real choice here, not a placeholder */
+.sch-specialty-field .form-field-select--placeholder {
+  color: var(--color-inputText);
+}
+
 .sch-date-scroll {
   display: flex;
   gap: 9px;

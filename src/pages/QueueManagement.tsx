@@ -5,8 +5,9 @@ import Modal from '../components/Modal'
 import PageHeader from '../components/PageHeader'
 import InstantPauseModal from '../components/InstantPauseModal'
 import ScheduledPauseModal from '../components/ScheduledPauseModal'
-import { getDoctors, getDoctorSchedule, subscribeQueue, updateAppointmentStatus, pauseSchedule, cancelSchedulePause } from '../services/api'
-import type { AppointmentDoctor, DoctorSchedule, QueueSSEData } from '../services/types'
+import ScheduleAppointmentModal from '../components/ScheduleAppointmentModal'
+import { getDoctors, getDoctorSchedule, subscribeQueue, updateAppointmentStatus, pauseSchedule, cancelSchedulePause, openQueueSession, closeQueueSession } from '../services/api'
+import type { AppointmentDoctor, DoctorSchedule, QueueSSEData, DoctorScheduleSession, QueueScreenState } from '../services/types'
 import { useAppContext } from '../context/AppContext'
 import verifyTickGreen from '../assets/icons/verify-tick-green.svg'
 import infoIconBlue from '../assets/icons/info-icon-blue.svg'
@@ -24,6 +25,7 @@ import skipIcon from '../assets/icons/skip-icon.svg'
 import rightArrow from '../assets/icons/right-arrow.svg'
 import phoneIcon from '../assets/icons/phone-icon.svg'
 import dotsIcon from '../assets/icons/3dots-icon.svg'
+import addIcon from '../assets/icons/add-icon-white.svg'
 import Badge from '../components/Badge'
 import './QueueManagement.css'
 import doctorProfileImg from '../assets/images/doctor-profile.png'
@@ -162,6 +164,7 @@ const QueueManagement: FC = () => {
   const [reloadKey, setReloadKey] = useState(0)
   const [searchQuery, setSearchQuery] = useState('')
   const [showSearch, setShowSearch] = useState(false)
+  const [showSchedule, setShowSchedule] = useState(false)
   const [headerHidden, setHeaderHidden] = useState(false)
   const lastScrollY = useRef(0)
   const scrollRef = useRef<HTMLDivElement | null>(null)
@@ -252,10 +255,35 @@ const QueueManagement: FC = () => {
   // on every unrelated doctors state update (e.g. avgInterval sync from SSE).
   const activeScheduleId = doctors.find(d => d.id === selectedId)?.sessions[sessionIdx]?.scheduleId
 
+  // These maps must be declared before the SSE effect that writes to them and
+  // before the derived values that read from them (e.g. queueScreenState).
+  const [showPauseModal, setShowPauseModal] = useState(false)
+  const [showScheduledModal, setShowScheduledModal] = useState(false)
+  const [showStartConfirm, setShowStartConfirm] = useState(false)
+  const [showNextConfirm, setShowNextConfirm] = useState(false)
+  const [showCloseConfirm, setShowCloseConfirm] = useState(false)
+  const [startLoading, setStartLoading] = useState(false)
+  const [nextLoading, setNextLoading] = useState(false)
+  const [openSessionLoading, setOpenSessionLoading] = useState(false)
+  const [closeSessionLoading, setCloseSessionLoading] = useState(false)
+  const [pausedMap, setPausedMap] = useState<Record<string, string | null>>({})
+  const [pauseIdMap, setPauseIdMap] = useState<Record<string, string | null>>({})
+  const [scheduledMap, setScheduledMap] = useState<Record<string, { startAt: string; duration: string } | null>>({})
+  const [sessionStateMap, setSessionStateMap] = useState<Record<string, DoctorScheduleSession | null>>({})
+  const [toast, setToast] = useState<string | null>(null)
+  const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null)
+  // Tracks which session keys have received at least one SSE message.
+  // Until the first message arrives we don't know the real server state,
+  // so we must not default to NOT_STARTED.
+  const sseReceivedKeys = useRef<Set<string>>(new Set())
+
   // SSE: subscribe to queue for the active session
   useEffect(() => {
     if (!activeScheduleId) return
     const es = subscribeQueue(activeScheduleId, (data: QueueSSEData) => {
+      // Mark that we've received at least one real SSE payload for this key
+      sseReceivedKeys.current.add(`${selectedId}-${sessionIdx}`)
+
       const mapped: Patient[] = data.appointments.map((a, i) => ({
         appointmentId: a.id,
         token: String(a.tokenNumber).padStart(2, '0'),
@@ -268,6 +296,9 @@ const QueueManagement: FC = () => {
         status: (a.tokenStatus === 'done' ? 'done' : a.tokenStatus === 'skipped' ? 'skipped' : a.tokenStatus === 'cancelled' ? 'cancelled' : a.tokenStatus === 'ongoing' ? 'ongoing' : 'pending') as Status,
       }))
       setPatientsMap(prev => ({ ...prev, [`${selectedId}-${sessionIdx}`]: mapped }))
+
+      // Sync session state from server
+      setSessionStateMap(prev => ({ ...prev, [`${selectedId}-${sessionIdx}`]: data.session ?? null }))
 
       // Sync pause state from server
       const active = data.activePauses?.find(p => p.status === 'active')
@@ -299,7 +330,11 @@ const QueueManagement: FC = () => {
         ))
       }
     })
-    return () => es.close()
+    return () => {
+      es.close()
+      // Clear the received flag so switching back shows loading until SSE re-delivers
+      sseReceivedKeys.current.delete(`${selectedId}-${sessionIdx}`)
+    }
   }, [activeScheduleId, reloadKey]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const doctor = doctors.find(d => d.id === selectedId) ?? doctors[0]
@@ -319,6 +354,17 @@ const QueueManagement: FC = () => {
     totalPatient: patients.length || session?.totalPatient || 0
   }
 
+  // Derive queue screen state from SSE session field.
+  // Use null (unknown) until at least one SSE message has arrived for this key —
+  // avoids flashing "Start Session" on page load before the server state is known.
+  const sseReady = sseReceivedKeys.current.has(sessionKey)
+  const sessionData: DoctorScheduleSession | null = sessionStateMap[sessionKey] ?? null
+  const queueScreenState: QueueScreenState | null = !sseReady
+    ? null
+    : sessionData === null
+      ? 'NOT_STARTED'
+      : sessionData.status === 'open' ? 'OPEN' : 'CLOSED'
+
   const allConsulted = patients.length > 0 && patients.every(p =>
     p.status === 'done' ||
     p.status === 'cancelled' ||
@@ -331,17 +377,6 @@ const QueueManagement: FC = () => {
 
   const updateStats = (delta: { completedPatient?: number; totalPatient?: number }) =>
     setStatsMap(prev => ({ ...prev, [sessionKey]: { ...prev[sessionKey], ...delta } }))
-
-  const [showPauseModal, setShowPauseModal] = useState(false)
-  const [showScheduledModal, setShowScheduledModal] = useState(false)
-  const [showStartConfirm, setShowStartConfirm] = useState(false)
-  const [showNextConfirm, setShowNextConfirm] = useState(false)
-  const [startLoading, setStartLoading] = useState(false)
-  const [nextLoading, setNextLoading] = useState(false)
-  const [pausedMap, setPausedMap] = useState<Record<string, string | null>>({})
-  const [pauseIdMap, setPauseIdMap] = useState<Record<string, string | null>>({})
-  const [scheduledMap, setScheduledMap] = useState<Record<string, { startAt: string; duration: string } | null>>({})
-
   const pausedDuration = pausedMap[sessionKey] ?? null
   const activePauseId = pauseIdMap[sessionKey] ?? null
   const scheduledPause = scheduledMap[sessionKey] ?? null
@@ -359,8 +394,6 @@ const QueueManagement: FC = () => {
     }, 10000)
     return () => clearInterval(interval)
   }, [scheduledPause, sessionKey])
-  const [toast, setToast] = useState<string | null>(null)
-  const [selectedPatient, setSelectedPatient] = useState<typeof patients[0] | null>(null)
 
   const openModal = (p: typeof patients[0]) => setSelectedPatient(p)
   const closeModal = () => setSelectedPatient(null)
@@ -467,8 +500,43 @@ const QueueManagement: FC = () => {
     }
   }
 
-  const handleSkip = async () => {
-    const ongoingIdx = patients.findIndex(p => p.status === 'ongoing')
+  const handleOpenSession = async () => {
+    const scheduleId = session?.scheduleId
+    if (!scheduleId) return
+    setOpenSessionLoading(true)
+    try {
+      await openQueueSession(scheduleId)
+      // SSE will fire and update queueScreenState — no manual state flip needed
+    } catch (err: any) {
+      const status = err?.response?.status
+      if (status === 409) {
+        setToast("Today's session has already been closed. It cannot be restarted.")
+      }
+    } finally {
+      setOpenSessionLoading(false)
+    }
+  }
+
+  const handleCloseSession = async () => {
+    const scheduleId = session?.scheduleId
+    if (!scheduleId) return
+    setCloseSessionLoading(true)
+    try {
+      await closeQueueSession(scheduleId)
+      // SSE will fire and update queueScreenState — no manual state flip needed
+      setShowCloseConfirm(false)
+    } catch (err: any) {
+      const status = err?.response?.status
+      if (status === 404) {
+        setToast('No active session to close.')
+      }
+      setShowCloseConfirm(false)
+    } finally {
+      setCloseSessionLoading(false)
+    }
+  }
+
+  const handleSkip = async () => {    const ongoingIdx = patients.findIndex(p => p.status === 'ongoing')
     if (ongoingIdx === -1) return
     try {
       const skipResponse = await updateAppointmentStatus(patients[ongoingIdx].appointmentId, 'skipped')
@@ -524,17 +592,23 @@ const QueueManagement: FC = () => {
       </div>
 
       {/* Doctor Tabs */}
-      <div className="qm-doctor-tabs">
-        {doctors.map(doc => (
-          <div
-            key={doc.id}
-            className={`qm-doctor-tab ${doc.id === selectedId ? 'active' : ''}`}
-            onClick={() => { setSelectedId(doc.id); setSessionIdx(0) }}
-          >
-            <img src={doc.avatar} alt={doc.name} className="tab-avatar" />
-            <span className="tab-name" style={{ color: doc.id === selectedId ? 'var(--color-accent)' : 'var(--color-tabText)' }}>{doc.name}</span>
-          </div>
-        ))}
+      <div className="qm-doctor-tabs-row">
+        <div className="qm-doctor-tabs">
+          {doctors.map(doc => (
+            <div
+              key={doc.id}
+              className={`qm-doctor-tab ${doc.id === selectedId ? 'active' : ''}`}
+              onClick={() => { setSelectedId(doc.id); setSessionIdx(0) }}
+            >
+              <img src={doc.avatar} alt={doc.name} className="tab-avatar" />
+              <span className="tab-name" style={{ color: doc.id === selectedId ? 'var(--color-accent)' : 'var(--color-tabText)' }}>{doc.name}</span>
+            </div>
+          ))}
+        </div>
+        <button className="apt-schedule-btn qm-schedule-btn" onClick={() => setShowSchedule(true)}>
+          <img src={addIcon} alt="" style={{ width: 16, height: 16 }} />
+          Schedule Appointment
+        </button>
       </div>
 
       {/* Main White Container */}
@@ -560,7 +634,19 @@ const QueueManagement: FC = () => {
             </div>
 
             {/* Doctor Card */}
-            {pausedDuration ? (
+            {/* Session state banners */}
+            {queueScreenState === 'CLOSED' ? (
+              <div className="session-banner session-closed-banner">
+                <span className="session-closed-dot" />
+                Session has been closed for today. The queue is now read-only.
+                {sessionData?.closedAt && (
+                  <span className="session-closed-time">
+                    &nbsp;Closed at {new Date(sessionData.closedAt).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
+                    {sessionData.closer ? ` by ${sessionData.closer.name}` : ''}.
+                  </span>
+                )}
+              </div>
+            ) : queueScreenState === 'OPEN' && pausedDuration ? (
               <div className="session-banner pause-banner">
                 <div className="pause-banner-left">
                   <img src={instantPauseIcon} alt="" className="banner-icon" />
@@ -573,13 +659,13 @@ const QueueManagement: FC = () => {
                   setToast('Successfully Resumed')
                 }}>Resume</button>
               </div>
-            ) : !session.isLive && (
+            ) : queueScreenState === 'NOT_STARTED' && !session.isLive ? (
               <div className="session-banner">
                 Queue hasn't started yet. Scheduled to begin at {session.workingTime.split(' - ')[0]}.
               </div>
-            )}
+            ) : null}
 
-            {scheduledPause && (
+            {queueScreenState === 'OPEN' && scheduledPause && (
               <div className="session-banner scheduled-banner">
                 <div className="pause-banner-left">
                   <img src={infoIconBlue} alt="" className="banner-icon" />
@@ -593,7 +679,7 @@ const QueueManagement: FC = () => {
               </div>
             )}
 
-            {allConsulted && session.isLive && (
+            {allConsulted && queueScreenState === 'OPEN' && (
               <div className="session-banner">
                 All patients have been consulted. Waiting for new appointments or session end time.
               </div>
@@ -606,13 +692,37 @@ const QueueManagement: FC = () => {
                   <h2 className="doctor-name">{doctor.name}</h2>
                   <p className="doctor-meta">{doctor.specialty} • {doctor.room}</p>
                 </div>
-                {session.isLive && <Badge text="Live" bgColor="#ECFDF3" textColor="#027A48" dotColor="#12B76A" />}
+                {queueScreenState === 'OPEN' && <Badge text="Live" bgColor="#ECFDF3" textColor="#027A48" dotColor="#12B76A" />}
               </div>
               <div className="doctor-actions">
-                <button className="action-btn" disabled={!session.isLive || !!pausedDuration} onClick={() => setShowPauseModal(true)}><img src={instantPauseIcon} alt="" className="btn-icon" /> Instant Pause</button>
-                <button className="action-btn" disabled={!session.isLive || !!pausedDuration} onClick={() => setShowScheduledModal(true)}><img src={scheduledPauseIcon} alt="" className="btn-icon" /> Scheduled Pause</button>
-                <button className="action-btn" disabled={!session.isLive || !!pausedDuration || !patients.some(p => p.status === 'ongoing')} onClick={handleSkip}><img src={skipIcon} alt="" className="btn-icon" /> Skip</button>
-                <button className="action-btn next-token" disabled={!session.isLive || !!pausedDuration || allConsulted || patients.length === 0} onClick={handleNextToken}>
+                {/* Start Session — only when NOT_STARTED */}
+                {queueScreenState === 'NOT_STARTED' && (
+                  <button
+                    className="action-btn start-session-btn"
+                    onClick={handleOpenSession}
+                    disabled={openSessionLoading}
+                    aria-label="Start today's session"
+                  >
+                    {openSessionLoading ? 'Starting…' : 'Start Session'}
+                  </button>
+                )}
+
+                {/* Close Session — only when OPEN */}
+                {queueScreenState === 'OPEN' && (
+                  <button
+                    className="action-btn close-session-btn"
+                    onClick={() => setShowCloseConfirm(true)}
+                    disabled={closeSessionLoading}
+                    aria-label="Close today's session"
+                  >
+                    Close Session
+                  </button>
+                )}
+
+                <button className="action-btn" disabled={queueScreenState !== 'OPEN' || !!pausedDuration} onClick={() => setShowPauseModal(true)}><img src={instantPauseIcon} alt="" className="btn-icon" /> Instant Pause</button>
+                <button className="action-btn" disabled={queueScreenState !== 'OPEN' || !!pausedDuration} onClick={() => setShowScheduledModal(true)}><img src={scheduledPauseIcon} alt="" className="btn-icon" /> Scheduled Pause</button>
+                <button className="action-btn" disabled={queueScreenState !== 'OPEN' || !!pausedDuration || !patients.some(p => p.status === 'ongoing')} onClick={handleSkip}><img src={skipIcon} alt="" className="btn-icon" /> Skip</button>
+                <button className="action-btn next-token" disabled={queueScreenState !== 'OPEN' || !!pausedDuration || allConsulted || patients.length === 0} onClick={handleNextToken}>
                   {!patients.some(p => p.status === 'ongoing') && patients.some(p => p.status === 'pending') && !patients.some(p => p.status === 'done' || p.status === 'skipped') ? 'Start Now' : 'Next Token'} <img src={rightArrow} alt="" className="btn-icon" />
                 </button>
               </div>
@@ -714,7 +824,34 @@ const QueueManagement: FC = () => {
 
       </div>
 
+      {showSchedule && (
+        <ScheduleAppointmentModal
+          initialDoctorId={doctor.apiId}
+          onClose={() => setShowSchedule(false)}
+          onCreated={reloadQueue}
+        />
+      )}
+
       {toast && <Toast message={toast} onClose={() => setToast(null)} icon={<img src={verifyTickGreen} alt="" />} />}
+
+      {showCloseConfirm && (
+        <Modal onClose={() => setShowCloseConfirm(false)} autoSize>
+          <div style={{ width: 400, padding: 24 }}>
+            <h2 style={{ margin: 0, marginBottom: 16, fontFamily: 'Manrope', fontSize: 20, fontWeight: 600, color: '#1A1D1F' }}>
+              Close Session
+            </h2>
+            <p style={{ margin: 0, marginBottom: 24, fontFamily: 'Manrope', fontSize: 14, color: '#636A79' }}>
+              Are you sure you want to close today's session? No new patients will be able to join the queue. This action cannot be undone.
+            </p>
+            <div style={{ display: 'flex', gap: 12, justifyContent: 'flex-end' }}>
+              <button className="ip-btn ip-cancel" onClick={() => setShowCloseConfirm(false)} disabled={closeSessionLoading}>Cancel</button>
+              <button className="ip-btn ip-submit close-session-confirm-btn" onClick={handleCloseSession} disabled={closeSessionLoading}>
+                {closeSessionLoading ? 'Closing…' : 'Close Session'}
+              </button>
+            </div>
+          </div>
+        </Modal>
+      )}
 
       {showStartConfirm && (
         <Modal onClose={() => setShowStartConfirm(false)} autoSize>

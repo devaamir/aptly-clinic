@@ -103,12 +103,25 @@
   background: var(--color-inputBg);
 }
 
+.qm-doctor-tabs-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
 .qm-doctor-tabs {
   display: flex;
   gap: 8px;
-  margin-bottom: 16px;
+  flex: 1;
+  min-width: 0;
   overflow-x: auto;
   scrollbar-width: none;
+}
+
+.qm-schedule-btn {
+  flex-shrink: 0;
+  white-space: nowrap;
 }
 
 .qm-doctor-tabs::-webkit-scrollbar {
@@ -863,4 +876,86 @@
   .sch-confirm-token-half {
     min-height: 160px;
   }
+}
+
+/* ── Session State UI ─────────────────────────────────────── */
+
+/* "Start Session" button in the doctor actions bar */
+.start-session-btn {
+  background: var(--color-accent, #418efd);
+  color: #fff;
+  border: none;
+  font-weight: 600;
+  padding: 8px 18px;
+  border-radius: 8px;
+  font-size: 13px;
+  cursor: pointer;
+  font-family: "Manrope", sans-serif;
+  transition: background 0.15s;
+}
+
+.start-session-btn:hover:not(:disabled) {
+  background: #2d7de8;
+}
+
+.start-session-btn:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+/* "Close Session" button in the doctor actions bar */
+.close-session-btn {
+  background: #fff;
+  color: #B42318;
+  border: 1px solid #FECDCA;
+  font-weight: 600;
+  padding: 8px 18px;
+  border-radius: 8px;
+  font-size: 13px;
+  cursor: pointer;
+  font-family: "Manrope", sans-serif;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.close-session-btn:hover:not(:disabled) {
+  background: #FEF3F2;
+  border-color: #F04438;
+}
+
+.close-session-btn:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+/* "Close Session" confirm modal submit button (destructive) */
+.close-session-confirm-btn {
+  background: #D92D20 !important;
+}
+
+.close-session-confirm-btn:hover:not(:disabled) {
+  background: #b42318 !important;
+}
+
+/* Session closed banner */
+.session-closed-banner {
+  background: #FEF3F2 !important;
+  border-color: #FECDCA !important;
+  color: #B42318 !important;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.session-closed-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #F04438;
+  flex-shrink: 0;
+}
+
+.session-closed-time {
+  color: #912018;
+  font-size: 12px;
 }

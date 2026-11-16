@@ -37,7 +37,12 @@ const parse12h = (t: string) => {
   return h * 60 + m
 }
 
-const DoctorStatus = ({ session }: { session: string }) => {
+const DoctorStatus = ({ session, isLive, isOnLeave }: { session: string; isLive: boolean; isOnLeave: boolean }) => {
+  if (isOnLeave) return <span className="dbp-doctor-status on-leave">• On leave</span>
+  // isLive now comes from the session table on the backend (not appointment counts).
+  // Trust it directly — do not override with a client-side time calculation.
+  if (isLive) return <span className="dbp-doctor-status live">• Live</span>
+  // Check if we're within the schedule window to show "Not started" vs "Booking open"
   const now = new Date()
   const cur = now.getHours() * 60 + now.getMinutes()
   const parts = session.split('–').map(s => s.trim())
@@ -45,12 +50,8 @@ const DoctorStatus = ({ session }: { session: string }) => {
   const start = parse12h(parts[0])
   const end = parse12h(parts[1])
   if (cur > end) return null
-  const isLive = cur >= start
-  return (
-    <span className={`dbp-doctor-status ${isLive ? 'live' : 'booking'}`}>
-      • {isLive ? 'Live' : 'Booking open'}
-    </span>
-  )
+  if (cur >= start) return <span className="dbp-doctor-status not-started">• Not started</span>
+  return <span className="dbp-doctor-status booking">• Booking open</span>
 }
 
 const AptTooltip = ({ active, payload }: { active?: boolean; payload?: { name: string; value: number; fill: string }[] }) => {
@@ -108,6 +109,8 @@ const DashboardPage: FC<{ onViewDoctor?: (d: DoctorDetail) => void }> = ({ onVie
     avatar: d.profilePicture || doctorProfileImg,
     specialty: d.specialties[0]?.name ?? '—',
     session: d.schedules[0] ? `${to12h(d.schedules[0].startTime)} – ${to12h(d.schedules[0].stopTime)}` : '—',
+    isLive: d.schedules[0]?.isLive ?? false,
+    isOnLeave: d.isOnLeave,
   }))
 
   if (loading) return (
@@ -281,7 +284,7 @@ const DashboardPage: FC<{ onViewDoctor?: (d: DoctorDetail) => void }> = ({ onVie
                             <span className="dbp-doctor-session-label">Time:</span>
                             <span className="dbp-doctor-session">{d.session}</span>
                           </div>
-                          <DoctorStatus session={d.session} />
+                          <DoctorStatus session={d.session} isLive={d.isLive} isOnLeave={d.isOnLeave} />
                         </div>
                     })()}
                   </div>

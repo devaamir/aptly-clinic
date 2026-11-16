@@ -243,6 +243,34 @@
   white-space: nowrap;
 }
 
+.lm-edit-btn {
+  background: transparent;
+  border: none;
+  color: #1570EF;
+  font-size: 13px;
+  font-weight: 500;
+  font-family: 'Manrope', sans-serif;
+  cursor: pointer;
+  padding: 4px;
+  line-height: 1;
+  vertical-align: middle;
+  white-space: nowrap;
+}
+
+.lm-delete-btn {
+  background: transparent;
+  border: none;
+  color: #B42318;
+  font-size: 13px;
+  font-weight: 500;
+  font-family: 'Manrope', sans-serif;
+  cursor: pointer;
+  padding: 4px;
+  line-height: 1;
+  vertical-align: middle;
+  white-space: nowrap;
+}
+
 .lm-apply-btn {
   display: flex;
   align-items: center;
@@ -499,7 +527,9 @@
 
 .lm-approve-btn:disabled,
 .lm-reject-btn:disabled,
-.lm-cancel-btn:disabled {
+.lm-cancel-btn:disabled,
+.lm-edit-btn:disabled,
+.lm-delete-btn:disabled {
   opacity: 0.5;
   cursor: not-allowed;
 }
@@ -662,4 +692,70 @@
   line-height: 1.6;
   margin: 8px 0 0;
   white-space: pre-wrap;
+}
+
+.lm-detail-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.lm-detail-action-btn {
+  flex: 1;
+  padding: 9px 16px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  font-family: 'Manrope', sans-serif;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: opacity 0.15s;
+}
+
+.lm-detail-action-btn:hover {
+  opacity: 0.85;
+}
+
+.lm-detail-edit-btn {
+  background: #EFF8FF;
+  color: #1570EF;
+  border-color: #B2DDFF;
+}
+
+.lm-detail-delete-btn {
+  background: #FEF3F2;
+  color: #B42318;
+  border-color: #FECDCA;
+}
+
+/* Edit modal — disabled doctor display */
+.lm-edit-doctor-display {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  background: #F9FAFB;
+  border: 1px solid #E4E7EC;
+  border-radius: 10px;
+  cursor: not-allowed;
+  opacity: 0.75;
+}
+
+.lm-edit-doctor-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.lm-edit-doctor-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: #344054;
+}
+
+.lm-edit-doctor-spec {
+  font-size: 12px;
+  color: #667085;
+  margin-top: 1px;
 }

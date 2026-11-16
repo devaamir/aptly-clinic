@@ -204,7 +204,40 @@ export interface ActivePause {
   status: string; createdAt: string; updatedAt: string
 }
 export interface PauseScheduleResponse { success: boolean; data: ActivePause }
+
+// Queue Session (new — backend PR 2026-11-13)
+export interface SessionUser {
+  id: string
+  name: string
+  emailAddress: string
+}
+export interface DoctorScheduleSession {
+  id: string
+  sessionDate: string                // "YYYY-MM-DD"
+  status: 'open' | 'closed'
+  openedAt: string                   // ISO 8601
+  closedAt: string | null
+  openedByRole: 'doctor' | 'medical-center-manager' | 'staff-member'
+  closedByRole: 'doctor' | 'medical-center-manager' | 'staff-member' | null
+  opener: SessionUser
+  closer: SessionUser | null
+  createdAt: string
+  updatedAt: string
+}
+export interface OpenSessionResponse {
+  success: boolean
+  message?: string
+  data: DoctorScheduleSession
+}
+export interface CloseSessionResponse {
+  success: boolean
+  message?: string
+  data: DoctorScheduleSession
+}
+export type QueueScreenState = 'NOT_STARTED' | 'OPEN' | 'CLOSED'
+
 export interface QueueSSEData {
+  session: DoctorScheduleSession | null   // null = session not opened today
   appointments: QueueAppointment[]
   activePauses: ActivePause[]
 }
@@ -299,6 +332,19 @@ export interface ApplyLeaveRequest {
   isHalfDay: boolean
   session: LeaveSession | null
   reason: string
+}
+
+export interface EditLeaveRequest {
+  startDate: string          // YYYY-MM-DD
+  endDate: string            // YYYY-MM-DD
+  isHalfDay: boolean
+  session: LeaveSession | null
+  reason: string
+}
+
+export interface DeleteLeaveResponse {
+  success: boolean
+  message: string
 }
 
 export interface GetLeavesParams {
