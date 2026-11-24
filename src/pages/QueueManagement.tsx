@@ -638,7 +638,7 @@ const QueueManagement: FC = () => {
             {queueScreenState === 'CLOSED' ? (
               <div className="session-banner session-closed-banner">
                 <span className="session-closed-dot" />
-                Session has been closed for today. The queue is now read-only.
+                Session has been closed. The queue is read-only until it is reopened.
                 {sessionData?.closedAt && (
                   <span className="session-closed-time">
                     &nbsp;Closed at {new Date(sessionData.closedAt).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
@@ -704,6 +704,18 @@ const QueueManagement: FC = () => {
                     aria-label="Start today's session"
                   >
                     {openSessionLoading ? 'Starting…' : 'Start Session'}
+                  </button>
+                )}
+
+                {/* Reopen Session — only when CLOSED (same POST as Start Session) */}
+                {queueScreenState === 'CLOSED' && (
+                  <button
+                    className="action-btn start-session-btn"
+                    onClick={handleOpenSession}
+                    disabled={openSessionLoading}
+                    aria-label="Reopen today's session"
+                  >
+                    {openSessionLoading ? 'Reopening…' : 'Reopen Session'}
                   </button>
                 )}
 
@@ -841,7 +853,7 @@ const QueueManagement: FC = () => {
               Close Session
             </h2>
             <p style={{ margin: 0, marginBottom: 24, fontFamily: 'Manrope', fontSize: 14, color: '#636A79' }}>
-              Are you sure you want to close today's session? No new patients will be able to join the queue. This action cannot be undone.
+              Are you sure you want to close today's session? No new patients will be able to join the queue until it is reopened.
             </p>
             <div style={{ display: 'flex', gap: 12, justifyContent: 'flex-end' }}>
               <button className="ip-btn ip-cancel" onClick={() => setShowCloseConfirm(false)} disabled={closeSessionLoading}>Cancel</button>
