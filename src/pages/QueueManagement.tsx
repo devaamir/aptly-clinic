@@ -168,6 +168,33 @@ const QueueManagement: FC = () => {
   const [headerHidden, setHeaderHidden] = useState(false)
   const lastScrollY = useRef(0)
   const scrollRef = useRef<HTMLDivElement | null>(null)
+  const doctorTabsRef = useRef<HTMLDivElement | null>(null)
+  const [canScrollLeft, setCanScrollLeft] = useState(false)
+  const [canScrollRight, setCanScrollRight] = useState(false)
+  const [hasTabOverflow, setHasTabOverflow] = useState(false)
+
+  const updateTabArrows = useCallback(() => {
+    const el = doctorTabsRef.current
+    if (!el) return
+    setHasTabOverflow(el.scrollWidth > el.clientWidth + 1)
+    setCanScrollLeft(el.scrollLeft > 1)
+    setCanScrollRight(el.scrollLeft + el.clientWidth < el.scrollWidth - 1)
+  }, [])
+
+  useEffect(() => {
+    const el = doctorTabsRef.current
+    if (!el) return
+    updateTabArrows()
+    const ro = new ResizeObserver(updateTabArrows)
+    ro.observe(el)
+    return () => ro.disconnect()
+  }, [doctors, updateTabArrows])
+
+  const scrollDoctorTabs = (dir: 1 | -1) => {
+    const el = doctorTabsRef.current
+    if (!el) return
+    el.scrollBy({ left: dir * Math.max(200, el.clientWidth * 0.7), behavior: 'smooth' })
+  }
 
   const handleScroll = useCallback(() => {
     const el = scrollRef.current
@@ -593,17 +620,32 @@ const QueueManagement: FC = () => {
 
       {/* Doctor Tabs */}
       <div className="qm-doctor-tabs-row">
-        <div className="qm-doctor-tabs">
-          {doctors.map(doc => (
-            <div
-              key={doc.id}
-              className={`qm-doctor-tab ${doc.id === selectedId ? 'active' : ''}`}
-              onClick={() => { setSelectedId(doc.id); setSessionIdx(0) }}
-            >
-              <img src={doc.avatar} alt={doc.name} className="tab-avatar" />
-              <span className="tab-name" style={{ color: doc.id === selectedId ? 'var(--color-accent)' : 'var(--color-tabText)' }}>{doc.name}</span>
-            </div>
-          ))}
+        <div className="qm-doctor-tabs-wrap">
+          {hasTabOverflow && (
+            <button className="qm-tabs-arrow" aria-label="Scroll doctors left" disabled={!canScrollLeft} onClick={() => scrollDoctorTabs(-1)}>
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M9.333 4L6.271 7.293a1.04 1.04 0 000 1.414L9.333 12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" /></svg>
+            </button>
+          )}
+          <div className="qm-doctor-tabs" ref={doctorTabsRef} onScroll={updateTabArrows}>
+            {doctors.map(doc => (
+              <div
+                key={doc.id}
+                className={`qm-doctor-tab ${doc.id === selectedId ? 'active' : ''}`}
+                onClick={e => {
+                  setSelectedId(doc.id); setSessionIdx(0)
+                  e.currentTarget.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'nearest' })
+                }}
+              >
+                <img src={doc.avatar} alt={doc.name} className="tab-avatar" />
+                <span className="tab-name" style={{ color: doc.id === selectedId ? 'var(--color-accent)' : 'var(--color-tabText)' }}>{doc.name}</span>
+              </div>
+            ))}
+          </div>
+          {hasTabOverflow && (
+            <button className="qm-tabs-arrow" aria-label="Scroll doctors right" disabled={!canScrollRight} onClick={() => scrollDoctorTabs(1)}>
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M6.667 12l3.062-3.293a1.04 1.04 0 000-1.414L6.667 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" /></svg>
+            </button>
+          )}
         </div>
         <button className="apt-schedule-btn qm-schedule-btn" onClick={() => setShowSchedule(true)}>
           <img src={addIcon} alt="" style={{ width: 16, height: 16 }} />
