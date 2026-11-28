@@ -110,6 +110,39 @@
   margin-bottom: 16px;
 }
 
+.qm-doctor-tabs-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  min-width: 0;
+}
+
+.qm-tabs-arrow {
+  flex-shrink: 0;
+  width: 34px;
+  height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  border: 1px solid var(--color-border);
+  background: #fff;
+  color: var(--color-tabText);
+  cursor: pointer;
+  padding: 0;
+}
+
+.qm-tabs-arrow:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.qm-tabs-arrow:not(:disabled):hover {
+  border-color: var(--color-accent);
+  color: var(--color-accent);
+}
+
 .qm-doctor-tabs {
   display: flex;
   gap: 8px;
